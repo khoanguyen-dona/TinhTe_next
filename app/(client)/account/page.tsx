@@ -78,6 +78,7 @@ const page = () => {
         resolver: zodResolver(form1Schema),
         defaultValues: {
             username: user?.username as string, 
+            img: '',
         },
     })
     const form2 = useForm<z.infer<typeof form2Schema>>({
