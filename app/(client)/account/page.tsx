@@ -24,7 +24,7 @@ import {
     DialogTrigger,
   } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { publicRequest } from '@/requestMethod'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
@@ -48,8 +48,6 @@ import Image from 'next/image'
 
 const form1Schema = z.object({
     username: z.string().min(4).max(100),
-    img: z.string().min(0).max(100),
-
   })
 
 const form2Schema = z.object({
@@ -74,11 +72,17 @@ const page = () => {
     const [imageFile, setImageFile] = useState<File|''>('')
     const [previewImage, setPreviewImage] = useState<string|''>(user?.img as string)
 
+    useEffect(()=>{
+        if(user===null){
+            router.push('/')
+        }
+    }, [] )
+
     const form1 = useForm<z.infer<typeof form1Schema>>({
         resolver: zodResolver(form1Schema),
         defaultValues: {
             username: user?.username as string, 
-            img: '',
+         
         },
     })
     const form2 = useForm<z.infer<typeof form2Schema>>({
@@ -93,10 +97,13 @@ const page = () => {
 
     const handleAvatar = (e: React.ChangeEvent<HTMLInputElement > ) => {
         const file = e.target.files?.[0] 
-        if(file){
+        
+        if(file && file.size < 5000000){
             setImageFile(file)    
             const image_URL = URL.createObjectURL(file)
             setPreviewImage(image_URL)
+        } else{
+            toast.error('Chọn ảnh nhỏ hơn 5MB')
         }
     }
 
@@ -208,47 +215,35 @@ const page = () => {
     console.log('previewImage',previewImage)
    
 
-  return (
-    <div className={` h-220 bg-white flex flex-col justify-center items-center
-        `}>
+  return (     
+    <div className={` h-220 bg-white flex flex-col justify-center items-center`}>
         <Form {...form1}>
             <div className='flex flex-col p-4 gap-8 w-5/6  md:w-2/3 lg:w-1/2 xl:w-1/3 mt-0 h-auto '>
                 <div className='font-bold text-center text-2xl'>Tài khoản</div>
                 <form onSubmit={form1.handleSubmit(onSubmit)} className='space-y-8'>
-                    <FormField
-                            control={form1.control}
-                            name="img"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormControl>
-                                    
-                                    <>
-                                        <p className='text-sm text-gray-500  text-left' >Ảnh đại diện </p>
+                   
+                    <>
+                        <p className='text-sm text-gray-500  text-left' >Ảnh đại diện </p>
 
-                                        <div className='text-center'>
-                                            <label className=' w-1/4  rounded-lg border-2 border-blue-200  font-semibold hover:bg-blue-200  hover:cursor-pointer p-2 transition' 
-                                                    htmlFor="thumbnail">
-                                                Chọn ảnh
-                                                {/* <input  className='hidden' type="file" id='thumbnail' onChange={handleAvatar} /> */}
-                                                <Input 
-                                                    className='p-6 hidden border-gray-200 ' 
-                                                    onChangeCapture={handleAvatar} id='thumbnail' type='file'  placeholder="chọn" {...field} />
-                                            </label>
-                                        </div>
-                                        
-                                        {previewImage  && 
-                                            <div className='relative flex justify-center  ' >       
-                                                <Image width={100} height={100} 
-                                                    className='w-32 h-32 mt-3 border-2 rounded-full  object-cover  ' alt='avatar' src={previewImage }  />                                                                   
-                                            </div>                                                      
-                                        } 
-                                    </>
-                                </FormControl>
-                                <FormMessage className='text-red-500'/>
-                            </FormItem>                     
+                        <div className='text-center'>
+                            <label className=' w-1/4  rounded-lg border-2 border-blue-200  font-semibold hover:bg-blue-200  hover:cursor-pointer p-2 transition' 
+                                    htmlFor="thumbnail">
+                                Chọn ảnh
+                                {/* <input  className='hidden' type="file" id='thumbnail' onChange={handleAvatar} /> */}
+                                <Input 
+                                    className='p-6 hidden border-gray-200 ' 
+                                    onChangeCapture={handleAvatar} id='thumbnail' type='file'  placeholder="chọn"  />
+                            </label>
+                        </div>
                         
-                    )}
-                    />
+                        {previewImage  && 
+                            <div className='relative flex justify-center  ' >       
+                                <Image width={100} height={100} 
+                                    className='w-32 h-32 mt-3 border-2 rounded-full  object-cover  ' alt='avatar' src={previewImage }  />                                                                   
+                            </div>                                                      
+                        } 
+                    </>
+                                
                     <FormField
                         control={form1.control}
                         name="username"

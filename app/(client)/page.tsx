@@ -1,13 +1,57 @@
 'use client'
+
+import axios from "axios";
 import Menu from "./custom-components/Menu";
 import { posts } from "@/data";
 import { trendingPosts } from "@/data";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/userRedux";
 
 export default function Home() {
+  const dispatch = useDispatch()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const user = useSelector((state: RootState) => state.user.currentUser)
+  const googleAuth = searchParams.get('googleAuth')
+  const logout = searchParams.get('logout')
+  // display notify when user redirected by googleAuth
+  useEffect(() => {
+    if(googleAuth==='true'){
+
+      // Remove the query param from the URL after setting message
+      //@ts-ignore
+      router.replace("/", undefined, { shallow: true });
+      toast.success('Đăng nhập thành công')
+    }
+
+    if(logout==='true'){
+
+      // Remove the query param from the URL after setting message
+      //@ts-ignore
+      router.replace("/", undefined, { shallow: true });
+      toast.success('Đăng xuất thành công')
+    }
+
+  }, [])
+
+   //get data of user when redirect by googleAuth
+   useEffect(()=> {
+    if(user === null  ){
+     
+      axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/user`, {withCredentials: true})
+      .then((res) => {
+        dispatch(setUser(res.data.user))
+      })
+      .catch(() => dispatch(setUser(null)) );
+  }
+  }, [])
+
 
   return (  
     <div className=" px-2 md:px-8 2xl:px-32 mt-16">

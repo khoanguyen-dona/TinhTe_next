@@ -5,6 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import Image from 'next/image'
 import { setUser } from '@/redux/userRedux'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
@@ -18,14 +19,8 @@ const Navbar = () => {
   const user:User|null = useSelector((state: RootState)=>state.user.currentUser)
  
   const handleLogout = () => {
-    try{
       dispatch(setUser(null))
-      toast.success('Đăng xuất thành công !')
-      router.push('/')
-    } catch(err){
-      toast.error('Lỗi, vui lòng thử lại !')
-      console.log('error while logout',err)
-    }
+      router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
   }
 
   return (
@@ -201,15 +196,15 @@ const Navbar = () => {
           {user !== null ?
           <Popover>
             <PopoverTrigger asChild >
-              <div className='bg-gray-300 p-2  rounded-full hover:bg-blue-300 hover:cursor-pointer transition '>
-                <img src="/user.png"  className='w-8 h-8 ' alt="" />
+              <div className='bg-gray-300  p-1 rounded-full hover:bg-blue-300 hover:cursor-pointer transition '>
+                {user!==null && user?.img!=='' ? <Image width={40} height={40} src={user?.img}  className='w-11 h-11 object-cover rounded-full' alt="" />
+                :<img src="/user.png"  className='w-8 h-8 ' alt="" />}
               </div>
             </PopoverTrigger>
             <PopoverContent>
               <div className='flex flex-col w-48 h-auto mr-2 bg-white fixed top-0 -right-2 shadow-2xl border-2 border-gray-200 rounded-lg ' >
                 <a href='/account' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
-                    {user?.img===null || user===null ? <img src="/user.png" className='w-8 h-8' alt="" /> :
-                      <img src={user?.img as string} className='w-8 h-8' alt="" />}
+                    <img src="/user.png" className='w-8 h-8' alt="" /> 
                     Thông tin cá nhân      
                 </a>
                 <div onClick={handleLogout}  className='flex  items-center gap-2  hover:cursor-pointer hover:bg-blue-300 p-2 rounded-lg transition'>
