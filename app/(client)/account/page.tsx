@@ -224,24 +224,23 @@ const page = () => {
                    
                     <>
                         <p className='text-sm text-gray-500  text-left' >Ảnh đại diện </p>
-
+                        {previewImage  && 
+                            <div className='relative flex justify-center items-center  ' >       
+                                <Image width={100} height={100} 
+                                    className='w-28 h-28  border-2 rounded-full  object-cover  ' alt='avatar' src={previewImage }  />                                                                   
+                            </div>                                                      
+                        } 
                         <div className='text-center'>
                             <label className=' w-1/4  rounded-lg border-2 border-blue-200  font-semibold hover:bg-blue-200  hover:cursor-pointer p-2 transition' 
                                     htmlFor="thumbnail">
                                 Chọn ảnh
-                                {/* <input  className='hidden' type="file" id='thumbnail' onChange={handleAvatar} /> */}
                                 <Input 
                                     className='p-6 hidden border-gray-200 ' 
                                     onChangeCapture={handleAvatar} id='thumbnail' type='file'  placeholder="chọn"  />
                             </label>
                         </div>
                         
-                        {previewImage  && 
-                            <div className='relative flex justify-center  ' >       
-                                <Image width={100} height={100} 
-                                    className='w-32 h-32 mt-3 border-2 rounded-full  object-cover  ' alt='avatar' src={previewImage }  />                                                                   
-                            </div>                                                      
-                        } 
+                        
                     </>
                                 
                     <FormField

@@ -149,3 +149,68 @@ export const trendingPosts = [
     },
     
 ]
+
+export const categories = [
+    {   
+        title: 'Xe',
+        value: 'xe'
+    },
+    {   
+        title: 'Máy tính',
+        value: 'máy tính'
+    },
+    {   
+        title: 'Điện thoại',
+        value: 'điện thoại'
+    },
+    {   
+        title:'Âm nhạc',
+        value:'âm nhạc'
+    },
+    {   
+        title:'Điện ảnh',
+        value:'điện ảnh'
+    },
+    {   
+        title:'Máy ảnh',
+        value:'máy ảnh'
+    },
+    {   
+        title:'TV',
+        value:'tv'
+    },
+    {   
+        title:'Thiết bị điện tử',
+        value:'thiết bị điện tử'
+    },
+    {   
+        title:'Du lịch',
+        value:'du lịch'
+    },
+    {   
+        title:'Đồng hồ',
+        value:'đồng hồ'
+    },
+    {   
+        title:'Sức khỏe',
+        value:'sức khỏe'
+    },
+    {   
+        title:'Thời trang',
+        value:'thời trang'
+    },
+    {   
+        title:'Cuộc sống',
+        value:'cuộc sống'
+    },
+    {   
+        title:'Khác',
+        value:'khác'
+    },
+]
+
+
+
+
+
+
