@@ -1,7 +1,7 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 
 import userReducer from "./userRedux";
-
+import draftReducer from './draftRedux'
 
 import {
   persistStore,
@@ -21,7 +21,7 @@ const persistConfig = {
   storage,
 };
 
-const rootReducer = combineReducers({ user: userReducer, });
+const rootReducer = combineReducers({ user: userReducer, draft: draftReducer });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 

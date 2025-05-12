@@ -9,3 +9,16 @@ export type User = {
     autoDelete: Date,
     token: string,
 }
+
+export type Post = {
+    _id: string,
+    title: string,
+    content: string,
+    thumbnail: string,
+    imgGallery: string[],
+    category: string,
+    authorId: string|User,
+    view: number,
+    isApproved: boolean,
+    isPosted: boolean
+}

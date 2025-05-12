@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import Jodit from '../custom-components/Jodit'
 import { Loader } from 'lucide-react';
 import toast from 'react-hot-toast'
-import { categories } from '@/data'
+import { categories, posts } from '@/data'
 import { useSelector } from 'react-redux'
 import {
     getStorage,
@@ -18,8 +18,13 @@ import {
   import app from '@/firebase'
 import { publicRequest } from '@/requestMethod'
 import { RootState } from '@/redux/store'
+import { useDispatch } from 'react-redux'
+import { setDraft } from '@/redux/draftRedux'
+import { useRouter } from 'next/navigation'
 
 const page = () => {
+    const router = useRouter()
+    const dispatch = useDispatch()
     const now = new Date()
     const user = useSelector((state: RootState)=>state.user.currentUser)
     const currentMonth = now.getMonth() + 1; // Months are zero-based (0 = Jan, 11 = Dec)
@@ -34,6 +39,7 @@ const page = () => {
     const [category, setCategory] = useState<string>()
     const [postId, setPostId] = useState<string>()
     console.log('post',postId)
+
     // add image to desc when choose image in RichtextEditor
     useEffect(()=>{
         image && setContent((prev)=>prev+`<img  src="${image}"/>`)
@@ -131,7 +137,24 @@ const page = () => {
             await uploadThumbnail(value)   
     }
     
+    const saveDraftToStorage = async() => {
+        dispatch(setDraft({
+            _id: postId,
+            title: title,
+            content: content,
+            thumbnail: thumbnail,
+            imgGallery: [],
+            category: category,
+            authorId: user?._id,
+        }))
+    }
 
+    const handleDraft = async () => {
+        setLoading(true)
+        await saveDraftToStorage()
+        window.open('/view-draft', '_blank')
+        setLoading(false)
+    }
 
   return (
     <>
@@ -219,6 +242,7 @@ const page = () => {
 
         <div className='flex gap-4 mb-20 justify-end' >
             <button className='p-4  hover:cursor-pointer hover:bg-gray-100 transition font-bold rounded-xl' 
+                    onClick = {handleDraft}
                     >
                 Xem nháp
             </button>
