@@ -13,7 +13,7 @@ const page = () => {
   return (
     <div className='flex flex-col px-2 md:px-8  xl:px-82  mt-30 h-auto '>
         <div className='text-2xl text-gray-500 text-center'>Bản Nháp</div>
-        <div className='text-2xl md:text-3xl font-bold mt-10'>{draft?.title}</div>
+        <div className='text-2xl md:text-3xl font-bold mt-10 '>{draft?.title}</div>
         <div className='flex gap-2 mt-10'>
             {
                 user && user.img ?

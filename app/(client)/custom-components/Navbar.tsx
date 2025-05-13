@@ -24,7 +24,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className='fixed top-0 left-0 h-16 bg-gray-100 w-full  z-20 p-2 flex justify-between  items-center gap-10 px-5' >
+    <div className='fixed top-0 left-0 h-16 bg-gray-100 w-full  z-50 p-2 flex justify-between  items-center gap-10 px-5' >
         <a className='flex  items-center gap-2  ' href='/' >
             <img src="/favicon.png" className='w-12 h-12' alt="" />
             <p className='font-bold text-xl ' >TinhTe.vn</p>
@@ -35,9 +35,9 @@ const Navbar = () => {
         </div>
 
         <div className='flex flex-row items-center space-x-2' >
-          <div className='hidden md:block bg-blue-500 p-2 px-4 text-white rounded-full hover:cursor-pointer hover:bg-blue-700 transition'>
+          <a href='/write-post' className='hidden md:block bg-blue-500 p-2 px-4 text-white rounded-full hover:cursor-pointer hover:bg-blue-700 transition'  >
             Viết bài 
-          </div>
+          </a>
 
          {/* mail button */}
           <Popover>
@@ -206,6 +206,10 @@ const Navbar = () => {
                 <a href='/account' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
                     <img src="/user.png" className='w-8 h-8' alt="" /> 
                     Thông tin cá nhân      
+                </a>
+                <a href='/account/my-post' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
+                    <img src="/my-post.png" className='w-8 h-8' alt="" /> 
+                    Bài đăng của tôi      
                 </a>
                 <div onClick={handleLogout}  className='flex  items-center gap-2  hover:cursor-pointer hover:bg-blue-300 p-2 rounded-lg transition'>
                   <img src="/power.png" className='w-8 h-8' alt="" />

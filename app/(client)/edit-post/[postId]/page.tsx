@@ -1,8 +1,11 @@
+
+
 'use client'
 import React from 'react'
 import { Textarea } from "@/components/ui/textarea"
+import { useParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import Jodit from '../custom-components/Jodit'
+import Jodit from '../../custom-components/Jodit'
 import { Loader } from 'lucide-react';
 import toast from 'react-hot-toast'
 import { categories } from '@/data'
@@ -20,24 +23,49 @@ import { publicRequest } from '@/requestMethod'
 import { RootState } from '@/redux/store'
 import { useDispatch } from 'react-redux'
 import { setDraft } from '@/redux/draftRedux'
+import { Post } from '@/dataTypes'
+import Image from 'next/image'
 
 const page = () => {
+    const { postId } = useParams()
+    const [post, setPost] = useState<Post>()
     const dispatch = useDispatch()
     const now = new Date()
     const user = useSelector((state: RootState)=>state.user.currentUser)
     const currentMonth = now.getMonth() + 1; // Months are zero-based (0 = Jan, 11 = Dec)
     const currentYear = now.getFullYear();
     const storage = getStorage(app)
-    const [title, setTitle] = useState<string>()
+    const [title, setTitle] = useState<string|undefined>(post?.title)
     const [content, setContent] = useState<string>()
     const [loading, setLoading] = useState<boolean>(false)
     const [image, setImage] = useState<string>()
-    const [thumbnail, setThumbnail] = useState<string>()
-    const [thumbnailFile, setThumbnailFile] = useState<File>()
-    const [category, setCategory] = useState<string>('xe')
-    const [postId, setPostId] = useState<string>()
-    console.log('post',postId)
+    const [thumbnail, setThumbnail] = useState<string|undefined>(post?.thumbnail)
+    const [thumbnailFile, setThumbnailFile] = useState<File|undefined>()
+    const [category, setCategory] = useState<string>()
+    // const [post_id, setPost_id] = useState<string|undefined>(postId as string)
 
+    // fetch data of base on postId
+    useEffect(()=>{
+        setLoading(true)
+        const getData = async () => {
+            try {
+                const res = await publicRequest.get(`/post/${postId}`)
+                if(res.data){
+                    setThumbnail(res.data.post.thumbnail)
+                    setPost(res.data.post)
+                    setTitle(res.data.post.title)
+                    setContent(res.data.post.content)
+                    setCategory(res.data.post.category)
+                }
+            } catch(err){
+                console.log('load post data failed', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        getData()
+    },[])
+    console.log('post',post)
     // add image to desc when choose image in RichtextEditor
     useEffect(()=>{
         image && setContent((prev)=>prev+`<img  src="${image}"/>`)
@@ -65,8 +93,8 @@ const page = () => {
     }
 
     const uploadThumbnail = async(value: string) => {
-        if(thumbnailFile){
-            let imageName = new Date().getTime() + thumbnailFile.name 
+        if(thumbnailFile ){
+            let imageName = new Date().getTime() + thumbnailFile?.name 
             let imageRef = ref(storage, `post/${currentMonth}-${currentYear}/${imageName}`)
             try {
                 await uploadBytes(imageRef, thumbnailFile)
@@ -79,6 +107,12 @@ const page = () => {
             } catch (err){
                 console.log('error loading thumbnailFile to firebase', err)
             }  
+        } else{
+            if(postId && postId!==undefined){
+                updateMongo(thumbnail as string, value)
+            }else {
+                uploadToMongo(thumbnail as string, value)             
+            }
         }
     }
 
@@ -94,7 +128,6 @@ const page = () => {
                         isPosted: isPosted,
                     })
                     if(res.data){
-                        setPostId(res.data.post._id)
                         toast.success('Cập nhật thành công')
                     }
             } catch(err) {
@@ -117,7 +150,6 @@ const page = () => {
                 isPosted: isPosted,
             })
             if(res.data){
-                setPostId(res.data.post._id)
                 toast.success('cập nhật thành công')
             }
     } catch(err) {
@@ -168,7 +200,7 @@ const page = () => {
     <div className=' px-2 md:px-8 lg:px-32 xl:px-70 mt-30 h-auto  '>
         <div className='flex flex-col '>
             <div className='text-gray-500'>Tiêu đề bài viết</div>
-            <Textarea disabled={false} className='text-2xl lg:text-2xl h-auto' onChange={(e)=>setTitle(e.target.value)} placeholder="Tiêu đề bài viết" />
+            <Textarea disabled={false} className='text-2xl lg:text-2xl h-auto' value={title} onChange={(e)=>setTitle(e.target.value)} placeholder="Tiêu đề bài viết" />
             {title && title?.length   > 90 ? <div className='text-red-500 mt-2'>Tiêu đề chỉ nên nhỏ hơn 90 chữ</div> : ''}
             <div className='text-right md:text-xl mt-2 text-gray-500'>
                 {title?.length!==undefined ? title?.length : 0 }/90 kí tự
@@ -177,7 +209,7 @@ const page = () => {
 
         <div className='flex flex-col  '>
             <p className='text-gray-500'>Ảnh đại diện bài viết</p>
-            {thumbnail ? '':
+            {thumbnail|| post?.thumbnail ? '':
                 <div className='text-center border-4 border-gray-200 border-dashed bg-gray-100 rounded-xl'>
                     <label className='hover:cursor-pointer p-2 ' 
                             htmlFor="thumbnail"
@@ -194,14 +226,13 @@ const page = () => {
                     </label>
                 </div> 
             }
+            
             {thumbnail && 
             <div className='w-full relative'>
-                <img src={thumbnail} className='w-full rounded-xl ' />
+                <Image alt='thumbnail' width={400} height={400} src={thumbnail} className='w-full rounded-xl ' />
                 <div className='absolute z-20 top-2 right-2 bg-gray-100 hover:bg-gray-300 transition rounded-xl opacity-70 p-4 hover:cursor-pointer' onClick={removeThumbnail}>
                     <img src="/x.png" className=' w-6 h-6 font-bold' alt="" />
                 </div>
-
-                {/* <div className='absolute inset-0 flex items-center justify-center  '>    */}
                     <label className='hover:cursor-pointer  absolute inset-0 flex items-center justify-center' 
                             htmlFor="thumbnail"
                     >
@@ -213,7 +244,6 @@ const page = () => {
                             className='p-6 hidden border-gray-200 ' 
                             onChange={handleThumbnail} id='thumbnail' type='file'  />
                     </label>         
-                {/* </div> */}
             </div>
             }
         </div>

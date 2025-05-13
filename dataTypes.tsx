@@ -20,5 +20,7 @@ export type Post = {
     authorId: string|User,
     view: number,
     isApproved: boolean,
-    isPosted: boolean
+    isPosted: boolean,
+    createdAt: Date,
+    updatedAt: Date,
 }
