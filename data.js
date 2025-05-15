@@ -164,6 +164,14 @@ export const categories = [
         value: 'điện thoại'
     },
     {   
+        title: 'Loa',
+        value: 'loa'
+    },
+    {   
+        title: 'Tai nghe',
+        value: 'tai nghe'
+    },
+    {   
         title:'Âm nhạc',
         value:'âm nhạc'
     },

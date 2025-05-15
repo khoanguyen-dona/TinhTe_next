@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fancyapps/ui": "^5.0.36",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-alert-dialog": "^1.1.13",
     "@radix-ui/react-dialog": "^1.1.13",
@@ -17,6 +18,7 @@
     "@radix-ui/react-slot": "^1.2.2",
     "@reduxjs/toolkit": "^2.8.1",
     "axios": "^1.9.0",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^11.7.1",

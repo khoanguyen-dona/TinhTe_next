@@ -11,6 +11,8 @@ import {
 } from "firebase/storage";
 import app from '@/firebase'
 import toast from 'react-hot-toast';
+import imageCompression from 'browser-image-compression';
+
 
 type Props = {
   content: string,
@@ -41,32 +43,63 @@ const Jodit = ({content, setContent, setLoading, setImage}:Props) => {
 
   }),[content])
   
-  const handleImage = async (e: React.ChangeEvent<HTMLInputElement >) => {
+  // const handleImage = async (e: React.ChangeEvent<HTMLInputElement >) => {
 
-        const file = e.target.files?.[0]
-        if(file && file.size > 3000000){
-          alert('Vui lòng chọn ảnh có kích thước nhỏ hơn 3 MB')
+  //       const file = e.target.files?.[0]
+  //       if(file && file.size > 3000000){
+  //         alert('Vui lòng chọn ảnh có kích thước nhỏ hơn 3 MB')
 
-          return
-        }
-        if(file){
-            let imageName = new Date().getTime() + file.name 
-            let imageRef = ref(storage, `post/${currentMonth}-${currentYear}/${imageName}`)
-            try {
-                setLoading(true)
-                await uploadBytes(imageRef, file)
-                const img_URL = await getDownloadURL(imageRef)
-                console.log(img_URL)
-                setImage(img_URL)
+  //         return
+  //       }
+  //       if(file){
+  //           let imageName = new Date().getTime() + file.name 
+  //           let imageRef = ref(storage, `post/${currentMonth}-${currentYear}/${imageName}`)
+  //           try {
+  //               setLoading(true)
+  //               await uploadBytes(imageRef, file)
+  //               const img_URL = await getDownloadURL(imageRef)
+  //               console.log(img_URL)
+  //               setImage(img_URL)
                 
-            } catch (err){
-                toast.error('lỗi')
-                console.log('error loading file to firebase', err)
-            }  finally {
-                setLoading(false)
-            }  
-        } 
-  }
+  //           } catch (err){
+  //               toast.error('lỗi')
+  //               console.log('error loading file to firebase', err)
+  //           }  finally {
+  //               setLoading(false)
+  //           }  
+  //       } 
+  // }
+
+  const handleImage = async (e: React.ChangeEvent<HTMLInputElement >) => {
+    const file = e.target.files?.[0] 
+    if(file && file.size > 3000000){
+      alert('Vui lòng chọn ảnh có kích thước nhỏ hơn 3 MB')
+      return
+    }
+    if(file){
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        }
+        const compressedFile = await imageCompression(file, options);
+        let imageName = new Date().getTime() + file.name 
+        let imageRef = ref(storage, `post/${currentMonth}-${currentYear}/${imageName}`)
+        try {
+            setLoading(true)
+            await uploadBytes(imageRef, compressedFile)
+            const img_URL = await getDownloadURL(imageRef)
+            console.log(img_URL)
+            setImage(img_URL)
+            
+        } catch (err){
+            toast.error('lỗi')
+            console.log('error loading file to firebase', err)
+        }  finally {
+            setLoading(false)
+        }  
+    } 
+}
 
 	return (
   <div className='flex flex-col    gap-2 ' >

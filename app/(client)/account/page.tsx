@@ -34,13 +34,11 @@ import { setUser } from '@/redux/userRedux'
 import { RootState } from '@/redux/store'
 import { useSelector } from 'react-redux'
 import { User } from '@/dataTypes'
+import { UploadSingleImage } from '../custom-components/UploadSingleImage'
 
 import {
     getStorage,
     ref,
-    uploadBytes,
-    uploadBytesResumable,
-    getDownloadURL,
     deleteObject,
   } from "firebase/storage";
 import app from '@/firebase'
@@ -94,16 +92,15 @@ const page = () => {
         },
     })
      
-
     const handleAvatar = (e: React.ChangeEvent<HTMLInputElement > ) => {
-        const file = e.target.files?.[0] 
-        
-        if(file && file.size < 5000000){
+        const file = e.target.files?.[0]   
+        if(file && file.size < 3000000){
             setImageFile(file)    
             const image_URL = URL.createObjectURL(file)
             setPreviewImage(image_URL)
         } else{
-            toast.error('Chọn ảnh nhỏ hơn 5MB')
+            // toast.error('Chọn ảnh nhỏ hơn 3MB')
+            alert('Chọn ảnh nhỏ hơn 3 MB')
         }
     }
 
@@ -132,7 +129,7 @@ const page = () => {
                     if(res.data){        
                         dispatch(setUser(res.data.data))
                         toast.success("Cập nhật thành công")
-                        router.push('/account')
+                        // router.push('/account')
                     }
                     await handleRemoveAvatar()
                 } else {
@@ -142,10 +139,9 @@ const page = () => {
                     if(res.data){        
                         dispatch(setUser(res.data.data))
                         toast.success("Cập nhật thành công")
-                        router.push('/account')
+                        // router.push('/account')
                     }
-                }
-                
+                }            
             } catch(err){
                 toast.error('Lỗi')           
                 console.log('err while handle submit',err)
@@ -158,12 +154,9 @@ const page = () => {
         const uploadImageToFirebase =  async() => {
             setLoading(true)
             if(imageFile !== '' && imageFile !==undefined && imageFile instanceof File){
-                let imageName = new Date().getTime() + imageFile.name
-                let imageRef = ref(storage, `avatar/${imageName}`)
                 try{
-                    await uploadBytes(imageRef, imageFile)
-                    const downloadURL = await getDownloadURL(imageRef)
-                    await handleUpdateUser(downloadURL as string)
+                    const downloadUrl = await UploadSingleImage({imageFile: imageFile, uploadPath: 'avatar'})
+                    await handleUpdateUser(downloadUrl as string)
                 } catch (err){
                     toast.error('error uploading avatar to firebase')
                     console.log('error uploading avatar to firebase', err)
@@ -211,17 +204,15 @@ const page = () => {
             }
         }
     }
-    console.log('img File',imageFile)
-    console.log('previewImage',previewImage)
+
    
 
   return (     
-    <div className={` h-220 bg-white flex flex-col justify-center items-center`}>
+    <div className={`  h-220 bg-white flex flex-col justify-center items-center`}>
         <Form {...form1}>
             <div className='flex flex-col p-4 gap-8 w-5/6  md:w-2/3 lg:w-1/2 xl:w-1/3 mt-0 h-auto '>
                 <div className='font-bold text-center text-2xl'>Tài khoản</div>
-                <form onSubmit={form1.handleSubmit(onSubmit)} className='space-y-8'>
-                   
+                <form onSubmit={form1.handleSubmit(onSubmit)} className='space-y-8'>                 
                     <>
                         <p className='text-sm text-gray-500  text-left' >Ảnh đại diện </p>
                         {previewImage  && 
@@ -238,9 +229,7 @@ const page = () => {
                                     className='p-6 hidden border-gray-200 ' 
                                     onChangeCapture={handleAvatar} id='thumbnail' type='file'  placeholder="chọn"  />
                             </label>
-                        </div>
-                        
-                        
+                        </div>                       
                     </>
                                 
                     <FormField
@@ -307,8 +296,7 @@ const page = () => {
                                         </div>
                                     </FormControl>
                                     <FormMessage className='text-red-500'/>
-                                </FormItem>                     
-                            
+                                </FormItem>                                             
                             )}
                             />
                              <FormField
@@ -331,8 +319,7 @@ const page = () => {
                                     </FormControl>
                                     {password1!==password2 && <div className='text-red-500'>Password phải giống nhau</div>}
                                     <FormMessage className='text-red-500'/>
-                                </FormItem>                     
-                            
+                                </FormItem>                                               
                             )}
                             />
                              <FormField
@@ -354,11 +341,9 @@ const page = () => {
                                     </FormControl>
                                     {password1!==password2 && <div className='text-red-500'>Password phải giống nhau</div>}
                                     <FormMessage className='text-red-500'/>
-                                </FormItem>                     
-                            
+                                </FormItem>                            
                             )}
-                            />
-                                          
+                            />                                          
                             <Button 
                                 disabled={loading||password1!==password2||password===''||password1===''||password2===''} type="submit" 
                                 className='bg-blue-500 text-white w-full p-6 text-lg font-bold hover:bg-blue-600 hover:cursor-pointer'>

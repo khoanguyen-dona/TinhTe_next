@@ -7,27 +7,21 @@ import { Loader } from 'lucide-react';
 import toast from 'react-hot-toast'
 import { categories } from '@/data'
 import { useSelector } from 'react-redux'
-import {
-    getStorage,
-    ref,
-    deleteObject,
-    uploadBytesResumable,
-    uploadBytes,
-    getDownloadURL,
-  } from "firebase/storage";
-  import app from '@/firebase'
+
 import { publicRequest } from '@/requestMethod'
 import { RootState } from '@/redux/store'
 import { useDispatch } from 'react-redux'
 import { setDraft } from '@/redux/draftRedux'
+import { Input } from '@/components/ui/input'
+import NextImage from 'next/image'
+
+import { UploadSingleImage } from '../custom-components/UploadSingleImage'
 
 const page = () => {
     const dispatch = useDispatch()
-    const now = new Date()
     const user = useSelector((state: RootState)=>state.user.currentUser)
-    const currentMonth = now.getMonth() + 1; // Months are zero-based (0 = Jan, 11 = Dec)
-    const currentYear = now.getFullYear();
-    const storage = getStorage(app)
+    const [linkUrl, setLinkUrl] = useState<string>()
+    const [shortDescription, setShortDescription] = useState<string>()
     const [title, setTitle] = useState<string>()
     const [content, setContent] = useState<string>()
     const [loading, setLoading] = useState<boolean>(false)
@@ -36,11 +30,11 @@ const page = () => {
     const [thumbnailFile, setThumbnailFile] = useState<File>()
     const [category, setCategory] = useState<string>('xe')
     const [postId, setPostId] = useState<string>()
-    console.log('post',postId)
 
     // add image to desc when choose image in RichtextEditor
     useEffect(()=>{
-        image && setContent((prev)=>prev+`<img  src="${image}"/>`)
+        image && setContent((prev)=>prev+`<div class='my-opacity'><img class='my-opacity'
+          src="${image}"/></div>`)
     }, [image])
 
     const handleThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,19 +60,23 @@ const page = () => {
 
     const uploadThumbnail = async(value: string) => {
         if(thumbnailFile){
-            let imageName = new Date().getTime() + thumbnailFile.name 
-            let imageRef = ref(storage, `post/${currentMonth}-${currentYear}/${imageName}`)
             try {
-                await uploadBytes(imageRef, thumbnailFile)
-                const img_URL = await getDownloadURL(imageRef)
                 if(postId && postId!==undefined){
+                    const img_URL = await UploadSingleImage({imageFile: thumbnailFile, uploadPath:'post'})
                     updateMongo(img_URL, value)
                 }else {
+                    const img_URL = await UploadSingleImage({imageFile: thumbnailFile, uploadPath:'post'})
                     uploadToMongo(img_URL, value)             
                 }
             } catch (err){
                 console.log('error loading thumbnailFile to firebase', err)
             }  
+        } else {
+            if(postId && postId!==undefined ){
+                updateMongo(thumbnail as string, value)
+            }else {
+                uploadToMongo(thumbnail as string, value)             
+            }         
         }
     }
 
@@ -87,6 +85,7 @@ const page = () => {
             try {
                     const res = await publicRequest.post('/post',{
                         title: title ,
+                        shortDescription: shortDescription, 
                         content: content,
                         thumbnail: img,
                         category: category,
@@ -99,7 +98,7 @@ const page = () => {
                     }
             } catch(err) {
                 toast.error('Lỗi')
-                console.log('err while post to mongo',err)
+                console.log('err while upload to mongo',err)
             } finally {
                 setLoading(false)
             }    
@@ -110,23 +109,25 @@ const page = () => {
         try {
             const res = await publicRequest.put(`/post/${postId}`,{
                 title: title ,
+                shortDescription: shortDescription, 
                 content: content,
                 thumbnail: img,
                 category: category,
                 authorId: user?._id,
-                isPosted: isPosted,
+                isPosted: isPosted,      
             })
             if(res.data){
                 setPostId(res.data.post._id)
                 toast.success('cập nhật thành công')
             }
-    } catch(err) {
-        toast.error('Lỗi')
-        console.log('err while post to mongo',err)
-    } finally {
-        setLoading(false)
+        } catch(err) {
+            toast.error('Lỗi')
+            console.log('err while update to mongo',err)
+        } finally {
+            setLoading(false)
+        }
     }
-    }
+
     const handleSubmit = async (value: string) => {
             if(title===undefined||title===''||thumbnail===undefined||content===undefined||content===''){
                 alert('Vui lòng điền đầy đủ thông tin')
@@ -140,6 +141,7 @@ const page = () => {
         dispatch(setDraft({
             _id: postId,
             title: title,
+            shortDescription: shortDescription, 
             content: content,
             thumbnail: thumbnail,
             imgGallery: [],
@@ -155,6 +157,20 @@ const page = () => {
         setLoading(false)
     }
 
+    const handleLinkUrl = async () => {
+       
+        if(linkUrl&&linkUrl.trim().length>0){
+            const img = new Image();
+            img.src = linkUrl;
+            img.onload = () => {
+                setThumbnailFile(undefined)
+                setThumbnail(linkUrl)
+            }  
+            img.onerror = () => {          
+            }; 
+        }
+    }
+
   return (
     <>
     {loading && 
@@ -165,18 +181,22 @@ const page = () => {
     </div>
     }
 
-    <div className=' px-2 md:px-8 lg:px-32 xl:px-70 mt-30 h-auto  '>
+    <div className=' px-2 md:px-8 lg:px-16 xl:px-32 mt-30 h-auto  space-y-10 '>
         <div className='flex flex-col '>
             <div className='text-gray-500'>Tiêu đề bài viết</div>
             <Textarea disabled={false} className='text-2xl lg:text-2xl h-auto' onChange={(e)=>setTitle(e.target.value)} placeholder="Tiêu đề bài viết" />
             {title && title?.length   > 90 ? <div className='text-red-500 mt-2'>Tiêu đề chỉ nên nhỏ hơn 90 chữ</div> : ''}
-            <div className='text-right md:text-xl mt-2 text-gray-500'>
+            <div className='text-right md:text-xl  text-gray-500'>
                 {title?.length!==undefined ? title?.length : 0 }/90 kí tự
             </div>
         </div>
 
-        <div className='flex flex-col  '>
+        <div className='flex flex-col space-y-4 '>
             <p className='text-gray-500'>Ảnh đại diện bài viết</p>
+            <div className='flex gap-4 justify-center items-center'>
+                <Input className='p-5' value={linkUrl} onChange={(e)=>setLinkUrl(e.target.value)} placeholder='Nhập link ảnh' />
+                <button onClick={handleLinkUrl} className='p-2 text-white rounded-lg w-20 bg-blue-500 text-lg font-bold hover:bg-blue-600 transition hover:cursor-pointer'>OK</button>
+            </div>
             {thumbnail ? '':
                 <div className='text-center border-4 border-gray-200 border-dashed bg-gray-100 rounded-xl'>
                     <label className='hover:cursor-pointer p-2 ' 
@@ -196,29 +216,29 @@ const page = () => {
             }
             {thumbnail && 
             <div className='w-full relative'>
-                <img src={thumbnail} className='w-full rounded-xl ' />
+                <NextImage alt='' width={1000} height={1000} src={thumbnail} className='w-full rounded-xl ' />
                 <div className='absolute z-20 top-2 right-2 bg-gray-100 hover:bg-gray-300 transition rounded-xl opacity-70 p-4 hover:cursor-pointer' onClick={removeThumbnail}>
                     <img src="/x.png" className=' w-6 h-6 font-bold' alt="" />
                 </div>
 
                 {/* <div className='absolute inset-0 flex items-center justify-center  '>    */}
-                    <label className='hover:cursor-pointer  absolute inset-0 flex items-center justify-center' 
-                            htmlFor="thumbnail"
-                    >
-                        <div className='w-auto  flex justify-center items-center flex-col  rounded-xl bg-gray-100 hover:bg-gray-300 transition opacity-70 font-bold p-2 '>
-                            <img src="/upload-image.png" className='w-12 h-12  ' alt="" />
-                            <p className='text-lg text-gray-800    rounded-xl text-center'>Đổi ảnh đại diện</p>
-                        </div>
-                        <input 
-                            className='p-6 hidden border-gray-200 ' 
-                            onChange={handleThumbnail} id='thumbnail' type='file'  />
-                    </label>         
+                <label className='hover:cursor-pointer  absolute inset-0 flex items-center justify-center' 
+                        htmlFor="thumbnail"
+                >
+                    <div className='w-auto  flex justify-center items-center flex-col  rounded-xl bg-gray-100 hover:bg-gray-300 transition opacity-70 font-bold p-2 '>
+                        <img src="/upload-image.png" className='w-12 h-12  ' alt="" />
+                        <p className='text-lg text-gray-800    rounded-xl text-center'>Đổi ảnh đại diện</p>
+                    </div>
+                    <input 
+                        className='p-6 hidden border-gray-200 ' 
+                        onChange={handleThumbnail} id='thumbnail' type='file'  />
+                </label>         
                 {/* </div> */}
             </div>
             }
         </div>
         
-        <div className='flex flex-col mt-10 w-35'>
+        <div className='flex flex-col  w-35'>
             <p className='text-gray-500' >Category</p>
             <select className=' border-2 border-gray-200 rounded-lg p-1' onChange={handleCategory} value={category as string} >
                 { categories.map((cat,index)=>(
@@ -228,8 +248,16 @@ const page = () => {
             </select>
         </div>
 
+        <div className='flex flex-col '>
+            <p className='text-gray-500'>Mô tả ngắn</p>
+            <Textarea value={shortDescription} onChange={(e)=>setShortDescription(e.target.value)} />
+            {shortDescription && shortDescription?.length   > 350 ? <div className='text-red-500 mt-2'>Mô tả ngắn chỉ nên nhỏ hơn 300 chữ</div> : ''}
+            <div className='text-right text-xl  text-gray-500' >
+                {shortDescription===undefined ? 0 : shortDescription?.length}/350 kí tự 
+            </div>
+        </div>
 
-        <div className='flex flex-col mt-10 mb-20'>
+        <div className='flex flex-col mb-20'>
             <div className='text-gray-500'>Nội dung bài viết</div>
             <Jodit
                     content={content as string} 

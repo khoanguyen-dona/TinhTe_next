@@ -1,5 +1,8 @@
+
 @import "tailwindcss";
 @import "tw-animate-css";
+
+
 
 /* :root {
   --background: #ffffff;
@@ -150,20 +153,40 @@
     .jodit-container{
       border: none !important;
     }
+
+    .jodit-wysiwyg video,
+    .jodit-wysiwyg iframe {
+      width: 100%;     
+      height: 500px;    
+      border-radius:15px;
+    } 
+    
+    .my-opacity {
+      opacity: 0.5;
+      border-radius: 125px;
+    }
+    
+    @media (max-width: 480px) {
+      .jodit-wysiwyg video,
+      .jodit-wysiwyg iframe {       
+        height: 250px;        
+      } 
+    }
+    @media (min-width: 481px) and (max-width: 768px) {
+      .jodit-wysiwyg video,
+      .jodit-wysiwyg iframe {      
+        height: 400px;    
+      } 
+    }
+    @media (min-width: 1024px) {
+      .jodit-wysiwyg video,
+      .jodit-wysiwyg iframe {    
+        height: 500px;       
+      } 
+    }
+
+
+
   }
 }
 
-/* body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-
-  .jodit-wysiwyg img {
-    width: 100%;
-    height: auto;
-    border-radius: 15px;
-  }
-  .jodit-container{
-    border: none !important;
-  }
-} */

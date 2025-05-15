@@ -6,7 +6,9 @@ module.exports = {
       './app/**/*.{js,ts,jsx,tsx}', // if using App Router
     ],
     theme: {
-      extend: {},
+      fontFamily: {
+        inter: ['Inter', 'sans-serif']
+      }
     },
     plugins: [require("tailwindcss-animate")],
     

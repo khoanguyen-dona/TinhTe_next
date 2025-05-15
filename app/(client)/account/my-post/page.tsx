@@ -97,96 +97,100 @@ const page = () => {
     </div>
     }
 
-    <div className=' px-2 md:px-8  mt-30 mb-30 h-auto  '>
-    <div className='text-center font-bold text-2xl mb-10'>Bài đăng của tôi</div>
-    <Table className='border-1 border-gray-200'>
-      <TableHeader>
-        <TableRow className='border-gray-200' >
-          <TableHead className="text-blue-500 font-bold w-20">Title</TableHead>
-          <TableHead className='text-blue-500 font-bold'>Thumbnail</TableHead>
-          <TableHead className='text-blue-500 font-bold'>Category</TableHead>
-          <TableHead className="text-blue-500 font-bold">view</TableHead>
-          <TableHead className="text-blue-500 font-bold">IsApproved</TableHead>
-          <TableHead className="text-blue-500 font-bold">IsPosted</TableHead>
-          <TableHead className="text-blue-500 font-bold">Action</TableHead>
-          <TableHead className="text-blue-500 font-bold">Created</TableHead>
-          <TableHead className="text-blue-500 font-bold">Updated</TableHead>
-
-        </TableRow>
-      </TableHeader>
-      <TableBody className='overflow-auto'>
-        {/* @ts-ignore */}
-        {posts?.map((post: Post) => (
-          <TableRow className='border-gray-200 ' key={post._id}>
-            <div className="w-80 flex justify-start items-center p-2 font-semibold">  
-                {post?.title}        
-            </div>
-            <TableCell>{<Image alt='thumbnail' width={50} height={50} src={post?.thumbnail} className='w-30 h-20 object-cover rounded-lg' />}</TableCell>
-            <TableCell>{post.category}</TableCell>
-            <TableCell className="">{post.view}</TableCell>
-            <TableCell className="">
-              {post.isApproved===false?
-              <X className='w-10 h-10 text-red-500 p-1 bg-red-100 rounded-lg'/>:<Check className='text-green-500 bg-green-100 p-1 rounded-lg w-10 h-10' />}
-
-            </TableCell>
-            <TableCell className="">
-            {post.isPosted===false?
-              <X className='w-10 h-10 text-red-500 p-1 bg-red-100 rounded-lg'/>:<Check className='text-green-500 bg-green-100 p-1 rounded-lg w-10 h-10' />}
-
-            </TableCell>
-
-            <TableCell className="">
-              <div className='flex justify-start w-auto items-center gap-1'>
-                <div title='Chỉnh sửa'>
-                  <SquarePen onClick={()=>{window.open(`/edit-post/${post._id}`,'_blank')}} className='w-10 h-10 p-1  rounded-lg hover:bg-blue-100 text-blue-500 transition hover:cursor-pointer'  />
-                </div>
-                <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Trash2 className='w-10 h-10 p-1 text-gray-600 hover:bg-gray-200 transition hover:cursor-pointer rounded-lg ' />
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Bạn có chắc chắn muốn xóa bài viết này?</AlertDialogTitle>  
-                  </AlertDialogHeader>          
-                  <div className='flex justify-center gap-2'>                 
-                    <AlertDialogCancel className=''>No</AlertDialogCancel>
-                    <AlertDialogAction onClick={()=>handleDeletePost(post._id)} className=''>Yes</AlertDialogAction>
-                  </div>              
-                </AlertDialogContent>
-              </AlertDialog>
-
-              </div>  
-            </TableCell>
-
-            <TableCell className="  ">
-                {moment(post.createdAt).format('DD/MM/YY HH:mm:ss')}          
-            </TableCell>
-
-            <TableCell className=" ">        
-                {moment(post.updatedAt).format('DD/MM/YY HH:mm:ss')}           
-            </TableCell>
+    <div className=' px-2 md:px-8  mt-30 mb-30 h-auto flex flex-col justify-center items-center '>
+      
+      <div className='text-center font-bold text-2xl mb-10'>Bài đăng của tôi</div>
+      <Table className='border-1 border-gray-200 '>
+        <TableHeader>
+          <TableRow className='border-gray-200' >       
+            <TableHead className='text-blue-500 font-bold w-auto'>Ảnh</TableHead>
+            <TableHead className="text-blue-500 font-bold w-20">Tiêu đề</TableHead>
+            <TableHead className='text-blue-500 font-bold'>Danh mục</TableHead>
+            <TableHead className="text-blue-500 font-bold">lượt xem</TableHead>
+            <TableHead className="text-blue-500 font-bold">Phê duyệt</TableHead>
+            <TableHead className="text-blue-500 font-bold">Đăng bài</TableHead>
+            <TableHead className="text-blue-500 font-bold">Chỉnh sửa</TableHead>
+            <TableHead className="text-blue-500 font-bold">Ngày tạo</TableHead>
+            <TableHead className="text-blue-500 font-bold">Ngày cập nhật</TableHead>
           </TableRow>
-        ))}
-      </TableBody>    
-    </Table>
-    <div className='flex justify-center items-center gap-10 mt-10'>
-      <button disabled={page===1}>
-        <ChevronLeft  onClick={handlePrev} className={`w-10 h-10  ${page===1?'opacity-20':'hover:cursor-pointer hover:text-blue-500 hover:bg-blue-100 rounded-lg'} `}/>
-      </button>
-      <div className='text-xl justify-center items-center flex gap-2'>
-        <select value={page} onChange={(e)=>setPage(parseInt(e.target.value))} className='border-1 border-gray-300 p-1 rounded-lg' id="">
+        </TableHeader>
+        <TableBody className=''>
           {/* @ts-ignore */}
-          {Array.from({length: totalPage}, (_, i)=>(
-            <option key={i} value={i+1}>{i+1}</option>
-          ))
-          }
-        </select>
-        / {totalPage}
+          {posts?.map((post: Post) => (
+            <TableRow className='border-gray-200 ' key={post._id}>
+
+              <TableCell className='w-auto'>
+                <Image alt='thumbnail' width={100} height={100} src={post?.thumbnail} className='w-30 h-20 object-cover rounded-lg' />
+              </TableCell> 
+              <div className='w-80 flex justify-start items-center p-2 font-semibold'>
+                {post?.title}        
+              </div> 
+          
+              <TableCell>{post.category}</TableCell>
+              <TableCell className="">{post.view}</TableCell>
+              <TableCell className="">
+                {post.isApproved===false?
+                <X className='w-10 h-10 text-red-500 p-1 bg-red-100 rounded-lg'/>:<Check className='text-green-500 bg-green-100 p-1 rounded-lg w-10 h-10' />}
+
+              </TableCell>
+              <TableCell className="">
+              {post.isPosted===false?
+                <X className='w-10 h-10 text-red-500 p-1 bg-red-100 rounded-lg'/>:<Check className='text-green-500 bg-green-100 p-1 rounded-lg w-10 h-10' />}
+
+              </TableCell>
+
+              <TableCell className="">
+                <div className='flex justify-start w-auto items-center gap-1'>
+                  <div title='Chỉnh sửa'>
+                    <SquarePen onClick={()=>{window.open(`/edit-post/${post._id}`,'_blank')}} className='w-10 h-10 p-1  rounded-lg hover:bg-blue-100 text-blue-500 transition hover:cursor-pointer'  />
+                  </div>
+                  <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Trash2 className='w-10 h-10 p-1 text-gray-600 hover:bg-gray-200 transition hover:cursor-pointer rounded-lg ' />
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Bạn có chắc chắn muốn xóa bài viết này?</AlertDialogTitle>  
+                    </AlertDialogHeader>          
+                    <div className='flex justify-center gap-2'>                 
+                      <AlertDialogCancel className=''>No</AlertDialogCancel>
+                      <AlertDialogAction onClick={()=>handleDeletePost(post._id)} className=''>Yes</AlertDialogAction>
+                    </div>              
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                </div>  
+              </TableCell>
+
+              <TableCell className="  ">
+                  {moment(post.createdAt).format('DD/MM/YY HH:mm:ss')}          
+              </TableCell>
+
+              <TableCell className=" ">        
+                  {moment(post.updatedAt).format('DD/MM/YY HH:mm:ss')}           
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>    
+      </Table>
+      <div className='flex justify-center items-center gap-10 mt-10'>
+        <button disabled={page===1}>
+          <ChevronLeft  onClick={handlePrev} className={`w-10 h-10  ${page===1?'opacity-20':'hover:cursor-pointer hover:text-blue-500 hover:bg-blue-100 rounded-lg'} `}/>
+        </button>
+        <div className='text-xl justify-center items-center flex gap-2'>
+          <select value={page} onChange={(e)=>setPage(parseInt(e.target.value))} className='border-1 border-gray-300 p-1 rounded-lg' id="">
+            {/* @ts-ignore */}
+            {Array.from({length: totalPage}, (_, i)=>(
+              <option key={i} value={i+1}>{i+1}</option>
+            ))
+            }
+          </select>
+          / {totalPage}
+        </div>
+        <button disabled={page===totalPage}>
+          <ChevronRight onClick={handleNext} className={`w-10 h-10 ${page===totalPage?'opacity-20':'hover:bg-blue-100 hover:text-blue-500 rounded-lg hover:cursor-pointer'}`}/>
+        </button>
       </div>
-      <button disabled={page===totalPage}>
-        <ChevronRight onClick={handleNext} className={`w-10 h-10 ${page===totalPage?'opacity-20':'hover:bg-blue-100 hover:text-blue-500 rounded-lg hover:cursor-pointer'}`}/>
-      </button>
-    </div>
 
     </div>
     </>
