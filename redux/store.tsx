@@ -2,7 +2,6 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 
 import userReducer from "./userRedux";
 import draftReducer from './draftRedux'
-
 import {
   persistStore,
   persistReducer,

@@ -31,6 +31,8 @@ export default function Home() {
   const [page, setPage] = useState<number>(1)
   const [hasNext, setHasNext] = useState<boolean>()
   const limit:number = 10
+
+  console.log('user',user)
   // display notify when user redirected by googleAuth
   useEffect(() => {
     if(googleAuth==='true'){

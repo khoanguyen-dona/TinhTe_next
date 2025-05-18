@@ -84,28 +84,7 @@ const page = () => {
         setCategory(e.target.value)
     }
 
-    // const uploadThumbnail = async(value: string) => {
-    //     if(thumbnailFile ){
-    //         try {
-    //             if(postId && postId!==undefined){
-    //                 const img_URL = await UploadSingleImage({imageFile: thumbnailFile, uploadPath:'post'})
-    //                 updateMongo(img_URL, value)
-    //             }else {
-    //                 const img_URL = await UploadSingleImage({imageFile: thumbnailFile, uploadPath:'post'})
-    //                 uploadToMongo(img_URL, value) 
-    //             }            
-    //         } catch (err){
-    //             console.log('error loading thumbnailFile to firebase', err)
-    //         }  
-    //     } else{
-    //         if(postId && postId!==undefined){
-    //             updateMongo(thumbnail as string, value) 
-            
-    //         }else {
-    //             uploadToMongo(thumbnail as string, value)             
-    //         }
-    //     }
-    // }
+  
 
     const uploadThumbnail = async(value: string) => {
         if(thumbnailFile ){
@@ -119,29 +98,6 @@ const page = () => {
                 updateMongo(thumbnail as string, value)          
         }
     }
-
-    // const uploadToMongo = async(img: string, value: string) =>{
-    //     const isPosted = value==='saved'?false:true
-    //         try {
-    //                 const res = await publicRequest.post('/post',{
-    //                     title: title ,
-    //                     shortDescription: shortDescription,
-    //                     content: content,
-    //                     thumbnail: img,
-    //                     category: category,
-    //                     authorId: user?._id,
-    //                     isPosted: isPosted,
-    //                 })
-    //                 if(res.data){
-    //                     toast.success('Cập nhật thành công')
-    //                 }
-    //         } catch(err) {
-    //             toast.error('Lỗi')
-    //             console.log('err while post to mongo',err)
-    //         } finally {
-    //             setLoading(false)
-    //         }    
-    // }
 
     const updateMongo = async (img : string, value: string) => {
         const isPosted = value==='saved'?false:true

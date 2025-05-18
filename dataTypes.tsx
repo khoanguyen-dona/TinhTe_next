@@ -8,6 +8,8 @@ export type User = {
     verified: boolean,
     autoDelete: Date,
     token: string,
+    createdAt: Date,
+    updatedAt: Date
 }
 
 export type Post = {
@@ -25,3 +27,5 @@ export type Post = {
     createdAt: Date,
     updatedAt: Date,
 }
+
+export type UserRole = 'Admin'|'Reporter'

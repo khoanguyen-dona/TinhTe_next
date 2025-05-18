@@ -197,8 +197,10 @@ const Navbar = () => {
           <Popover>
             <PopoverTrigger asChild >
               <div className='bg-gray-300  p-1 rounded-full hover:bg-blue-300 hover:cursor-pointer transition '>
-                {user!==null && user?.img!=='' ? <Image width={40} height={40} src={user?.img}  className='w-11 h-11 object-cover rounded-full' alt="" />
-                :<img src="/user.png"  className='w-8 h-8 ' alt="" />}
+                {user!==null && user?.img!=='' ? 
+                  <Image width={40} height={40} src={user?.img}  className='w-11 h-11 object-cover rounded-full' alt="" />
+                  :
+                  <img src="/user.png"  className='w-10 h-10 ' alt="" />}
               </div>
             </PopoverTrigger>
             <PopoverContent>
@@ -219,9 +221,9 @@ const Navbar = () => {
             </PopoverContent>
           </Popover>
           : 
-          <div className='bg-gray-300 rounded-full p-2 hover:bg-blue-300 transition ' title='Đăng nhập' >
+          <div className='bg-gray-300 rounded-full p-1 hover:bg-blue-300 transition' title='Đăng nhập' >
             <a href="/login">
-              <img src="/user.png" className='w-8 h-8'  alt="" />
+              <img src="/user.png" className='w-10 h-10'  alt="" />
             </a>
           </div>
           } 

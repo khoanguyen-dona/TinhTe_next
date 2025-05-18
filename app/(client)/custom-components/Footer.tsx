@@ -2,6 +2,7 @@ import React from 'react'
 
 const Footer = () => {
   return (
+  <div className='w-full   '>
     <div className=' flex flex-col h-64   ' >
       <div className='flex flex-wrap gap-10 p-6  justify-center  font-semibold bg-blue-500 text-white' >
           <div>TIN MỚI</div>
@@ -72,6 +73,7 @@ const Footer = () => {
           <div>Giấy phép thiết lập MXH số 11/GP-BTTTT, Ký ngày: 08/01/2019</div>
       </div>
     </div>
+  </div>
   )
 }
 

@@ -111,7 +111,7 @@ const page = () => {
 
                 </form>
                 <div className='text-center ' onClick={handleLoginWithGoogle}>
-                    <Button  className=' text-black w-auto p-6   hover:bg-blue-100 border-2 border-gray-200 hover:cursor-pointer'>
+                    <Button  className='bg-white text-black w-auto p-6   hover:bg-blue-100 border-2 border-gray-200 hover:cursor-pointer'>
                         <img src="/google.png" className='w-6 h-6' alt="" />
                         Đăng nhập với Google
                     </Button>

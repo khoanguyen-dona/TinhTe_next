@@ -33,8 +33,7 @@ const page = () => {
 
     // add image to desc when choose image in RichtextEditor
     useEffect(()=>{
-        image && setContent((prev)=>prev+`<div class='my-opacity'><img class='my-opacity'
-          src="${image}"/></div>`)
+        image && setContent((prev)=>prev+`<img src="${image}"/>`)
     }, [image])
 
     const handleThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {

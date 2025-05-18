@@ -7,7 +7,8 @@ import Footer from "./custom-components/Footer";
 import { Provider } from "react-redux";
 import {store, persistor} from '../../redux/store'
 import { PersistGate } from "redux-persist/integration/react";
-
+import '@fancyapps/ui/dist/fancybox/fancybox.css';
+import { Fancybox } from "@fancyapps/ui";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
