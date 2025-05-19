@@ -28,4 +28,19 @@ export type Post = {
     updatedAt: Date,
 }
 
+export type CommentType = {
+    _id: string,
+    content: string,
+    postId: Post,
+    userId: User,
+    imgGallery: string[],
+    type: 'thread'|'comment' ,
+    refCommentIdTypeThread: string,
+    refCommentUserId: User,
+    isApproved: boolean,
+    isReplied: boolean,
+    createdAt: Date,
+    updatedAt: Date
+}
+
 export type UserRole = 'Admin'|'Reporter'

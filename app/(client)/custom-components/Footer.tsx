@@ -2,7 +2,7 @@ import React from 'react'
 
 const Footer = () => {
   return (
-  <div className='w-full   '>
+  <div className='w-full mt-10  '>
     <div className=' flex flex-col h-64   ' >
       <div className='flex flex-wrap gap-10 p-6  justify-center  font-semibold bg-blue-500 text-white' >
           <div>TIN MỚI</div>

@@ -1,0 +1,172 @@
+'use client'
+import { CommentType, User } from '@/dataTypes';
+import { Flag } from 'lucide-react';
+import React, { useState } from 'react'
+import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil';
+import Image from 'next/image';
+import CommentBox from './CommentBox';
+import Reply from './Reply';
+import { ReplyIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { publicRequest } from '@/requestMethod';
+import { ChevronUp } from 'lucide-react';
+type Props = {
+    comment: CommentType,
+    user: User,
+    postId: string,
+    setLoading: (value:boolean) => void
+}
+
+const Comment = ({comment, user, postId, setLoading}:Props) => {
+
+    const [showEmoji, setShowEmoji] = useState<boolean>(false);
+    const [openCommentBox, setOpenCommentBox] = useState<boolean>(false)
+    const limit = 2
+    const [page, setPage] = useState<number>(1)
+    const [replies, setReplies] = useState<CommentType[]>([])
+    const [hasNext, setHasNext] = useState<boolean>(false)
+    const [showReplies, setShowReplies] = useState<boolean>(false)
+    const [fetchedAll, setFetchedAll] = useState<boolean>(false)
+
+// console.log('comm id',comment._id)
+    const fetchReply = async () => {
+        if(fetchedAll){
+            setShowReplies(true)
+        } else {
+            setShowReplies(true)
+            try {
+                setLoading(true)
+                const res = await publicRequest.get(`comment/refCommentId/${comment._id}?limit=${limit}&page=${page}`)
+                if(res.data){ 
+                    res.data.comments.map((comment: CommentType)=>(
+                        replies.push(comment)
+                    ))
+                    setHasNext(res.data.hasNext)
+                }
+                setPage((prev)=>prev+1)
+            } catch(err){
+                toast.error('Lỗi')
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    const handleCloseReplies = async () => {
+        setShowReplies(false)
+        setFetchedAll(true)
+    }
+
+    console.log('has next',hasNext)
+  return (
+    <>
+        <div className='flex gap-2 mt-6'>
+            { comment.userId.img ?
+                <Image width={40} height={40} className="w-10 h-10 object-cover rounded-full" src={comment.userId.img} alt="" />
+                :
+                <Image width={40} height={40} className="w-10 h-10 object-cover rounded-full" src='/user.png' alt="" />
+            }
+
+            <div className='w-full'>
+                <div className=' flex flex-col  p-4 bg-gray-100  rounded-lg'>
+                    <div className='flex gap-5'>
+                        <div className='text-blue-500 font-bold'>{comment.userId.username }</div>
+                        <div><ReactTimeAgoUtil date={comment.createdAt} locale="vi-VN"/></div>
+                    </div>
+                    <div className='mt-3'>
+                        {comment.content} 
+                    </div>
+                </div>
+                <div className='flex gap-6 mt-2'>
+                    <div className='flex justify-center items-center'>
+                        <div
+                            className="relative inline-block"
+                            onMouseEnter={() => setShowEmoji(true)}
+                            onMouseLeave={() => setShowEmoji(false)}
+                        >
+                            {/* Trigger Element */}
+                            <div className="flex gap-2 hover:text-red-500 hover:cursor-pointer">
+                                <p className=''>Thích</p>
+                            </div>
+
+                            {/* Options shown on hover */}
+                            {showEmoji && (
+                                <div className="absolute w-60 -top-14  bg-white border rounded-xl shadow-lg p-2 flex gap-2">
+                                    <span>
+                                        <img src="/icon-like.svg" className='w-10 h-10 hover:scale-130 transition hover:cursor-pointer' alt="" />
+                                    </span>
+                                    <span>
+                                        <img src="/icon-love.svg" className='w-10 h-10 hover:scale-130 transition hover:cursor-pointer' alt="" />
+                                    </span>
+                                    <span>
+                                        <img src="/icon-fun.svg" className='w-10 h-10 hover:scale-130 transition hover:cursor-pointer' alt="" />
+                                    </span>
+                                    <span>
+                                        <img src="/icon-sad.svg" className='w-10 h-10 hover:scale-130 transition hover:cursor-pointer' alt="" />
+                                    </span>
+                                    <span>
+                                        <img src="/icon-wow.svg" className='w-10 h-10 hover:scale-130 transition hover:cursor-pointer' alt="" />
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <div  onClick={()=>setOpenCommentBox(!openCommentBox)} className='flex hover:text-red-500 hover:cursor-pointer'>
+                        <p>Trả lời</p>
+                    </div>
+                    <div className='hover:text-red-500 hover:cursor-pointer'>
+                        <Flag />
+                    </div>
+                </div>
+                {comment.isReplied &&
+                <div className='flex justify-start' onClick={fetchReply}>
+                    <div className='flex  rounded-full px-3 py-1  items-center text-sm text-blue-500 hover:cursor-pointer ml-5 mt-2 hover:bg-blue-100'>
+                        <ReplyIcon className='rotate-180' />
+                        <div>
+                            Xem phản hồi
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+
+
+        {openCommentBox &&
+            <div className='ml-12 mt-4'  >
+                <CommentBox  user={user} postId={postId} type={'comment'} refCommentIdTypeThread={comment._id} closeBoxAfterComment={true}
+                refCommentUserId={comment.userId._id} refCommentUsername={comment.userId.username} isReplied={false} setLoading={setLoading}/>
+            </div>
+        }
+
+        {/* reply comments */}
+        {showReplies &&
+            <div className=''>
+            {replies.length>0 && replies.map((reply,index)=>(
+                <Reply replyData={reply} key={index} user={user} postId={postId} setLoading={setLoading}/>
+            ))}
+            </div>
+        }
+        
+        {hasNext &&
+            <div className='flex justify-start' onClick={fetchReply}>
+                <div className='text-sm px-3 py-1 rounded-full text-blue-500 ml-26 mt-2 hover:cursor-pointer hover:bg-blue-100'>
+                    Xem thêm
+                </div>
+            </div>
+        }
+        {showReplies && !hasNext &&
+            <div className='flex justart' onClick={handleCloseReplies} >
+                <div className='text-sm px-3 py-1 rounded-full text-blue-500 ml-26 mt-2 hover:cursor-pointer hover:bg-blue-100 flex justify-center items-center'> 
+                    Thu gọn
+                    <ChevronUp />
+                </div>
+            </div>
+
+        }
+
+    </>
+  )
+}
+
+export default Comment
