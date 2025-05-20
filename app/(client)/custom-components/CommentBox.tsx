@@ -12,15 +12,19 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog"
-  import { Button } from "@/components/ui/button"
-  import { Textarea } from '@/components/ui/textarea'
+import { Button } from "@/components/ui/button"
+import { Textarea } from '@/components/ui/textarea'
 import { User } from '@/dataTypes'
 import { userRequest } from '@/requestMethod'
 import { CommentType } from '@/dataTypes'
 import toast from 'react-hot-toast'
 import Comment from './Comment'
+import { CommentRedType } from './CommentRed'
 import CommentRed from './CommentRed'
 import Image from 'next/image'
+import { X } from 'lucide-react'
+import { UploadMultipleImage } from './UploadMultipleImage'
+import { v4 as uuidv4 } from 'uuid';
 
 type Props = {
     user: User,
@@ -31,29 +35,34 @@ type Props = {
     refCommentUsername: string|null,
     isReplied: boolean,
     setLoading: (value: boolean) => void,
-    closeBoxAfterComment: boolean
+    closeBoxAfterComment: boolean,
 }
 
-type CommentRed = {
-    avatar : string,
-    content: string,
-    username: string
-}
+
 
 const CommentBox = ({user, postId, type, refCommentIdTypeThread, refCommentUserId, refCommentUsername, isReplied, setLoading, closeBoxAfterComment }:Props) => {
 
     const [comment, setComment] = useState<string>()
-    console.log('type :',type)
-    const [data, setData] = useState<CommentRed[]>([])
+    const [data, setData] = useState<CommentRedType[]>([])
     const [closeCommentBox, setCloseCommentBox] = useState<boolean>(false)
+
+    const [previewImages, setPreviewImages] = useState<string[]>([])
+    const [imageFiles, setImageFiles] = useState<File[]>([])
+    const uuid = uuidv4()
+
     const handleSendComment = async() => {
         setLoading(true)
-        try {
+        const imgGallery = await UploadMultipleImage({imageFiles:imageFiles,uploadPath:'comment'})
+        sendDataToMongo(imgGallery)         
+    }
+
+    const sendDataToMongo = async (imgGallery: string[]) =>{
+        try{
             const res = await userRequest.post('/comment',{
                 postId: postId ,
                 content: comment ,
                 userId: user._id,
-                imgGalllery: [] ,
+                imgGallery: imgGallery ,
                 type: type,
                 refCommentIdTypeThread: refCommentIdTypeThread ,
                 refCommentUserId: refCommentUserId ,
@@ -63,7 +72,8 @@ const CommentBox = ({user, postId, type, refCommentIdTypeThread, refCommentUserI
                 data.push({
                     avatar: user.img,
                     content: comment as string,
-                    username: user.username
+                    username: user.username,
+                    imgGallery: previewImages
                 })
                 toast.success('Bình luận thành công')  
                 setCloseCommentBox(true)     
@@ -74,19 +84,83 @@ const CommentBox = ({user, postId, type, refCommentIdTypeThread, refCommentUserI
             setLoading(false)
         }
     }
-    console.log('com',comment)
+
+    const handleImageGallery = (e: React.ChangeEvent<HTMLInputElement>) =>{
+        const files = e.target.files as FileList
+        if(imageFiles.length+files.length > 5){
+            alert('Bạn chỉ được upload tối đa 5 ảnh')
+            return
+        }
+
+        if(files){
+            for (const file of files ){     
+                if(file.size > 3000000){
+                    // toast.error('Kích thước ảnh quá lớn vui lòng chọn ảnh nhỏ hơn 3 MB')
+                    alert('Vui lòng chọn ảnh có kích thước nhỏ hơn 3 MB')
+                }
+                else if(file.size < 3000000) {
+                    setImageFiles(prev=>[...prev,file])
+                    const imageBlob = URL.createObjectURL(file)
+                    setPreviewImages(prev=>[...prev,imageBlob])
+                }
+            }
+
+        } 
+    }
+
+    const handleRemoveImage = (index:number) => {
+        const imgs = previewImages.filter((image, i)=>i !== index)
+        const files = imageFiles.filter((file, i) => i !== index)
+        setPreviewImages(imgs)
+        setImageFiles(files)
+    }
+
+
   return (
     <div className='h-full -mt-4'>
         {
          closeBoxAfterComment && closeCommentBox ? '':
-            <div className='flex  gap-2 h-50 '>
+            <div className='flex h-auto '>
                 <div className='w-[50px]'>
-                <Image width={50} height={50} src={user?.img ? user?.img : '/user.png'} className='w-10 h-10 rounded-full object-cover' alt="" />
+                <Image width={30} height={30} src={user?.img ? user?.img : '/user.png'} className='w-10 h-10 rounded-full object-cover' alt="" />
                 </div>
                 <div className='w-full h-auto p-2 flex flex-col border-2 rounded-lg'>
-                    <Textarea spellCheck={false} value={comment} onChange={(e)=>setComment(e.target.value)} className='w-full h-50  bg-gray-200 border-none'   id="" />
+                    <Textarea spellCheck={false} value={comment} onChange={(e)=>setComment(e.target.value)} 
+                        className='w-full h-30  bg-gray-100 border-none'   id="" 
+                    />
+                    {/* preview images */}
+                    <div className='flex flex-wrap mt-4 gap-2'>
+                        {previewImages && previewImages.length>0 &&
+                            previewImages.map((image,index)=>(
+                                <div className='relative'>
+                                    <X 
+                                        size={30} onClick={()=>handleRemoveImage(index)}
+                                        className='absolute top-0  right-0 bg-black text-gray-400 rounded-md  hover:text-red-500 transition hover:cursor-pointer'/>
+                                    <Image width={30} height={30} src={image} className='w-30 h-30 object-cover rounded-lg' alt=''/>
+                                </div>
+                            ))
+
+                        }    
+                    </div>
+
                     <div className='flex justify-end gap-2 mt-2'>
-                        <img src="/upload.png" className='w-14 hover:cursor-pointer p-1 hover:bg-blue-200 rounded-lg ' alt="" />
+                        {/* add images */}
+                        <span className=' hover:cursor-pointer p-[1px] hover:bg-blue-200 rounded-lg' title='Thêm ảnh'>          
+                            <label 
+                                title='Thêm ảnh'
+                                className='hover:text-blue-500   transition  ' 
+                                htmlFor={`${uuid}`}
+                            >
+                                <img
+                                    src='/upload.png'
+                                    alt='Thêm ảnh'
+                                    className='  h-full w-16 hover:cursor-pointer hover:bg-blue-200 px-2  rounded-lg '                             
+                                />
+                                <input  className='hidden' type="file" multiple accept='image/*' onChange={handleImageGallery} 
+                                    id={`${uuid}`}/>
+                            </label>
+                        </span>
+                        {/* send button */}
                         { user!==null ?
                             <button onClick={handleSendComment} className='px-6   rounded-lg text-white font-bold bg-blue-500 hover:bg-blue-600 flex justify-center items-center gap-2 hover:cursor-pointer' >
                                 <SendIcon />
@@ -122,8 +196,8 @@ const CommentBox = ({user, postId, type, refCommentIdTypeThread, refCommentUserI
 
         {/* user've just comment */}
         {data && data.length>0 &&
-            data.map((c,index)=>(
-                <CommentRed avatar={c.avatar} content={c.content}  username={c.username} refCommentUsername={refCommentUsername} key={index} imgGallery={[]} type={type} />
+            data.map((d,index)=>(
+                <CommentRed avatar={d.avatar} content={d.content}  username={d.username} refCommentUsername={refCommentUsername} key={index} imgGallery={d.imgGallery} type={type} />
             ))
         }
     </div>

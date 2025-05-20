@@ -1,7 +1,7 @@
 'use client'
 import { CommentType, User } from '@/dataTypes';
 import { Flag } from 'lucide-react';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil';
 import Image from 'next/image';
 import CommentBox from './CommentBox';
@@ -10,25 +10,28 @@ import { ReplyIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { publicRequest } from '@/requestMethod';
 import { ChevronUp } from 'lucide-react';
+import Fancybox from './Fancybox';
 type Props = {
     comment: CommentType,
     user: User,
     postId: string,
     setLoading: (value:boolean) => void
+    index: number
 }
 
-const Comment = ({comment, user, postId, setLoading}:Props) => {
+const Comment = ({comment, user, postId, setLoading, index}:Props) => {
 
     const [showEmoji, setShowEmoji] = useState<boolean>(false);
     const [openCommentBox, setOpenCommentBox] = useState<boolean>(false)
-    const limit = 2
+    const limit = 4
     const [page, setPage] = useState<number>(1)
     const [replies, setReplies] = useState<CommentType[]>([])
     const [hasNext, setHasNext] = useState<boolean>(false)
     const [showReplies, setShowReplies] = useState<boolean>(false)
     const [fetchedAll, setFetchedAll] = useState<boolean>(false)
+    const [totalReplies, setTotalReplies]= useState<number>()
 
-// console.log('comm id',comment._id)
+    console.log('totalre',totalReplies)
     const fetchReply = async () => {
         if(fetchedAll){
             setShowReplies(true)
@@ -42,6 +45,7 @@ const Comment = ({comment, user, postId, setLoading}:Props) => {
                         replies.push(comment)
                     ))
                     setHasNext(res.data.hasNext)
+                    setTotalReplies(res.data.totalReplies)
                 }
                 setPage((prev)=>prev+1)
             } catch(err){
@@ -51,6 +55,23 @@ const Comment = ({comment, user, postId, setLoading}:Props) => {
             }
         }
     }
+
+    // fetch number of replies
+    useEffect(()=>{
+        const getTotalReplies = async () => {
+            try {   
+                const res = await publicRequest.get(`/comment/refCommentId/${comment._id}/replyNumber`)
+                if(res.data){
+                    setTotalReplies(res.data.totalReplies)
+                }
+            } catch(err){
+                console.log('err fetch replies number',err)
+            }finally{
+
+            }
+        }
+        getTotalReplies()
+    }, [])
 
     const handleCloseReplies = async () => {
         setShowReplies(false)
@@ -62,9 +83,9 @@ const Comment = ({comment, user, postId, setLoading}:Props) => {
     <>
         <div className='flex gap-2 mt-6'>
             { comment.userId.img ?
-                <Image width={40} height={40} className="w-10 h-10 object-cover rounded-full" src={comment.userId.img} alt="" />
+                <Image width={30} height={30} className="w-10 h-10 object-cover rounded-full" src={comment.userId.img} alt="" />
                 :
-                <Image width={40} height={40} className="w-10 h-10 object-cover rounded-full" src='/user.png' alt="" />
+                <Image width={30} height={30} className="w-10 h-10 object-cover rounded-full" src='/user.png' alt="" />
             }
 
             <div className='w-full'>
@@ -76,6 +97,34 @@ const Comment = ({comment, user, postId, setLoading}:Props) => {
                     <div className='mt-3'>
                         {comment.content} 
                     </div>
+
+                    {/* display comment imgGallery with fancybox library */}                 
+                    {comment.imgGallery && comment.imgGallery.length > 0  &&
+                    <Fancybox
+                        options={{
+                        Carousel: {
+                            infinite: false,
+                        },
+                        }}
+                    >
+                        <div className='flex gap-2 mt-2'>
+                        {
+                        comment.imgGallery?.map((img,index)=>(
+                            <a key={index} data-fancybox="gallery" href={img}>
+                            <Image
+                                className='rounded-lg object-cover w-28 h-28'
+                                alt="image"
+                                src={img}
+                                width={50}
+                                height={50}
+                            />
+                            </a>
+                        ))
+                        }
+                        </div>
+                    </Fancybox>
+                    }
+
                 </div>
                 <div className='flex gap-6 mt-2'>
                     <div className='flex justify-center items-center'>
@@ -114,16 +163,22 @@ const Comment = ({comment, user, postId, setLoading}:Props) => {
                     <div  onClick={()=>setOpenCommentBox(!openCommentBox)} className='flex hover:text-red-500 hover:cursor-pointer'>
                         <p>Trả lời</p>
                     </div>
-                    <div className='hover:text-red-500 hover:cursor-pointer'>
+                    <div className='hover:text-red-500 hover:cursor-pointer' title='báo vi phạm'>
                         <Flag />
                     </div>
                 </div>
-                {comment.isReplied &&
+
+                {/* {comment.isReplied && */}
+                {totalReplies!== undefined && totalReplies!==0 &&
+
                 <div className='flex justify-start' onClick={fetchReply}>
                     <div className='flex  rounded-full px-3 py-1  items-center text-sm text-blue-500 hover:cursor-pointer ml-5 mt-2 hover:bg-blue-100'>
                         <ReplyIcon className='rotate-180' />
-                        <div>
-                            Xem phản hồi
+                        <div className='flex gap-1'>
+                            <div>
+                                {totalReplies}
+                            </div>
+                            phản hồi
                         </div>
                     </div>
                 </div>
@@ -133,17 +188,17 @@ const Comment = ({comment, user, postId, setLoading}:Props) => {
 
 
         {openCommentBox &&
-            <div className='ml-12 mt-4'  >
-                <CommentBox  user={user} postId={postId} type={'comment'} refCommentIdTypeThread={comment._id} closeBoxAfterComment={true}
+            <div className='ml-12 mt-6 border-l-2 pl-2 '  >
+                <CommentBox  user={user} postId={postId} type={'comment'} refCommentIdTypeThread={comment._id} closeBoxAfterComment={true} 
                 refCommentUserId={comment.userId._id} refCommentUsername={comment.userId.username} isReplied={false} setLoading={setLoading}/>
             </div>
         }
 
         {/* reply comments */}
         {showReplies &&
-            <div className=''>
+            <div className='border-l-2 ml-12'>
             {replies.length>0 && replies.map((reply,index)=>(
-                <Reply replyData={reply} key={index} user={user} postId={postId} setLoading={setLoading}/>
+                <Reply replyData={reply} key={index} user={user} postId={postId} setLoading={setLoading} />
             ))}
             </div>
         }

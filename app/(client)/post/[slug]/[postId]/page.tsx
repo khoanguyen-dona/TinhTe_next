@@ -185,7 +185,7 @@ const page = () => {
 
                 {/* comment box */}
                 <div className=''>
-                    <CommentBox user={user} postId={postId as string} type={'thread'} refCommentIdTypeThread={null} closeBoxAfterComment={false}
+                    <CommentBox user={user} postId={postId as string} type={'thread'} refCommentIdTypeThread={null} closeBoxAfterComment={false} 
                                 refCommentUserId={null} refCommentUsername={null} isReplied={false} setLoading={setLoading} />
                 </div>
    
@@ -193,7 +193,7 @@ const page = () => {
                 <div>
                     {comments?.map((comment, index)=>(
                         // @ts-ignore
-                        <Comment comment={comment } key={index} user={user} postId={postId} setLoading={setLoading} />
+                        <Comment comment={comment } key={index} user={user} postId={postId} setLoading={setLoading}  />
                     ))
                     }
                 </div>
