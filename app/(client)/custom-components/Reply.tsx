@@ -1,25 +1,55 @@
 'use client'
 import { CommentType } from '@/dataTypes'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
-import { Flag } from 'lucide-react'
+import { Flag, Loader } from 'lucide-react'
 import React, { useState } from 'react'
 import Image from 'next/image'
 import CommentBox from './CommentBox'
 import { User } from '@/dataTypes'
 import Fancybox from './Fancybox'
+import { userRequest } from '@/requestMethod'
+import toast from 'react-hot-toast'
 
 type Props = {
     replyData: CommentType,
     user: User,
     postId: string,
     setLoading: (value: boolean) => void,
+    reportComments: string[],
+    setReportComments: (value: string[]) => void
 }
 
-const Reply = ({replyData, user, postId, setLoading }:Props) => {
+const Reply = ({replyData, user, postId, setLoading, reportComments, setReportComments }:Props) => {
     
     const [showEmoji, setShowEmoji] = useState<boolean>(false);
     const [openCommentBox, setOpenCommentBox] = useState<boolean>(false)
-    
+    const [loading2, setLoading2] = useState<boolean>(false)
+
+
+
+    const handleReportComment = async () => {
+        
+        try {
+            setLoading2(true)
+            const res = await userRequest.post(`/report-comment`,{
+                commentId: replyData._id ,
+                postId: postId , 
+                userId: user._id,
+            })
+            if(res.data){
+                setLoading2(false)
+                if(res.data.unReport===true){       
+                    const reports = reportComments.filter(id=>id!==replyData._id)
+                    setReportComments(reports)
+                }
+                if(res.data.unReport===false){                    
+                    reportComments.push(replyData._id)
+                }
+            }
+        } catch(err){
+            toast.error('Lỗi')
+        }
+    }   
 
   return (
     <>
@@ -112,9 +142,14 @@ const Reply = ({replyData, user, postId, setLoading }:Props) => {
                     <div  onClick={()=>setOpenCommentBox(!openCommentBox)} className='flex hover:text-red-500 hover:cursor-pointer'>
                         <p>Trả lời</p>
                     </div>
-                    <div className='hover:text-red-500 hover:cursor-pointer' title='báo vi phạm'>
-                        <Flag />
-                    </div>
+                    {loading2 ? <Loader className='animate-spin text-gray-500'/> :
+                        <div onClick={handleReportComment} 
+                            className={`hover:text-red-500 hover:cursor-pointer ${reportComments?.includes(replyData._id)?'text-red-500':''} `} 
+                            title='báo vi phạm'
+                        >
+                            <Flag />
+                        </div>
+                    }
                 </div>
             </div>
     </div>

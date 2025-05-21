@@ -43,4 +43,11 @@ export type CommentType = {
     updatedAt: Date
 }
 
+export type ReportCommentType = {
+    _id: string,
+    postId: string,
+    userId: string,
+    commentId: string
+}
+
 export type UserRole = 'Admin'|'Reporter'

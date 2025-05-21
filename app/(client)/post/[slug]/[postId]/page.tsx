@@ -17,7 +17,7 @@ import { User } from '@/dataTypes'
 import CommentBox from '@/app/(client)/custom-components/CommentBox'
 import { CommentType } from '@/dataTypes'
 import Comment from '@/app/(client)/custom-components/Comment'
-
+import { ReportCommentType } from '@/dataTypes'
 
 
 const page = () => {
@@ -33,7 +33,7 @@ const page = () => {
     const [limit, setLimit] = useState<number>(4)
     const [hasNext, setHasNext] = useState<boolean>(false)
     const type='thread'
-
+    const [reportComments, setReportComments] = useState<string[]>()
     //fech post data
     useEffect(()=>{
         const getPost = async() =>{
@@ -91,6 +91,26 @@ const page = () => {
         getComments()
     }, [page])
 
+    //fetch reportComments of user by postId and userId
+    useEffect(()=>{
+        const getData = async() =>{
+            try {
+                const res = await publicRequest.get(`/report-comment?postId=${postId}&userId=${user._id}`)
+                let tempArray:string[] = []
+                if(res.data){
+                    res.data.reportComments.map((r: ReportCommentType)=>{
+                        tempArray.push(r.commentId as string)
+                    })
+                }
+                setReportComments(tempArray)
+            } catch(err) {
+                console.log('get reportComments failed',err)
+            }
+        }
+        getData()
+    }, [])
+
+    console.log('rep com',reportComments)
     setTimeout(()=>{
         publicRequest.get(`/post/${post?._id}/increase-view`)
     }, 20000)
@@ -124,10 +144,10 @@ const page = () => {
                 <div className=''>
                     <Image width={600} height={600} src={post?.thumbnail as string} className='w-full object-cover h-60 sm:h-100 md:h-130 mt-4 rounded-xl ' alt="" />
                 </div>
-                <JoditViewer data={post?.content} />
+                <JoditViewer data={post?.content}  />
 
 
-                <div className='flex flex-col my-20 space-y-2'>
+                <div className='flex flex-col my-20 space-y-2 '>
                     <div className='flex gap-5'>
                         <div className='flex'>
                             <img src="/icon-like.svg" className='w-6 h-6' alt="" />
@@ -193,7 +213,8 @@ const page = () => {
                 <div>
                     {comments?.map((comment, index)=>(
                         // @ts-ignore
-                        <Comment comment={comment } key={index} user={user} postId={postId} setLoading={setLoading}  />
+                        <Comment comment={comment } key={index} user={user} postId={postId} setLoading={setLoading} reportComments={reportComments} 
+                            setReportComments={setReportComments} />
                     ))
                     }
                 </div>

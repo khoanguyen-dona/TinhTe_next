@@ -8,18 +8,20 @@ import CommentBox from './CommentBox';
 import Reply from './Reply';
 import { ReplyIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { publicRequest } from '@/requestMethod';
+import { publicRequest, userRequest } from '@/requestMethod';
 import { ChevronUp } from 'lucide-react';
 import Fancybox from './Fancybox';
 type Props = {
     comment: CommentType,
     user: User,
     postId: string,
-    setLoading: (value:boolean) => void
-    index: number
+    setLoading: (value:boolean) => void,
+    reportComments: string[],
+    setReportComments: (value: string[])=> void
 }
+import { Loader } from 'lucide-react';
 
-const Comment = ({comment, user, postId, setLoading, index}:Props) => {
+const Comment = ({comment, user, postId, setLoading, reportComments, setReportComments}:Props) => {
 
     const [showEmoji, setShowEmoji] = useState<boolean>(false);
     const [openCommentBox, setOpenCommentBox] = useState<boolean>(false)
@@ -30,8 +32,8 @@ const Comment = ({comment, user, postId, setLoading, index}:Props) => {
     const [showReplies, setShowReplies] = useState<boolean>(false)
     const [fetchedAll, setFetchedAll] = useState<boolean>(false)
     const [totalReplies, setTotalReplies]= useState<number>()
+    const [loading2, setLoading2] = useState<boolean>(false)
 
-    console.log('totalre',totalReplies)
     const fetchReply = async () => {
         if(fetchedAll){
             setShowReplies(true)
@@ -78,7 +80,30 @@ const Comment = ({comment, user, postId, setLoading, index}:Props) => {
         setFetchedAll(true)
     }
 
-    console.log('has next',hasNext)
+    const handleReportComment = async () => {
+        
+        try {
+            setLoading2(true)
+            const res = await userRequest.post(`/report-comment`,{
+                commentId: comment._id ,
+                postId: postId , 
+                userId: user._id,
+            })
+            if(res.data){
+                setLoading2(false)
+                if(res.data.unReport===true){       
+                    const reports = reportComments.filter(id=>id!==comment._id)
+                    setReportComments(reports)
+                }
+                if(res.data.unReport===false){                    
+                    reportComments.push(comment._id)
+                }
+            }
+        } catch(err){
+            toast.error('Lỗi')
+        }
+    }
+
   return (
     <>
         <div className='flex gap-2 mt-6'>
@@ -163,9 +188,14 @@ const Comment = ({comment, user, postId, setLoading, index}:Props) => {
                     <div  onClick={()=>setOpenCommentBox(!openCommentBox)} className='flex hover:text-red-500 hover:cursor-pointer'>
                         <p>Trả lời</p>
                     </div>
-                    <div className='hover:text-red-500 hover:cursor-pointer' title='báo vi phạm'>
-                        <Flag />
-                    </div>
+                    {loading2 ? <Loader className='animate-spin text-gray-500'/> :
+                        <div onClick={handleReportComment} 
+                            className={`hover:text-red-500 hover:cursor-pointer ${reportComments?.includes(comment._id)?'text-red-500':''} `} 
+                            title='báo vi phạm'
+                        >
+                            <Flag />
+                        </div>
+                    }
                 </div>
 
                 {/* {comment.isReplied && */}
@@ -198,7 +228,8 @@ const Comment = ({comment, user, postId, setLoading, index}:Props) => {
         {showReplies &&
             <div className='border-l-2 ml-12'>
             {replies.length>0 && replies.map((reply,index)=>(
-                <Reply replyData={reply} key={index} user={user} postId={postId} setLoading={setLoading} />
+                <Reply replyData={reply} key={index} user={user} postId={postId} setLoading={setLoading} reportComments={reportComments} 
+                        setReportComments={setReportComments} />
             ))}
             </div>
         }
