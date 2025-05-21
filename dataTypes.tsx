@@ -50,4 +50,8 @@ export type ReportCommentType = {
     commentId: string
 }
 
+
+
+export type EmotionType = 'like'|'love'|'fun'|'sad'|'wow'
+export type EmotionArray = ['like','love','fun','sad','wow']
 export type UserRole = 'Admin'|'Reporter'

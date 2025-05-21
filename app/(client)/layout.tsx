@@ -37,11 +37,11 @@ export default function RootLayout({
             <div><Navbar /></div>
 
 
-            {/* <div className="flex justify-center"> */}
-              {/* <div className=" w-[1200px]"> */}
+            <div className="flex justify-center">
+              <div className=" w-[1200px]">
               {children}
-              {/* </div> */}
-            {/* </div> */}
+              </div>
+            </div>
 
             <Toaster 
               position="top-right"

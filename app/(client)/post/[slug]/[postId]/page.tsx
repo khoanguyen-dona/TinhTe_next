@@ -110,7 +110,6 @@ const page = () => {
         getData()
     }, [])
 
-    console.log('rep com',reportComments)
     setTimeout(()=>{
         publicRequest.get(`/post/${post?._id}/increase-view`)
     }, 20000)
