@@ -5,7 +5,7 @@ import React from 'react'
 import JoditViewer from '@/app/(client)/custom-components/JoditViewer'
 import Image from 'next/image'
 import { Post } from '@/dataTypes'
-import { publicRequest } from '@/requestMethod'
+import { publicRequest, userRequest } from '@/requestMethod'
 import { useParams } from 'next/navigation'
 import moment from 'moment'
 import { Separator } from "@/components/ui/separator"
@@ -18,9 +18,27 @@ import CommentBox from '@/app/(client)/custom-components/CommentBox'
 import { CommentType } from '@/dataTypes'
 import Comment from '@/app/(client)/custom-components/Comment'
 import { ReportCommentType } from '@/dataTypes'
+import { EmotionType } from '@/dataTypes'
+import toast from 'react-hot-toast'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "@/components/ui/dialog"
 
+type postEmotionType = {
+    postId: string,
+    userId: User,
+    type: EmotionType
+}
 
 const page = () => {
+    const [reload, setReload] = useState<boolean>(false)
+    const EmotionArray = ['like','love','fun','sad','wow']
     const user = useSelector((state: RootState)=>state.user.currentUser as User)
     const {postId, slug} = useParams()
     const now = new Date()
@@ -34,6 +52,82 @@ const page = () => {
     const [hasNext, setHasNext] = useState<boolean>(false)
     const type='thread'
     const [reportComments, setReportComments] = useState<string[]>()
+    const [totalComments, setTotalComments] = useState<number>()
+    const [emotionLoading ,setEmotionLoading] = useState<boolean>(false)
+    const [userEmotion, setUserEmotion] = useState<EmotionType>() // emotion that user have in this post
+    const [postEmotions,setPostEmotions] = useState<postEmotionType[]>() // emotion data related to this post 
+    const [emotionTypeOfPost, setEmotionTypeOfPost] = useState<EmotionType[]>() //type of emotions have in this post eg..[like,love,fun]
+    const [currentEmotion, setCurrentEmotion] = useState<EmotionType|'all'>() // current emotion user choose from
+    const [currentPostEmotions, setCurrentPostEmotions] = useState<postEmotionType[]>() //current emotions data base on type of emotion
+
+    const [likeCount, setLikeCount] = useState<number>()
+    const [loveCount, setLoveCount] = useState<number>()
+    const [funCount, setFunCount] = useState<number>()
+    const [sadCount, setSadCount] = useState<number>()
+    const [wowCount, setWowCount] = useState<number>()
+
+    //fetch user emotion
+    useEffect(()=>{
+       
+        const getUserEmotion = async() =>{
+            try {
+                const res = await publicRequest.get(`/post-emotion/${postId}?userId=${user._id}`)
+                if(res.data.emotion.length >0 ){
+                    setUserEmotion(res.data.emotion[0].type)
+                } else {
+                    setUserEmotion(undefined)
+                }
+            } catch(err){
+                console.log('fetch user emotion failed',err)
+            }
+        }
+        getUserEmotion()
+       
+    },[reload])
+
+    //fetch all emotion of this post
+    useEffect(()=>{
+        const getData = async () =>{
+            try {
+                const res = await publicRequest.get(`/post-emotion/${postId}`)
+                if(res.data){
+                    setPostEmotions(res.data.emotion)
+                    const tempArray:EmotionType[] = []
+                    res.data.emotion.map((emotion:postEmotionType)=>{
+                        tempArray?.includes(emotion.type) ? '': tempArray.push(emotion.type)
+                    })
+                    setEmotionTypeOfPost(tempArray)
+                    setCurrentPostEmotions(res.data.emotion)
+                }
+            } catch(err){
+                console.log('fetch commentEmotions failed',err)
+            }
+        }
+        getData()
+    },[reload])
+
+    //handlelike
+    const handleEmotion = async (value: EmotionType) =>{
+        try {
+            setEmotionLoading(true)
+            const res = await userRequest.post(`/post-emotion`,{
+                postId: postId,
+                userId: user._id,
+                type: value
+            })
+            if(res.data){
+                setReload(!reload)
+            }
+        } catch(err){
+            toast.error('Lỗi')
+            console.log('post emotion failed',err)
+        } finally {
+            setEmotionLoading(false)
+        }
+    }
+
+
+
     //fech post data
     useEffect(()=>{
         const getPost = async() =>{
@@ -110,6 +204,62 @@ const page = () => {
         getData()
     }, [])
 
+    //fetch total Comments
+    useEffect(()=>{
+        const getTotalComments = async () =>{
+            const res = await publicRequest.get(`/comment/${postId}`)
+            if(res.data){
+                setTotalComments(res.data.totalComments)
+            }
+        }
+        getTotalComments()
+    },[])
+
+    const calculateCount = async () => {
+        let tempLikeCount = 0
+        let tempLoveCount = 0
+        let tempFunCount = 0
+        let tempSadCount = 0
+        let tempWowCount = 0
+
+        if(postEmotions){   
+            for(const c of postEmotions ){
+                c.type==='like'? tempLikeCount+=1 :
+                c.type==='love'? tempLoveCount+=1 :
+                c.type==='fun'? tempFunCount+=1 :
+                c.type==='sad'? tempSadCount+=1 :
+                c.type==='wow'? tempWowCount+=1 :''
+            }
+        }
+        setLikeCount(tempLikeCount)
+        setLoveCount(tempLoveCount)
+        setFunCount(tempFunCount)
+        setSadCount(tempSadCount)
+        setWowCount(tempWowCount)
+    }
+
+    //fetch currentEmotions
+    useEffect(()=>{
+        const getEmotions = async () => {
+        let tempArray: postEmotionType[] = []
+
+        try {
+            if(currentEmotion==='all'){
+            setCurrentPostEmotions(postEmotions)
+            } else {    
+            postEmotions?.map((com:postEmotionType)=>(
+                com.type===currentEmotion? tempArray.push(com):''
+            ))
+            setCurrentPostEmotions(tempArray)
+            }
+        } catch(err){
+            console.log('err while fetching current emotions',err)
+        } 
+        }
+        getEmotions()
+    },[currentEmotion])
+
+
     setTimeout(()=>{
         publicRequest.get(`/post/${post?._id}/increase-view`)
     }, 20000)
@@ -146,13 +296,80 @@ const page = () => {
                 <JoditViewer data={post?.content}  />
 
 
-                <div className='flex flex-col my-20 space-y-2 '>
-                    <div className='flex gap-5'>
-                        <div className='flex'>
-                            <img src="/icon-like.svg" className='w-6 h-6' alt="" />
-                            <p>10</p>
-                        </div>
-                        <p className='text-gray-500'> 8 bình luận</p>
+                <div className='flex flex-col my-20 space-y-2  '>
+                    <div className='flex gap-5 items-center'>                       
+                        <Dialog>
+                            <DialogTrigger>
+                                {postEmotions && postEmotions?.length>0 &&
+                                    <div 
+                                        onClick={()=>{
+                                            calculateCount
+                                            setCurrentEmotion('all')
+                                        }}
+                                        className='  p-1 px-2     flex items-center hover:cursor-pointer hover:text-red-500'>
+                                            {emotionTypeOfPost?.map((emo)=>(
+                                                    EmotionArray.includes(emo) && <img className='w-6 h-6' src={`/icon-${emo}.svg`} />
+                                                )
+                                            )
+                                            }
+                                            <div className='ml-2 '>{postEmotions?.length}</div>
+                                    </div>
+                                }
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle className='flex font-medium items-center'>
+                                    <div className='flex justify-center items-center'>
+                                        <div className={`flex gap-1 hover:cursor-pointer hover:text-blue-500  p-3 transition ${currentEmotion==='all'?'border-blue-500 text-blue-500  border-b-3':''} `} 
+                                            onClick={()=>setCurrentEmotion('all')}>
+                                            <p>Tất cả</p>
+                                            <p>({postEmotions?.length})</p>
+                                        </div>
+                                        {postEmotions && postEmotions?.length>0 &&
+                                        <div className=' p-1 bg-white   h-auto flex items-center '>
+                                            {emotionTypeOfPost?.map((emo)=>(
+                                                    EmotionArray.includes(emo) &&
+                                                    <div 
+                                                        onClick={()=>setCurrentEmotion(emo)}
+                                                        className={`flex justify-center items-center  hover:cursor-pointer hover:text-blue-500  p-2  transition
+                                                            ${currentEmotion===emo?'border-b-3 text-blue-500 border-blue-500':''} `}>
+                                                        <img className='w-6 h-6' src={`/icon-${emo}.svg`} />
+                                                        {   emo==='like'?<div>{likeCount}</div> :
+                                                            emo==='love'?<div>{loveCount}</div> :
+                                                            emo==='fun'?<div>{funCount}</div> :
+                                                            emo==='sad'?<div>{sadCount}</div> :
+                                                            emo==='wow'?<div>{wowCount}</div> :''                                                       
+                                                        } 
+                                                      
+                                                    </div> 
+                                                )
+                                            )
+                                            }                                              
+                                        </div>
+                                        }
+                                    </div>
+                                    </DialogTitle>
+                                    <Separator />
+                                    <DialogDescription className='overflow-auto h-80 '>
+                                       {currentPostEmotions?.map((c:postEmotionType,index)=>(
+                                        <div className='flex gap-4  items-center  space-y-2 relative' key={index}>
+                                            {c.userId.img ?
+                                                <Image  width={50} height={50} className='w-12 h-12 object-cover rounded-full' src={c.userId.img} alt='avatar' />
+                                                :
+                                                <Image  width={50} height={50} className='w-12 h-12 object-cover rounded-full' src='/user.png' alt='avatar' />
+                                            }
+                                            <p className='text-black'>{c.userId.username}</p>
+                                            <img src={`/icon-${c.type}.svg`} className='absolute bottom-0 -left-0 w-6 h-6  ' alt="" />
+                                        </div>
+                                       ))
+
+                                       }
+                                    </DialogDescription>
+                                </DialogHeader>
+                            </DialogContent>
+                        </Dialog>  
+                        <div>-</div>
+                        <p className='text-gray-500 '> {totalComments} bình luận</p>
                     </div>
                     <Separator />
                     <div className='flex justify-around'>
@@ -163,31 +380,39 @@ const page = () => {
                                 onMouseLeave={() => setShowEmoji(false)}
                             >
                                 {/* Trigger Element */}
-                                <div className="flex gap-2">
-                                    <ThumbsUp className='w-6 h-6'  />
-                                    <p>Thích</p>
-                                </div>
-
-                                {/* Options shown on hover */}
-                                {showEmoji && (
-                                    <div className="absolute w-60 -top-14  bg-white border rounded-xl shadow-lg p-2 flex gap-2">
-                                        <span>
-                                            <img src="/icon-like.svg" className='w-10 h-10 hover:scale-130 transition' alt="" />
-                                        </span>
-                                        <span>
-                                            <img src="/icon-love.svg" className='w-10 h-10 hover:scale-130 transition' alt="" />
-                                        </span>
-                                        <span>
-                                            <img src="/icon-fun.svg" className='w-10 h-10 hover:scale-130 transition' alt="" />
-                                        </span>
-                                        <span>
-                                            <img src="/icon-sad.svg" className='w-10 h-10 hover:scale-130 transition' alt="" />
-                                        </span>
-                                        <span>
-                                            <img src="/icon-wow.svg" className='w-10 h-10 hover:scale-130 transition' alt="" />
-                                        </span>
+                                {
+                                    emotionLoading ? 
+                                    <div className='flex justify-end items-center'>
+                                        <Loader className='animate-spin text-gray-500 '/>
                                     </div>
-                                )}
+                                    :     
+                                    <div>                          
+                                    {
+                                        EmotionArray.includes(userEmotion as EmotionType) ? 
+                                            <div className='text-red-500 font-bold first-letter:uppercase '> {
+                                                userEmotion==='like'?<p onClick={()=>handleEmotion('like')} className='flex items-center'><img src='/icon-like.svg' className='w-8 h-8' />Thích</p>
+                                                :userEmotion==='love'?<p onClick={()=>handleEmotion('love')} className='flex items-center'><img src='/icon-love.svg' className='w-8 h-8' />Yêu</p>
+                                                :userEmotion==='fun'?<p onClick={()=>handleEmotion('fun')} className='flex items-center gap-1'><img src='/icon-fun.svg' className='w-8 h-8' />Vui</p>
+                                                :userEmotion==='sad'?<p onClick={()=>handleEmotion('sad')} className='flex items-center gap-1 '><img src='/icon-sad.svg' className='w-8 h-8' />Buồn</p>
+                                                :userEmotion==='wow'?<p onClick={()=>handleEmotion('wow')} className='flex items-center gap-1'><img src='/icon-wow.svg' className='w-8 h-8' />Wow</p>: ''
+                                            }</div>
+                                            :
+                                            <div onClick={()=>handleEmotion('thích' as EmotionType)}>Thích</div>
+                                        }
+                                    </div>
+                                }
+
+                                 {/* Options shown on hover */}
+                                    {showEmoji && (
+                                    <div className="absolute w-60 -top-13  bg-white border rounded-xl shadow-lg p-2 flex gap-2">
+                                        {EmotionArray.map((emotionType, index)=>(
+                                            <span key={index} onClick={()=>handleEmotion(emotionType as EmotionType)}>
+                                                <img src={`/icon-${emotionType}.svg`} className='w-10 h-10 hover:scale-130 transition hover:cursor-pointer' alt="" />
+                                            </span>
+                                        
+                                        ))}
+                                    </div>
+                                    )}
 
                             </div>
                         </div>

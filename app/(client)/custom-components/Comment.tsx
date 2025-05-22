@@ -352,8 +352,8 @@ const Comment = ({comment, user, postId, setLoading, reportComments, setReportCo
                                 className='rounded-lg object-cover w-28 h-28'
                                 alt="image"
                                 src={img}
-                                width={50}
-                                height={50}
+                                width={100}
+                                height={100}
                             />
                             </a>
                         ))
@@ -403,7 +403,7 @@ const Comment = ({comment, user, postId, setLoading, reportComments, setReportCo
                                 
                                 ))}
                             </div>
-                        )}
+                            )}
 
                         </div>
                     </div>
