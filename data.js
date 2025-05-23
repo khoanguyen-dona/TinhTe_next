@@ -157,11 +157,11 @@ export const categories = [
     },
     {   
         title: 'Máy tính',
-        value: 'máy tính'
+        value: 'may-tinh'
     },
     {   
         title: 'Điện thoại',
-        value: 'điện thoại'
+        value: 'dien-thoai'
     },
     {   
         title: 'Loa',
@@ -169,19 +169,19 @@ export const categories = [
     },
     {   
         title: 'Tai nghe',
-        value: 'tai nghe'
+        value: 'tai-nghe'
     },
     {   
         title:'Âm nhạc',
-        value:'âm nhạc'
+        value:'am-nhac'
     },
     {   
         title:'Điện ảnh',
-        value:'điện ảnh'
+        value:'dien-anh'
     },
     {   
         title:'Máy ảnh',
-        value:'máy ảnh'
+        value:'may-anh'
     },
     {   
         title:'TV',
@@ -189,31 +189,31 @@ export const categories = [
     },
     {   
         title:'Thiết bị điện tử',
-        value:'thiết bị điện tử'
+        value:'thiet-bi-dien-tu'
     },
     {   
         title:'Du lịch',
-        value:'du lịch'
+        value:'du-lich'
     },
     {   
         title:'Đồng hồ',
-        value:'đồng hồ'
+        value:'dong-ho'
     },
     {   
         title:'Sức khỏe',
-        value:'sức khỏe'
+        value:'suc-khoe'
     },
     {   
         title:'Thời trang',
-        value:'thời trang'
+        value:'thoi-trang'
     },
     {   
         title:'Cuộc sống',
-        value:'cuộc sống'
+        value:'cuoc-song'
     },
     {   
         title:'Khác',
-        value:'khác'
+        value:'khac'
     },
 ]
 

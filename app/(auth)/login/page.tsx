@@ -51,7 +51,7 @@ const page = () => {
             if(res.data){        
                 dispatch(setUser(res.data.data))
                 toast.success("Đăng nhập thành công")
-                router.push('/admin')
+                router.push('/')
             }
         } catch(err){
             toast.error('Lỗi, vui lòng thử lại')           
@@ -66,7 +66,8 @@ const page = () => {
     }
 
   return (
-    <div className={` h-screen 200 flex justify-center items-center `}>
+    <div className={` h-screen flex justify-center items-center bg-no-repeat bg-cover bg-center
+         bg-[url('https://img.freepik.com/free-photo/close-up-pretty-flowers-with-blurred-person-background_23-2147604837.jpg?size=626&ext=jpg')] `}>
         <Form {...form}>
             <div className='flex flex-col p-4 gap-8 w-5/6  md:w-2/3 lg:w-1/2 xl:w-1/3 mt-0 h-auto bg-white rounded-xl border-2 border-gray-200 shadow-2xl'>
                 <div className='font-bold text-center text-2xl'>Đăng nhập</div>
@@ -109,8 +110,16 @@ const page = () => {
                         </Button>
 
                 </form>
-                
-
+                <div className='text-center ' onClick={handleLoginWithGoogle}>
+                    <Button  className='bg-white text-black w-auto p-6   hover:bg-blue-100 border-2 border-gray-200 hover:cursor-pointer'>
+                        <img src="/google.png" className='w-6 h-6' alt="" />
+                        Đăng nhập với Google
+                    </Button>
+                </div>
+                <div className='flex justify-between' >
+                    <a href='/register' className='p-4 hover:bg-blue-100 rounded-lg hover:cursor-pointer'>Đăng kí</a>
+                    <div className='p-4 hover:bg-blue-100 rounded-lg hover:cursor-pointer'>Quên mật khẩu</div>
+                </div>
             </div>
         </Form>
     </div>

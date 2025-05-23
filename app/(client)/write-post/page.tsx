@@ -171,7 +171,7 @@ const page = () => {
     }
 
   return (
-    <>
+    <div className='flex justify-center'>
     {loading && 
     <div className='fixed top-0 z-20  w-screen h-screen bg-white opacity-50' >
         <div className='absolute inset-0 flex items-center justify-center'>
@@ -180,7 +180,7 @@ const page = () => {
     </div>
     }
 
-    <div className=' px-2 md:px-8 lg:px-16 xl:px-32 mt-30 h-auto  space-y-10 '>
+    <div className=' px-2 md:px-8 lg:px-16 xl:px-32 mt-30 h-auto w-full  space-y-10 '>
         <div className='flex flex-col '>
             <div className='text-gray-500'>Tiêu đề bài viết</div>
             <Textarea disabled={false} className='text-2xl lg:text-2xl h-auto' onChange={(e)=>setTitle(e.target.value)} placeholder="Tiêu đề bài viết" />
@@ -283,7 +283,7 @@ const page = () => {
         </div>
 
     </div>
-    </>
+    </div>
   )
 }
 

@@ -124,7 +124,7 @@ export default function Home() {
 
   console.log(page)
   return (  
-    <div className=" px-2 md:px-8 2xl:px-32 mt-16">
+    <div className="w-full px-2 md:px-8  mt-16">
       <Menu />
       <div className=" mt-10 flex gap-2">
         <div className="flex flex-col lg:flex-row md:gap-2">
@@ -212,18 +212,18 @@ export default function Home() {
           {
             posts?.slice(5).map((p: Post, index)=>(
                 <div key={index} className="flex  mt-0   hover:cursor-pointer">
-                    <a  href={`/post/${p.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p._id}`} className="w-2/5 md:w-1/3 lg:w-1/4 p-2 " >
-                      <Image width={200} height={200} src={p.thumbnail as string} className="object-cover h-24 sm:h-36 md:h-36 w-64 rounded-lg " alt="" />
+                    <a  href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`} className="w-2/5 md:w-1/3 lg:w-1/4 p-2 " >
+                      <Image width={150} height={150} src={p.thumbnail as string} className="object-cover h-24 sm:h-36 md:h-36 w-64 rounded-lg " alt="" />
                     </a>
                     <div className="w-3/5 md:w-2/3 lg:w-3/4 flex flex-col space-y-2 p-2" >
-                      <a href={`/post/${p.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p._id}`}>
-                        <h1 className="font-bold text-sm md:text-lg hover:text-blue-500  transition" >{p.title}</h1>
+                      <a href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`}>
+                        <h1 className="font-bold text-sm md:text-lg hover:text-blue-500  transition" >{p?.title}</h1>
                       </a>
-                      <p className="hidden sm:block md:hidden lg:block ">{p?.shortDescription.slice(0, 270)}...</p>
+                      <p className="hidden sm:block md:hidden lg:block ">{p?.shortDescription.slice(0, 235)}...</p>
                       <p className="hidden md:block lg:hidden">{p?.shortDescription.slice(0, 180)}...</p>
                       <div className="flex  items-center gap-2 ">
-                        <Image width={30} height={30} src={p.authorId.img as string } className="w-8 h-8 rounded-full " alt="" />
-                        <p className=" hover:text-blue-500 transition">{p.authorId.username }</p>
+                        <Image width={30} height={30} src={p?.authorId.img as string } className="w-8 h-8 rounded-full " alt="" />
+                        <p className=" hover:text-blue-500 transition">{p?.authorId.username }</p>
                       </div>
                     </div>
                 </div>

@@ -3,7 +3,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-
+import { categories } from '@/data';
 import { Post } from '@/dataTypes';// adjust to your Post type location
 import { useState } from 'react';
 import { DataTable } from '@/app/(client)/custom-components/table/data-table'; 
@@ -75,7 +75,16 @@ export const PostsTable = ({ data, onDelete, handleApprove }: PostsTableProps) =
     },
     {
         accessorKey: "category",
-        header: "Category"
+        header: "Category",
+        cell: ({row})=>{
+            return (
+                    <div>
+                {categories.map((category)=>(
+                    category.value===row.original.category?category.title:''
+                ))}
+                </div>
+            )
+        }
     },
     {
         accessorKey: "view",

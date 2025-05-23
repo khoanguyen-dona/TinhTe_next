@@ -1,6 +1,6 @@
 'use client'
 
-import { useState,useEffect } from 'react'
+import { useState,useEffect, useRef } from 'react'
 import React from 'react'
 import JoditViewer from '@/app/(client)/custom-components/JoditViewer'
 import Image from 'next/image'
@@ -37,6 +37,11 @@ type postEmotionType = {
 }
 
 const page = () => {
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const scrollToSection = () => {
+        sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+      };
+
     const [reload, setReload] = useState<boolean>(false)
     const EmotionArray = ['like','love','fun','sad','wow']
     const user = useSelector((state: RootState)=>state.user.currentUser as User)
@@ -265,7 +270,7 @@ const page = () => {
     }, 20000)
 
   return (
-    <>
+    <div className='flex justify-center'>
     {loading && 
         <div className='fixed top-0 z-20  w-screen h-screen bg-white opacity-50' >
             <div className='absolute inset-0 flex items-center justify-center'>
@@ -273,7 +278,7 @@ const page = () => {
             </div>
         </div>
     }
-    <div className=' h-auto  '>
+    <div className=' h-auto w-full  '>
         <div className=' flex flex-col lg:flex-row h-auto p-2 mt-24 rounded-lg '>
 
             {/* content of post col */}
@@ -291,7 +296,7 @@ const page = () => {
                     </div>
                 </div>
                 <div className=''>
-                    <Image width={600} height={600} src={post?.thumbnail as string} className='w-full object-cover h-60 sm:h-100 md:h-130 mt-4 rounded-xl ' alt="" />
+                    <Image width={800} height={800} src={post?.thumbnail as string} className='w-full object-cover h-60 sm:h-100 md:h-130 mt-4 rounded-xl ' alt="" />
                 </div>
                 <JoditViewer data={post?.content}  />
 
@@ -300,7 +305,7 @@ const page = () => {
                     <div className='flex gap-5 items-center'>                       
                         <Dialog>
                             <DialogTrigger>
-                                {postEmotions && postEmotions?.length>0 &&
+                                {postEmotions && postEmotions?.length>0 ?
                                     <div 
                                         onClick={()=>{
                                             calculateCount
@@ -313,6 +318,11 @@ const page = () => {
                                             )
                                             }
                                             <div className='ml-2 '>{postEmotions?.length}</div>
+                                    </div>
+                                    :
+                                    <div className='flex gap-2 items-center p-1 px-2 '>
+                                        <img src='/icon-like.svg' className='w-6 h-6' />
+                                        <p>0</p>
                                     </div>
                                 }
                             </DialogTrigger>
@@ -397,7 +407,7 @@ const page = () => {
                                                 :userEmotion==='wow'?<p onClick={()=>handleEmotion('wow')} className='flex items-center gap-1'><img src='/icon-wow.svg' className='w-8 h-8' />Wow</p>: ''
                                             }</div>
                                             :
-                                            <div onClick={()=>handleEmotion('thích' as EmotionType)}>Thích</div>
+                                            <div onClick={()=>handleEmotion('like' as EmotionType)}>Thích</div>
                                         }
                                     </div>
                                 }
@@ -416,7 +426,7 @@ const page = () => {
 
                             </div>
                         </div>
-                        <div className='flex w-1/3 justify-center items-center gap-2 p-4 rounded-lg hover:bg-blue-100 transition hover:cursor-pointer'>
+                        <div onClick={scrollToSection} className='flex w-1/3 justify-center items-center gap-2 p-4 rounded-lg hover:bg-blue-100 transition hover:cursor-pointer'>
                             <MessageSquare className='w-6 h-6 opacity-70'/>
                             <p className='text-gray-500'>Bình luận</p>
                         </div>
@@ -428,7 +438,7 @@ const page = () => {
                 </div>
 
                 {/* comment box */}
-                <div className=''>
+                <div ref={sectionRef} className=''>
                     <CommentBox user={user} postId={postId as string} type={'thread'} refCommentIdTypeThread={null} closeBoxAfterComment={false} 
                                 refCommentUserId={null} refCommentUsername={null} isReplied={false} setLoading={setLoading} />
                 </div>
@@ -483,7 +493,7 @@ const page = () => {
     </div>
 
     
-    </>
+    </div>
   )
 }
 

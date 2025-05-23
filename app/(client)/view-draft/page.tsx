@@ -13,7 +13,7 @@ const page = () => {
     const user: User|null = useSelector((state: RootState)=>state.user.currentUser)
     const draft = useSelector((state: RootState)=>state.draft.currentDraft)
   return (
-    <div className='flex flex-col px-2 md:px-8 lg:px-16 xl:px-32  mt-30 h-auto '>
+    <div className='flex flex-col px-2 md:px-8 lg:px-16 xl:px-32  mt-30 h-auto w-full'>
         <div className='text-2xl text-gray-500 text-center'>Bản Nháp</div>
         <div className='text-2xl md:text-3xl font-bold mt-10 '>{draft?.title}</div>
         <div className='flex gap-2 mt-10'>
