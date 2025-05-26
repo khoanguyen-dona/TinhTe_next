@@ -286,8 +286,8 @@ const page = () => {
                 <div className='text-2xl md:text-3xl font-bold  '>{post?.title}</div>
                 <div className='flex gap-2 mt-10 '>
                     {
-                        post?.authorId.img  ?
-                        <Image width={20} height={20} src={post?.authorId.img as string} className='w-12 h-12 rounded-full ' alt="" />
+                        post?.authorId?.img  ?
+                        <Image width={20} height={20} src={post?.authorId?.img as string||'/user.png'} className='w-12 h-12 rounded-full ' alt="" />
                         : <img src='/user.png' className='w-12 h-12 rounded-full ' alt="" />
                     }
                     <div className='flex flex-col'>
@@ -363,12 +363,12 @@ const page = () => {
                                     <DialogDescription className='overflow-auto h-80 '>
                                        {currentPostEmotions?.map((c:postEmotionType,index)=>(
                                         <div className='flex gap-4  items-center  space-y-2 relative' key={index}>
-                                            {c.userId.img ?
-                                                <Image  width={50} height={50} className='w-12 h-12 object-cover rounded-full' src={c.userId.img} alt='avatar' />
+                                            {c?.userId?.img ?
+                                                <Image  width={50} height={50} className='w-12 h-12 object-cover rounded-full' src={c?.userId?.img||'/user.png'} alt='avatar' />
                                                 :
                                                 <Image  width={50} height={50} className='w-12 h-12 object-cover rounded-full' src='/user.png' alt='avatar' />
                                             }
-                                            <p className='text-black'>{c.userId.username}</p>
+                                            <p className='text-black'>{c?.userId?.username}</p>
                                             <img src={`/icon-${c.type}.svg`} className='absolute bottom-0 -left-0 w-6 h-6  ' alt="" />
                                         </div>
                                        ))
@@ -474,15 +474,15 @@ const page = () => {
                 newestPosts?.map((post:Post)=>(
                     <div className='flex gap-2 '>
                         <a href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`} className='w-2/5  hover:cursor-pointer'>
-                            <Image width={150} height={100} src={post.thumbnail} className='object-cover w-full h-24 sm:h-36 md:h-48 lg:h-24  rounded-lg' alt='' />
+                            <Image width={150} height={100} src={post?.thumbnail} className='object-cover w-full h-24 sm:h-36 md:h-48 lg:h-24  rounded-lg' alt='' />
                         </a>
                         <div className='w-3/5 flex flex-col space-y-2 '> 
                             <a href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`} className='font-bold hover:text-blue-500 hover:cursor-pointer hidden md:block'>{post.title}</a>
                             <a href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`} className='font-bold hover:text-blue-500 hover:cursor-pointer block md:hidden'>{post.title.slice(0,65)}...</a>
-                            <p className='hidden md:block lg:hidden '>{post.shortDescription.slice(0,220)}...</p>
+                            <p className='hidden md:block lg:hidden '>{post?.shortDescription.slice(0,220)}...</p>
                             <div className=' lg:hidden flex  gap-2 justify-start items-center hover:text-blue-500 hover:cursor-pointer'>
-                                <Image width={20} height={20} src={post.authorId.img} className='object-cover rounded-full w-6 h-6 md:w-8 md:h-8' alt='' />
-                                <p className='text-sm md:text-medium'>{post.authorId.username}</p>
+                                <Image width={20} height={20} src={post?.authorId?.img||'/user.png'} className='object-cover rounded-full w-6 h-6 md:w-8 md:h-8' alt='' />
+                                <p className='text-sm md:text-medium'>{post?.authorId?.username}</p>
                             </div> 
                         </div> 
                     </div>

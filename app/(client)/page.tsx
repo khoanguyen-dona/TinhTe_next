@@ -138,7 +138,7 @@ export default function Home() {
                   <h1 className="text-xl font-bold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition ">{posts?.[0].title.split(/\s+/).slice(0, 20).join(' ')}</h1>
                   <h1 className="text-xl font-bold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[0].title.split(/\s+/).slice(0, 34).join(' ')}</h1>
                 </a>
-                <p className="text-sm ">{posts?.[0].authorId.username }</p>
+                <p className="text-sm ">{posts?.[0].authorId?.username }</p>
               </div>
               <div  className="flex h-auto md:h-80 space-x-4 lg:space-x-2 mt-4">
                 <div className=" w-1/2  space-y-2 " >
@@ -147,7 +147,7 @@ export default function Home() {
                     <h1 className="font-semibold text-medium block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[1].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
                     <h1 className="font-semibold text-medium hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[1].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </a>
-                  <p className="text-sm">{posts?.[1].authorId.username}</p>
+                  <p className="text-sm">{posts?.[1].authorId?.username}</p>
                 </div>
                 <div className=" w-1/2  space-y-2" >
                   <a  href={`/post/${posts?.[2].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[2]._id}`}>
@@ -155,7 +155,7 @@ export default function Home() {
                     <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
                     <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </a>
-                  <p className="text-sm">{posts?.[2].authorId.username}</p>
+                  <p className="text-sm">{posts?.[2].authorId?.username}</p>
                 </div>
               </div>
             </div>
@@ -167,7 +167,7 @@ export default function Home() {
                     <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
                     <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </a>
-                  <p className="text-sm">{posts?.[3].authorId.username}</p>
+                  <p className="text-sm">{posts?.[3].authorId?.username}</p>
                   <p className="hidden md:block" >{posts?.[3].shortDescription.slice(0, 210)}...</p> 
               </div>
               <div className="h-auto md:h-80  space-y-2 mt-4 md:mt-0 w-1/2 md:w-full " >
@@ -176,7 +176,7 @@ export default function Home() {
                     <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 16).join(' ')}</h1>
                     <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </a>
-                  <p className="text-sm ">{posts?.[4].authorId.username}</p>
+                  <p className="text-sm ">{posts?.[4].authorId?.username}</p>
               </div>
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function Home() {
             posts?.slice(5).map((p: Post, index)=>(
                 <div key={index} className="flex  mt-0   hover:cursor-pointer">
                     <a  href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`} className="w-2/5 md:w-1/3 lg:w-1/4 p-2 " >
-                      <Image width={150} height={150} src={p.thumbnail as string} className="object-cover h-24 sm:h-36 md:h-36 w-64 rounded-lg " alt="" />
+                      <Image width={150} height={150} src={p?.thumbnail as string} className="object-cover h-24 sm:h-36 md:h-36 w-64 rounded-lg " alt="" />
                     </a>
                     <div className="w-3/5 md:w-2/3 lg:w-3/4 flex flex-col space-y-2 p-2" >
                       <a href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`}>
@@ -222,8 +222,8 @@ export default function Home() {
                       <p className="hidden sm:block md:hidden lg:block ">{p?.shortDescription.slice(0, 235)}...</p>
                       <p className="hidden md:block lg:hidden">{p?.shortDescription.slice(0, 180)}...</p>
                       <div className="flex  items-center gap-2 ">
-                        <Image width={30} height={30} src={p?.authorId.img as string } className="w-8 h-8 rounded-full " alt="" />
-                        <p className=" hover:text-blue-500 transition">{p?.authorId.username }</p>
+                        <Image width={30} height={30} src={p?.authorId?.img as string } className="w-8 h-8 rounded-full " alt="" />
+                        <p className=" hover:text-blue-500 transition">{p?.authorId?.username }</p>
                       </div>
                     </div>
                 </div>

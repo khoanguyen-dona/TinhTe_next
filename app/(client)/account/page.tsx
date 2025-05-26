@@ -43,9 +43,11 @@ import {
   } from "firebase/storage";
 import app from '@/firebase'
 import Image from 'next/image'
+import { Textarea } from '@/components/ui/textarea'
 
 const form1Schema = z.object({
     username: z.string().min(4).max(100),
+    description: z.string()
   })
 
 const form2Schema = z.object({
@@ -66,7 +68,7 @@ const page = () => {
     const [password2, setPassword2] = useState<string>('')
     const [seePassword, setSeePassword] = useState<true|false>(true)
     const user: User|null = useSelector((state: RootState)=>state.user.currentUser)
-
+    // const [description, setDescription] = useState<string>()
     const [imageFile, setImageFile] = useState<File|''>('')
     const [previewImage, setPreviewImage] = useState<string|''>(user?.img as string)
 
@@ -79,8 +81,8 @@ const page = () => {
     const form1 = useForm<z.infer<typeof form1Schema>>({
         resolver: zodResolver(form1Schema),
         defaultValues: {
-            username: user?.username as string, 
-         
+            username: user?.username as string,    
+            description: user?.description as string    ,
         },
     })
     const form2 = useForm<z.infer<typeof form2Schema>>({
@@ -124,7 +126,8 @@ const page = () => {
                 if(imgUrl !== ''){
                     const res = await publicRequest.put(`/user/${user?._id}`,{
                         username: values.username,
-                        img: imgUrl
+                        img: imgUrl,
+                        description: values.description
                     })
                     if(res.data){        
                         dispatch(setUser(res.data.data))
@@ -135,6 +138,7 @@ const page = () => {
                 } else {
                     const res = await publicRequest.put(`/user/${user?._id}`,{
                         username: values.username,
+                        description: values.description
                     })
                     if(res.data){        
                         dispatch(setUser(res.data.data))
@@ -213,13 +217,17 @@ const page = () => {
             <div className='flex flex-col p-4 gap-8 w-5/6  md:w-2/3 lg:w-1/2 xl:w-1/3 mt-0 h-auto '>
                 <div className='font-bold text-center text-2xl'>Tài khoản</div>
                 <form onSubmit={form1.handleSubmit(onSubmit)} className='space-y-8'>                 
-                    <>
-                        <p className='text-sm text-gray-500  text-left' >Ảnh đại diện </p>
-                        {previewImage  && 
+                    <div className='space-y-3'>
+                        <p className='text-sm text-gray-500  text-center' >Ảnh đại diện </p>
+                        {previewImage  ? 
                             <div className='relative flex justify-center items-center  ' >       
                                 <Image width={100} height={100} 
                                     className='w-28 h-28  border-2 rounded-full  object-cover  ' alt='avatar' src={previewImage }  />                                                                   
-                            </div>                                                      
+                            </div>  :
+                             <div className='relative flex justify-center items-center  ' >       
+                                <Image width={100} height={100} 
+                                    className='w-28 h-28  border-2 rounded-full  object-cover  ' alt='avatar' src='/user.png'  />                                                                   
+                            </div>                                              
                         } 
                         <div className='text-center'>
                             <label className=' w-1/4  rounded-lg border-2 border-blue-200  font-semibold hover:bg-blue-200  hover:cursor-pointer p-2 transition' 
@@ -230,7 +238,7 @@ const page = () => {
                                     onChangeCapture={handleAvatar} id='thumbnail' type='file'  placeholder="chọn"  />
                             </label>
                         </div>                       
-                    </>
+                    </div>
                                 
                     <FormField
                         control={form1.control}
@@ -250,6 +258,21 @@ const page = () => {
                         <div className='text-gray-500 text-sm'>Email</div>
                         <div className='p-3 border-1 bg-gray-200 border-gray-200 rounded-lg' >{user?.email}</div>
                     </div>
+
+                    <FormField
+                        control={form1.control}
+                        name="description"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className='text-gray-500'>Description</FormLabel>
+                            <FormControl>
+                                <Textarea className='p-6  border-gray-200 '    placeholder="" {...field} />
+                            </FormControl>
+                            <FormMessage className='text-red-500'/>
+                        </FormItem>                     
+                      
+                    )}
+                    />
                     
                     <Button 
                         disabled={loading} type="submit" 
