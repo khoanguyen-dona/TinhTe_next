@@ -51,7 +51,33 @@ export type ReportCommentType = {
     commentId: string
 }
 
+export type ChatType = {
+    _id: string,
+    members: string[],
+    lastMessage: string,
+    senderId: string,
+    isReceiverSeen: boolean,
+    updatedAt: Date,
+    createdAt: Date
+}
 
+export type MessageType = {
+    _id: string,
+    chatId: string,
+    sender: string,
+    text: string,
+    imgs : string[],
+    createdAt: Date|string,
+    updatedAt: Date|string
+}
+
+export type ArrivalMessageType = {
+    chatId : string ,
+    sender: string,
+    receiverId: string,
+    imgs: string[],
+    text: string
+}
 
 export type EmotionType = 'like'|'love'|'fun'|'sad'|'wow'
 export type EmotionArray = ['like','love','fun','sad','wow']

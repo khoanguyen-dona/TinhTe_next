@@ -9,6 +9,8 @@ import {store, persistor} from '../../redux/store'
 import { PersistGate } from "redux-persist/integration/react";
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import { Fancybox } from "@fancyapps/ui";
+import ChatBox from "./custom-components/ChatBox";
+// import { SocketProvider } from "@/context/socketContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,9 +32,9 @@ export default function RootLayout({
     <html lang="en">
       
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-  
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor} >
+          {/* <SocketProvider> */}
             
             <div><Navbar /></div>
 
@@ -43,6 +45,7 @@ export default function RootLayout({
               </div>
             </div>
 
+            <ChatBox />
             <Toaster 
               position="top-right"
               reverseOrder={false}
@@ -51,8 +54,10 @@ export default function RootLayout({
 
             <div><Footer /></div>
 
+          {/* </SocketProvider> */}
           </PersistGate>
         </Provider >
+
       </body>
         
     </html>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Input } from "@/components/ui/input"
 import {
   Popover,
@@ -12,16 +12,59 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
 import { useDispatch } from 'react-redux'
 import { useRouter } from 'next/navigation'
-import { User } from '@/dataTypes'
+import { ChatType, User } from '@/dataTypes'
+import ChatItem from './ChatItem'
+import { userRequest } from '@/requestMethod'
+import { setChatList } from '@/redux/chatListRedux'
+import { setMessages } from '@/redux/chatRedux'
+import { setSenderData } from '@/redux/chatRedux'
+import { setChatId } from '@/redux/chatRedux'
+import { setChatState } from '@/redux/chatRedux'
+import { setChatPage } from '@/redux/chatRedux'
+import { setNotifyCount } from '@/redux/chatListRedux'
+
 const Navbar = () => {
   const router = useRouter()
   const dispatch = useDispatch()
+  const notiCount:number|null = useSelector((state:RootState)=>state.chatList.notifyCount)
   const user:User|null = useSelector((state: RootState)=>state.user.currentUser)
- 
+  const chatList: ChatType[] = useSelector((state: RootState)=>state.chatList.currentChatList)
+
+
   const handleLogout = () => {
-      dispatch(setUser(null))
-      router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
+    dispatch(setUser(null))
+    dispatch(setChatList([]))
+    dispatch(setChatPage(1))
+    dispatch(setChatId(null))
+    dispatch(setNotifyCount(0))
+    dispatch(setSenderData(null))
+    dispatch(setChatId(null))
+    dispatch(setChatState(false))
+    dispatch(setMessages(null))
+
+    router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
   }
+
+  //calculate notifyCOunt
+  useEffect(()=>{
+      const calculate = () => {
+          let number = 0 
+          try {
+              chatList && chatList.length>0 && chatList?.map((chat)=>{
+                chat?.isReceiverSeen === false && user?._id !== chat?.senderId ? number+=1 : ''
+              })
+              
+          } catch(err){
+            console.log('calculate failed',err)
+          } finally {
+            dispatch(setNotifyCount(number))
+          }
+      }
+      calculate()
+  },[chatList])
+  
+  // console.log('list',list)
+  console.log('noti',notiCount)
 
   return (
     <div className='fixed top-0 left-0 h-16 bg-gray-100 w-full  z-50 p-2 flex justify-between  items-center gap-10 px-5' >
@@ -42,9 +85,14 @@ const Navbar = () => {
          {/* mail button */}
           <Popover>
             <PopoverTrigger asChild >
-              <div className='bg-gray-300 p-2  rounded-full hover:bg-blue-300 hover:cursor-pointer transition' title='Tin nhắn'>
+           
+              <div className='bg-gray-300 p-2  rounded-full hover:bg-blue-300 hover:cursor-pointer transition relative' title='Tin nhắn'>
                 <img src="/email.png"  className='w-8 h-8 text-gray-400 opacity-60' alt="" />
+                {notiCount>0 &&
+                  <div className='absolute bg-red-500 rounded-full top-0 w-6 h-6 -right-2 p-[1px] text-center text-white'>{notiCount}</div>
+                }
               </div>
+          
             </PopoverTrigger>
             <PopoverContent>
               <div className='flex flex-col w-72 h-82 mr-2 bg-white fixed top-0 -right-20 sm:-right-2 shadow-2xl rounded-lg border-2 border-gray-200' >
@@ -57,55 +105,11 @@ const Navbar = () => {
 
                   <hr className='text-gray-300 border-b-1 w-full'/>
 
-                  <div className='h-60   overflow-auto'>
-                    <div className='p-2 hover:bg-gray-200 flex-col'>
-                      <p>
-                        Tin nhắn 1   
-                      </p>
-                      <p className='text-sm text-gray-400'>
-                        7 ngày trước           
-                      </p> 
-                    </div>
-                    <div className='p-2 hover:bg-gray-200 flex-col'>
-                      <p>
-                        Tin nhắn 1   
-                      </p>
-                      <p className='text-sm text-gray-400'>
-                        7 ngày trước           
-                      </p> 
-                    </div>
-                    <div className='p-2 hover:bg-gray-200 flex-col'>
-                      <p>
-                        Tin nhắn 1   
-                      </p>
-                      <p className='text-sm text-gray-400'>
-                        7 ngày trước           
-                      </p> 
-                    </div>
-                    <div className='p-2 hover:bg-gray-200 flex-col'>
-                      <p>
-                        Tin nhắn 1   
-                      </p>
-                      <p className='text-sm text-gray-400'>
-                        7 ngày trước           
-                      </p> 
-                    </div>
-                    <div className='p-2 hover:bg-gray-200 flex-col'>
-                      <p>
-                        Tin nhắn 1   
-                      </p>
-                      <p className='text-sm text-gray-400'>
-                        7 ngày trước           
-                      </p> 
-                    </div>
-                    <div className='p-2 hover:bg-gray-200 flex-col'>
-                      <p>
-                        Tin nhắn 1   
-                      </p>
-                      <p className='text-sm text-gray-400'>
-                        7 ngày trước           
-                      </p> 
-                    </div>
+                  <div className='h-60   overflow-auto'>                  
+                    {chatList && chatList?.length>0 && chatList?.map((chat: ChatType,index)=>(            
+                      <ChatItem chat={chat} key={index} userId={user?._id as string} />  
+                      ))
+                    }                                            
                   </div>
                   <div className='h-10 flex rounded-b-lg justify-center items-center hover:cursor-pointer bg-gray-100
                      text-blue-500 hover:text-blue-600'>
@@ -198,7 +202,7 @@ const Navbar = () => {
             <PopoverTrigger asChild >
               <div className='bg-gray-300  p-1 rounded-full hover:bg-blue-300 hover:cursor-pointer transition '>
                 {user!==null && user?.img!=='' ? 
-                  <Image width={40} height={40} src={user?.img}  className='w-11 h-11 object-cover rounded-full' alt="" />
+                  <Image width={80} height={80} src={user?.img}  className='w-11 h-11 object-cover rounded-full' alt="" />
                   :
                   <img src="/user.png"  className='w-10 h-10 ' alt="" />}
               </div>

@@ -19,6 +19,8 @@ import { publicRequest } from '@/requestMethod'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { Divide, Loader } from 'lucide-react';
+import { RootState } from '@/redux/store'
+import { useSelector } from 'react-redux'
 
 const formSchema = z.object({
     username: z.string().min(4).max(50),
@@ -29,6 +31,7 @@ const formSchema = z.object({
 console.log('reg',process.env.NEXT_PUBLIC_FIREBASE_API_KEY)
 const page = () => {
     const router = useRouter()
+    const user = useSelector((state:RootState)=>state.user.currentUser)
     const [loading, setLoading] = useState(false)
     const [seePassword, setSeePassword] = useState<true|false>(false)
     const [password1, setPassword1] = useState('')
@@ -74,6 +77,9 @@ const page = () => {
     }
 
   return (
+    <>
+    {user ? router.push('/')
+    :
     <div className={` h-240  flex justify-center items-center bg-no-repeat bg-cover bg-center
          bg-[url('https://img.freepik.com/free-photo/close-up-pretty-flowers-with-blurred-person-background_23-2147604837.jpg?size=626&ext=jpg')] `}>
         <Form {...form}>
@@ -164,6 +170,8 @@ const page = () => {
             </div>
         </Form>
     </div>
+    }
+    </>
   )
 }
 

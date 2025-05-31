@@ -8,8 +8,10 @@ TimeAgo.addLocale(vi)
 
 
 const ReactTimeAgoUtil = ({date,locale}:{date: Date, locale: string}) => {
+  const timestamp = new Date(date).getTime();
+  if (isNaN(timestamp)) return null;
   return (
-    <ReactTimeAgo date={date} locale={locale}/>
+    <ReactTimeAgo date={timestamp } locale={locale}/>
   )
 }
 

@@ -15,12 +15,14 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useState } from 'react'
-import { publicRequest } from '@/requestMethod'
+import { publicRequest, userRequest } from '@/requestMethod'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { Loader } from 'lucide-react';
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setUser } from '@/redux/userRedux'
+import { setChatList } from '@/redux/chatListRedux'
+import { RootState } from '@/redux/store'
 
 const formSchema = z.object({
     email: z.string().email('This is not a email').min(4).max(50),
@@ -32,7 +34,7 @@ const page = () => {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [seePassword, setSeePassword] = useState<true|false>(false)
-  
+    const user = useSelector((state: RootState)=>state.user.currentUser)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -50,6 +52,17 @@ const page = () => {
             })
             if(res.data){        
                 dispatch(setUser(res.data.data))
+                const getChatList = async() =>{ 
+                    try{
+                        const res2 = await userRequest.get(`/chat/chat-list/${res.data.data._id}`)
+                        if(res2.data){
+                          dispatch(setChatList(res2.data.chatList))
+                        }
+                    } catch(err){
+                      console.log('get chat list failed',err)
+                    }
+                  }
+                  getChatList()
                 toast.success("Đăng nhập thành công")
                 router.push('/')
             }
@@ -66,6 +79,9 @@ const page = () => {
     }
 
   return (
+    <>
+    {
+        user ? router.push('/') :
     <div className={` h-screen flex justify-center items-center bg-no-repeat bg-cover bg-center
          bg-[url('https://img.freepik.com/free-photo/close-up-pretty-flowers-with-blurred-person-background_23-2147604837.jpg?size=626&ext=jpg')] `}>
         <Form {...form}>
@@ -123,6 +139,8 @@ const page = () => {
             </div>
         </Form>
     </div>
+    }
+    </>
   )
 }
 

@@ -1,20 +1,29 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { publicRequest } from '@/requestMethod'
-import { Post, User } from '@/dataTypes'
+import { publicRequest, userRequest } from '@/requestMethod'
+import { ChatType, Post, User } from '@/dataTypes'
 import Image from 'next/image'
 import { Check, Loader, MessageSquare } from 'lucide-react'
 import { Send } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
 import moment from 'moment';
-
+import { RootState } from '@/redux/store'
+import { useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
+import { setChatId, setChatLoading, setChatPage, setChatState, setMessages, setSenderData } from '@/redux/chatRedux'
+import { setChatList, updateChatList } from '@/redux/chatListRedux'
+import { addChatToChatList } from '@/redux/chatListRedux'
+import { Socket,io } from 'socket.io-client'
 
 const page = () => {
-
+    const dispatch = useDispatch()
+    const currentUser = useSelector((state: RootState)=>state.user.currentUser)
+    const chatList = useSelector((state: RootState)=>state.chatList.currentChatList)
     const {userId} = useParams()
     const [loading, setLoading]= useState<boolean>(false)
+    const [mailLoading,setMailLoading] = useState<boolean>(false)
     const [user, setUser] = useState<User>()
     const [page, setPage] = useState<number>(1)
     const [hasNext, setHasNext] = useState<boolean>()
@@ -22,8 +31,9 @@ const page = () => {
     const [commentCount, setCommentCount] = useState<number>()
     const [postCount, setPostCount] = useState<number>()
     const limit = 5
-
     const [posts, setPosts] = useState<Post[]>([])
+
+
     // fetch user info
     useEffect(() =>{
         const getUser = async () => {
@@ -98,15 +108,79 @@ const page = () => {
         getCount()
     },[])
 
-    console.log('comment count',commentCount)
-    console.log("postcount",postCount)
+    console.log('chatList',chatList)
+
+    const handleOpenChatBox = async  () => {
+        console.log('clicked')
+
+        // find chat between 2 user
+        const res = await userRequest.get(`/chat?user1=${currentUser?._id}&user2=${userId}`) 
+
+        // if existed ,go find chatId in out localStorage then set chatBox state
+        if(res.data.chat !== null){
+            console.log('1')
+            const chat = chatList.find((chat:ChatType)=>chat._id===res.data.chat._id)
+            if(chat){
+                const messages = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
+                dispatch(setChatPage(1))
+                dispatch(setMessages(messages))
+                dispatch(setChatState(true))
+                dispatch(setChatId(chat?._id))
+                dispatch(setSenderData(user))
+
+            //if not exists in local storage we push chat to our local storage chatList then set chatBox state
+            } else {
+                const messages = await userRequest.get(`/message?chatId=${res.data.chat._id}&page=1&limit=6`)
+                dispatch(addChatToChatList(res.data.chat))
+                dispatch(setChatPage(1))
+                dispatch(setMessages(messages))
+                dispatch(setChatState(true))
+                dispatch(setChatId(res.data.chat._id))
+                dispatch(setSenderData(user))
+            }
+            
+        }
+
+        //if not exists we create a chat then response the chatId
+        if(res.data.chat === null){
+            setMailLoading(true)
+            const createChat = await userRequest.post(`/chat`,{
+                members:[currentUser?._id, userId],
+                lastMessage:'',
+                senderId:'',
+                isReceiverSeen: true
+            })
+            //get new chatId then insert to localStorage chatList , and set state for LocalStorage chatBox
+            
+            if(createChat?.data){        
+                const getChatList = async() => {                
+                    const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}`)
+                    if(res.data){
+                        setMailLoading(false)
+                        dispatch(setChatList(res.data.chatList))
+                        dispatch(setChatPage(1))
+                        dispatch(setMessages([]))
+                        dispatch(setChatState(true))
+                        dispatch(setChatId(createChat.data.chat._id))
+                        dispatch(setSenderData(user))
+                    }
+                }
+                getChatList()
+        
+            }
+        }
+
+    }
+
+    // console.log('comment count',commentCount)
+    // console.log("postcount",postCount)
   return (
-    <div className='flex flex-col   mt-16 h-auto w-screen'>
+    <div className='flex flex-col   mt-16 h-auto w-full'>
         {/* user info */}
         <div className={`flex flex-col justify-center items-center bg-red-100  py-8 px-2  bg-no-repeat bg-cover bg-center
          bg-[url('https://img.freepik.com/free-photo/close-up-pretty-flowers-with-blurred-person-background_23-2147604837.jpg?size=626&ext=jpg')] `}>
             <div className='relative'>
-                <Image width={100} height={100} src={user?.img as string} className='w-30 h-30 object-cover rounded-full' alt='avatar' />
+                <Image width={100} height={100} src={user?.img as string||'/user.png'} className='w-30 h-30 object-cover rounded-full' alt='avatar' />
                 {
                     user?.isAdmin ?
                     <div className='absolute -bottom-4 left-5 p-1 px-2 bg-orange-300 rounded-lg font-bold text-white  text-center '>Admin</div>
@@ -155,8 +229,14 @@ const page = () => {
         <div className='flex justify-center h-auto  '>
             <div className='  w-[1200px]'>
                 <div className='flex justify-end'>
-                    <div className='bg-blue-100 gap-1 p-2 mt-2 rounded-lg text-blue-500 flex justify-center items-center hover:cursor-pointer font-semibold'>
-                        <MessageSquare className='w-5 h-5 font-bold' />
+                    <div 
+                        onClick={handleOpenChatBox}
+                         className='bg-blue-100 gap-1 p-2 mt-2 rounded-lg text-blue-500 flex justify-center items-center hover:cursor-pointer font-semibold'>
+                        {mailLoading ?
+                             <Loader className='animate-spin' />
+                             :
+                            <MessageSquare className='w-5 h-5 font-bold' />
+                        }
                         Nhắn tin
                     </div>
                 </div>
@@ -166,6 +246,12 @@ const page = () => {
                     <div className='font-bold text-xl mb-20 text-center'>
                         Các bài viết gần đây
                     </div>
+                    {
+                        posts.length===0 &&
+                        <div className='flex justify-center items-center p-2 bg-gray-100 mb-20'>
+                            Không có bài viết nào !
+                        </div>
+                    }
                     {posts?.map((post,index)=>(
                         <div className='w-full flex space-y-2' key={index}>
                             <div className='w-[200px]'>

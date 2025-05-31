@@ -9,7 +9,7 @@ import {store, persistor} from '../../redux/store'
 import { PersistGate } from "redux-persist/integration/react";
 import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import { Fancybox } from "@fancyapps/ui";
-
+import ChatBox from "../(client)/custom-components/ChatBox";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -36,7 +36,7 @@ export default function RootLayout({
             
             <div><Navbar /></div>
               {children}
-            
+            <ChatBox />
             <Toaster 
               position="top-right"
               reverseOrder={false}

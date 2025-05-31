@@ -1,9 +1,5 @@
 'use client'
-
-import axios from "axios";
 import Menu from "./custom-components/Menu";
-// import { posts } from "@/data";
-
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useEffect, useState } from "react";
@@ -12,9 +8,10 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/redux/userRedux";
-import { publicRequest } from "@/requestMethod";
+import { setChatList } from "@/redux/chatListRedux";
+import { publicRequest, userRequest } from "@/requestMethod";
 import { Post } from "@/dataTypes";
-import JoditViewer from "./custom-components/JoditViewer";
+
 import Image from "next/image";
 import { Loader } from "lucide-react";
 
@@ -32,15 +29,34 @@ export default function Home() {
   const [hasNext, setHasNext] = useState<boolean>()
   const limit:number = 10
 
-  console.log('user',user)
-  // display notify when user redirected by googleAuth
+  setTimeout(()=>{
+    window.location.reload()
+  },600000)
+
+
   useEffect(() => {
     if(googleAuth==='true'){
-
       // Remove the query param from the URL after setting message
       //@ts-ignore
       router.replace("/", undefined, { shallow: true });
+      // display notify when user redirected by googleAuth
       toast.success('Đăng nhập thành công')
+
+      
+     // get chatList
+     const getData = async() => {
+        if(user===null){       
+          const res = await publicRequest(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/user`,{withCredentials: true})
+          dispatch(setUser(res.data.user))
+          if(res.data){
+            const res1 = await userRequest(`/chat/chat-list/${res.data.user?._id}`)
+            dispatch(setChatList(res1.data.chatList))   
+            window.location.reload()       
+          }     
+        }    
+    }
+    getData()
+
     }
 
     if(logout==='true'){
@@ -51,7 +67,19 @@ export default function Home() {
       toast.success('Đăng xuất thành công')
     }
 
+
   }, [])
+
+  //get chatList 
+    useEffect(()=>{
+      const getData = async() => {   
+          console.log('dispatch chatlist!')
+          const res = await userRequest(`/chat/chat-list/${user?._id}`)
+          dispatch(setChatList(res.data.chatList))              
+      }      
+      getData()
+    },[])
+
 
   //  get post data first time
    useEffect(()=>{
@@ -110,19 +138,9 @@ export default function Home() {
     getPosts()
   }, [page])
 
-   //get data of user when redirect by googleAuth
-   useEffect(()=> {
-    if(user === null  ){
-     
-      axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/user`, {withCredentials: true})
-      .then((res) => {
-        dispatch(setUser(res.data.user))
-      })
-      .catch(() => dispatch(setUser(null)) );
-  }
-  }, [])
 
-  console.log(page)
+
+
   return (  
     <div className="w-full px-2 md:px-8  mt-16">
       <Menu />
@@ -138,7 +156,7 @@ export default function Home() {
                   <h1 className="text-xl font-bold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition ">{posts?.[0].title.split(/\s+/).slice(0, 20).join(' ')}</h1>
                   <h1 className="text-xl font-bold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[0].title.split(/\s+/).slice(0, 34).join(' ')}</h1>
                 </a>
-                <p className="text-sm ">{posts?.[0].authorId?.username }</p>
+                <a href={`/profile/${posts?.[0].authorId._id}`} className="text-sm hover:text-blue-500">{posts?.[0].authorId?.username }</a>
               </div>
               <div  className="flex h-auto md:h-80 space-x-4 lg:space-x-2 mt-4">
                 <div className=" w-1/2  space-y-2 " >
@@ -147,7 +165,7 @@ export default function Home() {
                     <h1 className="font-semibold text-medium block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[1].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
                     <h1 className="font-semibold text-medium hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[1].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </a>
-                  <p className="text-sm">{posts?.[1].authorId?.username}</p>
+                  <a href={`/profile/${posts?.[1].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[1].authorId?.username}</a>
                 </div>
                 <div className=" w-1/2  space-y-2" >
                   <a  href={`/post/${posts?.[2].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[2]._id}`}>
@@ -155,7 +173,7 @@ export default function Home() {
                     <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
                     <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </a>
-                  <p className="text-sm">{posts?.[2].authorId?.username}</p>
+                  <a href={`/profile/${posts?.[2].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[2].authorId?.username}</a>
                 </div>
               </div>
             </div>
@@ -167,7 +185,7 @@ export default function Home() {
                     <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
                     <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </a>
-                  <p className="text-sm">{posts?.[3].authorId?.username}</p>
+                  <a href={`/profile/${posts?.[3].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[3].authorId?.username}</a>
                   <p className="hidden md:block" >{posts?.[3].shortDescription.slice(0, 210)}...</p> 
               </div>
               <div className="h-auto md:h-80  space-y-2 mt-4 md:mt-0 w-1/2 md:w-full " >
@@ -176,7 +194,7 @@ export default function Home() {
                     <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 16).join(' ')}</h1>
                     <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </a>
-                  <p className="text-sm ">{posts?.[4].authorId?.username}</p>
+                  <a href={`/profile/${posts?.[4].authorId._id}`} className="text-sm hover:text-blue-500  ">{posts?.[4].authorId?.username}</a>
               </div>
             </div>
           </div>
@@ -223,7 +241,7 @@ export default function Home() {
                       <p className="hidden md:block lg:hidden">{p?.shortDescription.slice(0, 180)}...</p>
                       <div className="flex  items-center gap-2 ">
                         <Image width={30} height={30} src={p?.authorId?.img as string } className="w-8 h-8 rounded-full " alt="" />
-                        <p className=" hover:text-blue-500 transition">{p?.authorId?.username }</p>
+                        <a href={`/profile/${p?.authorId._id}`} className=" hover:text-blue-500 transition">{p?.authorId?.username }</a>
                       </div>
                     </div>
                 </div>

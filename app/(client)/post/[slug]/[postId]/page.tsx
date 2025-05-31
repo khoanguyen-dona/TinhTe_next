@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Loader, MessageSquare } from 'lucide-react'
 import { ThumbsUp } from 'lucide-react'
 import { RootState } from '@/redux/store'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { User } from '@/dataTypes'
 import CommentBox from '@/app/(client)/custom-components/CommentBox'
 import { CommentType } from '@/dataTypes'
@@ -29,6 +29,8 @@ import {
     DialogTitle,
     DialogTrigger,
   } from "@/components/ui/dialog"
+import { setChatList } from '@/redux/chatListRedux'
+// import { useSocket } from '@/context/socketContext'
 
 type postEmotionType = {
     postId: string,
@@ -41,12 +43,11 @@ const page = () => {
     const scrollToSection = () => {
         sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
       };
-
+    const dispatch = useDispatch()
     const [reload, setReload] = useState<boolean>(false)
     const EmotionArray = ['like','love','fun','sad','wow']
     const user = useSelector((state: RootState)=>state.user.currentUser as User)
     const {postId, slug} = useParams()
-    const now = new Date()
     const [post, setPost] = useState<Post>()
     const [loading, setLoading] = useState<boolean>(false)
     const [newestPosts, setNewestPosts] = useState<Post[]>()
@@ -70,6 +71,18 @@ const page = () => {
     const [funCount, setFunCount] = useState<number>()
     const [sadCount, setSadCount] = useState<number>()
     const [wowCount, setWowCount] = useState<number>()
+
+    //fet chatList when refesh
+        useEffect(()=>{
+          const getData = async() => {   
+              console.log('dispatch chatlist!')
+              const res = await userRequest(`/chat/chat-list/${user?._id}`)
+              dispatch(setChatList(res.data.chatList))              
+          }      
+          getData()
+        },[])
+    
+
 
     //fetch user emotion
     useEffect(()=>{
