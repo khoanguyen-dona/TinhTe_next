@@ -26,10 +26,13 @@ import { Socket, io } from 'socket.io-client'
 import { useRef } from 'react'
 import { ChatType } from '@/dataTypes'
 import { addChatToChatList, setChatList, setChatListHasNext, updateChatList } from '@/redux/chatListRedux'
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { EmojiStyle } from 'emoji-picker-react';
+
 
 const ChatBox = () => {
     const dispatch = useDispatch()
- 
+    const [emojiState, setEmojiState] = useState<boolean>(false)
     const socket = useRef<Socket|null>(null)
     const currentUser = useSelector((state: RootState)=>state.user.currentUser)
     const isOpen: boolean = useSelector((state: RootState)=>state.chat.isOpen)
@@ -40,7 +43,7 @@ const ChatBox = () => {
     const page = useSelector((state:RootState)=>state.chat.pageNumber)
     const sound: boolean = useSelector((state:RootState)=>state.chat.sound)
     const messagelimit = 6
-    const [text, setText] = useState<string>()
+    const [text, setText] = useState<string>('')
     const [sendLoading, setSendLoading] = useState<boolean>(false)
     const [newMessages, setNewMessages ] = useState<MessageType[]>([])
     const [hasNext, setHasNext] = useState<boolean>(false)
@@ -151,6 +154,7 @@ const ChatBox = () => {
     },[page])
 
     const handleSendMessage = async () => {
+        setEmojiState(false)
         try {
             setSendLoading(true)
             // create message in mongodb
@@ -252,6 +256,10 @@ const ChatBox = () => {
         }
     }
 
+    const handleEmojiClick = (e: EmojiClickData) =>{
+        setText(prev=>prev+e.emoji)
+    }
+
   return (
     <>
     {isOpen &&
@@ -302,7 +310,7 @@ const ChatBox = () => {
             <Separator />   
 
             {/* content  */}
-            <div className=' h-80 w-88  overflow-auto space-y-4 p-2 ' >
+            <div className=' h-80   overflow-auto space-y-4 p-2 ' >
                     {hasNext ?
                         <div 
                             onClick={handleLoadMessage}
@@ -316,11 +324,13 @@ const ChatBox = () => {
                         
                         <div ref={scrollRef}  >
                         {message?.sender === currentUser?._id ?
-                            <div className='ml-30'>
-                                <div className='w-50 h-auto  p-2 rounded-xl bg-blue-700 text-white '  key={index} >
-                                    {message?.text}
+                            <div className='flex  flex-col '>
+                                <div className='flex justify-end  '>                             
+                                    <span className='text-lg max-w-50 w-auto   h-auto  p-2 rounded-xl bg-blue-600 text-white '  key={index} >
+                                        {message?.text}
+                                    </span>
                                 </div>
-                                <div className='text-sm text-gray-400'>
+                                <div className='text-sm flex justify-end text-gray-400'>
                                     <ReactTimeAgoUtil date={message?.createdAt as Date} locale='vi-VN'/>
                                 </div>
                             </div>
@@ -330,7 +340,7 @@ const ChatBox = () => {
                                     <div className='w-10'>
                                         <Image src={senderData?.img||'/user.png'} className='w-8 h-8 rounded-full object-cover' alt='' width={40} height={40} />
                                     </div>
-                                    <div  className='w-50 h-auto  p-2 rounded-xl bg-gray-100' key={index} >
+                                    <div  className='text-lg max-w-50 w-auto h-auto  p-2 rounded-xl bg-gray-100' key={index} >
                                         {message?.text}
                                     </div>
                                 </div>                  
@@ -345,7 +355,7 @@ const ChatBox = () => {
             </div>
 
             {/* writing  */}
-            <div className='absolute -bottom-18 h-auto flex justify-between items-center px-2 py-4 border-t-2 gap-2 bg-white rounded-b-lg' >
+            <div className='absolute -bottom-18 h-auto flex justify-between items-center px-2 py-4 border-t-2 gap-2 bg-white rounded-b-lg z-90' >
                 <Image src='/upload.png' alt='gửi ảnh' width={50} height={50} className='w-10 h-10  hover:bg-blue-100 p-1 rounded-lg hover:cursor-pointer' title='gửi ảnh'/>
                 <Textarea value={text}  onChange={(e)=>setText(e.target.value as string)} className='bg-gray-200 w-50 rounded-lg resize-none ' />    
                 {sendLoading ?
@@ -358,9 +368,14 @@ const ChatBox = () => {
                         className={`w-10 h-10 p-1 hover:bg-blue-100 object-cover rounded-lg  `} alt='' title='Gửi'
                         />  
                     </button>
-                }     
-                <SmilePlus className='w-10 h-10 hover:bg-blue-100 rounded-lg p-1 hover:cursor-pointer text-blue-500'  />
+                }                     
+                <SmilePlus onClick={()=>setEmojiState(!emojiState)} className='w-10 h-10 hover:bg-blue-100 rounded-lg p-1 hover:cursor-pointer text-blue-500 '  /> 
             </div>
+            
+            <div className='h-[0px]'>
+                    <EmojiPicker  onEmojiClick={handleEmojiClick} open={emojiState} height={500} width={360} className='z-10 absolute -left-0 -top-130 ' /> 
+             </div>
+            
         </div>
     </div>
     }

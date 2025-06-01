@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { setSearchType } from "@/redux/searchRedux";
 import { setChatId, setChatPage, setChatState, setMessages, setSenderData } from "@/redux/chatRedux";
-import { addChatToChatList, setChatList } from "@/redux/chatListRedux";
+import { addChatToChatList, setChatList, setChatListHasNext } from "@/redux/chatListRedux";
 
 export default function Search() {
     const dispatch = useDispatch()
@@ -175,13 +175,14 @@ export default function Search() {
                     senderId:'',
                     isReceiverSeen: true
                 })
-                //get new chatId then insert to localStorage chatList , and set state for LocalStorage chatBox
-                
+
+                //get new chatId then insert to localStorage chatList , and set state for LocalStorage chatBox             
                 if(createChat?.data){        
                     const getChatList = async() => {                
                         const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}`)
                         if(res.data){
                             setMailLoading(false)
+                            dispatch(setChatListHasNext(res.data.hasNext))
                             dispatch(setChatList(res.data.chatList))
                             dispatch(setChatPage(1))
                             dispatch(setMessages([]))
