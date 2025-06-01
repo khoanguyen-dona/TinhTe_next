@@ -68,14 +68,12 @@ const Navbar = () => {
   
   const handleSearch = () => {
     if(keyWord && keyWord?.length>0){
-      console.log('clidke')
       router.push(`/search/${keyWord}`)
     }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if(e.key==='Enter' && keyWord && keyWord.length>0 ){
-      console.log('clidke')
       router.push(`/search/${keyWord}`)
     }
   }
@@ -94,8 +92,6 @@ const Navbar = () => {
       setPage(page+1)
   }
   
-  
-  console.log('',keyWord?.length)
 
   return (
     <div className='fixed top-0 left-0 h-16 bg-gray-100 w-full  z-50 p-2 flex justify-between  items-center gap-10 px-5' >

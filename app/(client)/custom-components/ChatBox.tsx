@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { SmilePlus } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
-import { setChatSound, setChatState } from '@/redux/chatRedux'
+import { setChatSound, setChatState, setUserStatus } from '@/redux/chatRedux'
 import { setChatLoading } from '@/redux/chatRedux'
 import { MessageType } from '@/dataTypes'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
@@ -27,7 +27,8 @@ import { useRef } from 'react'
 import { ChatType } from '@/dataTypes'
 import { addChatToChatList, setChatList, setChatListHasNext, updateChatList } from '@/redux/chatListRedux'
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
-import { EmojiStyle } from 'emoji-picker-react';
+import { Dot } from 'lucide-react'
+
 
 
 const ChatBox = () => {
@@ -49,6 +50,9 @@ const ChatBox = () => {
     const [hasNext, setHasNext] = useState<boolean>(false)
     const [arrivalMessage, setArrivalMessage] = useState<MessageType>()
     const scrollRef = useRef<HTMLDivElement |null>(null)
+    // const [senderStatus,setSenderStatus] = useState<boolean>(false)
+    const userStatus = useSelector((state:RootState)=>state.chat.userStatus)
+   
 
     // init socket
     useEffect(() => {
@@ -88,13 +92,17 @@ const ChatBox = () => {
                 });
             }
         })
+
+        socket.current.on('userStatus', (data:{status:string}) =>{
+            console.log('heard status event',data.status)
+            if(data.status==='online'){
+                dispatch(setUserStatus(true))
+                
+            }
+        })
     }, []);
- 
-
-    console.log('socket',socket)
-
+    console.log(userStatus)
     const playNotificationSound = () => {
-
         const audio = new Audio('/notify-sound.mp3');
         if(sound){
             audio.play()
@@ -153,6 +161,7 @@ const ChatBox = () => {
         getMessage()
     },[page])
 
+    // send message
     const handleSendMessage = async () => {
         setEmojiState(false)
         try {
@@ -233,6 +242,7 @@ const ChatBox = () => {
         }
     }
  
+    // scroll to bottom when  new messages come
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: 'auto' });
       }, [newMessages]);
@@ -260,6 +270,11 @@ const ChatBox = () => {
         setText(prev=>prev+e.emoji)
     }
 
+    // fetch online status of user 
+    useEffect(()=>{
+        socket.current?.emit('checkStatus', {userChecked_id: senderData?._id, userCheck_id: currentUser?._id})
+    },[senderData?._id])
+
   return (
     <>
     {isOpen &&
@@ -268,7 +283,10 @@ const ChatBox = () => {
             {/* tab info */}
             <div className='h-12  rounded-t-lg flex justify-between items-center px-2  '>
                 <div  className='flex items-center  hover:bg-blue-100 p-1 rounded-lg hover:cursor-pointer '>
-                    <Image src={senderData?.img as string||'/user.png'} width={40} height={40} className='w-8 h-8 object-cover rounded-full' alt='' />
+                    <div className='relative '>
+                        <Image src={senderData?.img as string||'/user.png'} width={40} height={40} className='w-8 h-8 object-cover rounded-full' alt='' />                      
+                        <div className={`absolute -bottom-1 -right-1 rounded-full w-3 h-3  ${userStatus?'bg-green-500':'bg-red-500'} `} />               
+                    </div>
                     <Popover>
                         <PopoverTrigger asChild >
                             <div className='p-2 rounded-md font-bold'>

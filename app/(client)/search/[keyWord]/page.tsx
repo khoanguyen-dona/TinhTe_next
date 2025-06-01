@@ -12,7 +12,7 @@ import moment from "moment";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { setSearchType } from "@/redux/searchRedux";
-import { setChatId, setChatPage, setChatState, setMessages, setSenderData } from "@/redux/chatRedux";
+import { setChatId, setChatPage, setChatState, setMessages, setSenderData, setUserStatus } from "@/redux/chatRedux";
 import { addChatToChatList, setChatList, setChatListHasNext } from "@/redux/chatListRedux";
 
 export default function Search() {
@@ -143,6 +143,7 @@ export default function Search() {
                 const chat = chatList.find((chat:ChatType)=>chat._id===res.data.chat._id)
                 if(chat){
                     const res_messages = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
+                    dispatch(setUserStatus(false))
                     dispatch(setChatId(chat._id))
                     dispatch(setChatPage(1))                
                     dispatch(setMessages(res_messages.data.messages))                
@@ -153,6 +154,7 @@ export default function Search() {
                 //if not exists in local storage we push chat to our local storage chatList then set chatBox state
                 } else {
                     const res_messages = await userRequest.get(`/message?chatId=${res.data.chat._id}&page=1&limit=6`)
+                    dispatch(setUserStatus(false))
                     dispatch(setChatPage(1))
                     dispatch(setMessages(res_messages.data.messages))
                     dispatch(setChatState(true))
@@ -181,6 +183,7 @@ export default function Search() {
                     const getChatList = async() => {                
                         const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}`)
                         if(res.data){
+                            dispatch(setUserStatus(false))
                             setMailLoading(false)
                             dispatch(setChatListHasNext(res.data.hasNext))
                             dispatch(setChatList(res.data.chatList))

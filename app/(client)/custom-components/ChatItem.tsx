@@ -10,7 +10,7 @@ import {
     PopoverTrigger,
   } from "@/components/ui/popover"
 import { useDispatch } from 'react-redux'
-import { setChatPage, setChatState, setSenderData } from '@/redux/chatRedux'
+import { setChatPage, setChatState, setSenderData, setUserStatus } from '@/redux/chatRedux'
 import { setMessages } from '@/redux/chatRedux'
 import { setChatId } from '@/redux/chatRedux'
 // import { setChatPage } from '@/redux/chatRedux'
@@ -25,7 +25,7 @@ type Props ={
 }
 
 const ChatItem = ({chat, userId}: Props) => {
-
+    const chatId = useSelector((state:RootState)=>state.chat.chatId)
     const senderId = chat?.members?.find(memberId=>memberId!==userId)
     const [senderInfo, setSenderInfo] = useState<User>()
     const dispatch = useDispatch()
@@ -51,6 +51,10 @@ const ChatItem = ({chat, userId}: Props) => {
     },[senderId])
 
     const handleClick = async () =>{
+        if(chat._id===chatId){
+            return
+        }
+        dispatch(setUserStatus(false))
         dispatch(setChatPage(1))
         dispatch(setChatLoading(true))
         dispatch(setSenderData(senderInfo as User))

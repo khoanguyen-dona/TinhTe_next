@@ -12,7 +12,7 @@ import moment from 'moment';
 import { RootState } from '@/redux/store'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
-import { setChatId, setChatLoading, setChatPage, setChatState, setMessages, setSenderData } from '@/redux/chatRedux'
+import { setChatId, setChatLoading, setChatPage, setChatState, setMessages, setSenderData, setUserStatus } from '@/redux/chatRedux'
 import { setChatList, setChatListHasNext, updateChatList } from '@/redux/chatListRedux'
 import { addChatToChatList } from '@/redux/chatListRedux'
 import { Socket,io } from 'socket.io-client'
@@ -156,6 +156,7 @@ const page = () => {
                 const getChatList = async() => {                
                     const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=3`)
                     if(res.data){
+                        dispatch(setUserStatus(false))
                         setMailLoading(false)
                         dispatch(setChatListHasNext(res.data.hasNext))
                         dispatch(setChatList(res.data.chatList))

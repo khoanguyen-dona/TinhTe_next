@@ -11,7 +11,8 @@ type InitialState = {
     chatId: string|null,
     chatLoading: boolean,
     pageNumber: number ,
-    sound: boolean
+    sound: boolean,
+    userStatus: boolean
 }
 
 const initialState: InitialState = {
@@ -21,7 +22,8 @@ const initialState: InitialState = {
     chatId: null,
     chatLoading: false,
     pageNumber: 1,
-    sound: true
+    sound: true,
+    userStatus: false
 }
 
 const chatSlice = createSlice({
@@ -48,12 +50,15 @@ const chatSlice = createSlice({
     },
     setChatSound: (state, action: PayloadAction<boolean>) => {
         state.sound = action.payload
-    }
+    },
+    setUserStatus: (state, action: PayloadAction<boolean>) => {
+        state.userStatus = action.payload
+    },
    
   },
 });
 
 
 
-export const { setMessages, setSenderData, setChatState, setChatId, setChatLoading, setChatPage, setChatSound} = chatSlice.actions;
+export const { setMessages, setSenderData, setChatState, setChatId, setChatLoading, setChatPage, setChatSound, setUserStatus} = chatSlice.actions;
 export default chatSlice.reducer;
