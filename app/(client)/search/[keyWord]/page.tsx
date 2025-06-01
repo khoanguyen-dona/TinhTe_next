@@ -7,16 +7,13 @@ import { Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { publicRequest, userRequest } from "@/requestMethod";
-import { ChatType, Post, User } from "@/dataTypes";
+import { ChatType, MessageType, Post, User } from "@/dataTypes";
 import moment from "moment";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { setSearchType } from "@/redux/searchRedux";
 import { setChatId, setChatPage, setChatState, setMessages, setSenderData } from "@/redux/chatRedux";
 import { addChatToChatList, setChatList } from "@/redux/chatListRedux";
-
-
-
 
 export default function Search() {
     const dispatch = useDispatch()
@@ -142,30 +139,35 @@ export default function Search() {
     
             // if existed ,go find chatId in out localStorage then set chatBox state
             if(res.data.chat !== null && sender.data){
+      
                 const chat = chatList.find((chat:ChatType)=>chat._id===res.data.chat._id)
                 if(chat){
-                    const messages = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
-                    dispatch(setChatPage(1))
-                    dispatch(setMessages(messages))
+                    const res_messages = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
+                    dispatch(setChatId(chat._id))
+                    dispatch(setChatPage(1))                
+                    dispatch(setMessages(res_messages.data.messages))                
                     dispatch(setChatState(true))
                     dispatch(setChatId(chat?._id))
                     dispatch(setSenderData(sender.data.user))
     
                 //if not exists in local storage we push chat to our local storage chatList then set chatBox state
                 } else {
-                    const messages = await userRequest.get(`/message?chatId=${res.data.chat._id}&page=1&limit=6`)
-                    dispatch(addChatToChatList(res.data.chat))
+                    const res_messages = await userRequest.get(`/message?chatId=${res.data.chat._id}&page=1&limit=6`)
                     dispatch(setChatPage(1))
-                    dispatch(setMessages(messages))
+                    dispatch(setMessages(res_messages.data.messages))
                     dispatch(setChatState(true))
                     dispatch(setChatId(res.data.chat._id))
                     dispatch(setSenderData(sender.data.user))
+                    dispatch(addChatToChatList(res.data.chat))
+                    
+
                 }
                 
             }
     
             //if not exists we create a chat then response the chatId
             if(res.data.chat === null && sender.data){
+      
                 setMailLoading(true)
                 const createChat = await userRequest.post(`/chat`,{
                     members:[currentUser?._id, userId],
@@ -256,7 +258,7 @@ export default function Search() {
                             </div>
                             <div className="flex items-center justify-center gap-2">
                                 <div>Ngày tham gia:</div>
-                                <div className="text-sm text-gray-400">{moment(user?.createdAt).format('DD-MM-YYYY')}</div>
+                                <div className=" text-gray-400">{moment(user?.createdAt).format('DD-MM-YYYY')}</div>
                             </div>
                         </div>
                         <div>
@@ -291,13 +293,13 @@ export default function Search() {
                             <a href={`/post/${post?.title?.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') as string}/${post?._id}`} 
                                 className="font-bold text-lg hover:cursor-pointer hover:text-blue-500">{post?.title?.slice(0,70)}...</a>
                             <div>{post?.shortDescription?.slice(0,190)}...</div>
-                            <div className="flex items-center justify-between  ">
+                            <div className=" flex justify-between items-center  ">
                                 <div className="flex items-center gap-2">
                                     <Image width={10} height={10} className="w-8 h-8 rounded-full object-cover" alt='avatar' src={post?.authorId?.img||'/user.png'}/>
                                     <a href={`/profile/${post?.authorId._id}`} className=" hover:cursor-pointer hover:text-blue-500">{post?.authorId?.username}</a>
                                 </div>
                                 <div>
-                                    <div className="text-sm text-gray-400">{moment(post?.createdAt).format('DD-MM-YYYY, hh:mm a')}</div>
+                                    <div className=" text-gray-400">{moment(post?.createdAt).format('DD-MM-YYYY, hh:mm a')}</div>
                                 </div>
 
                             </div>

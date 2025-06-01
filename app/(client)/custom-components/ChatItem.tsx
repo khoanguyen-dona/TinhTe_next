@@ -53,7 +53,7 @@ const ChatItem = ({chat, userId}: Props) => {
     const handleClick = async () =>{
         dispatch(setChatPage(1))
         dispatch(setChatLoading(true))
-        dispatch(setSenderData(senderInfo))
+        dispatch(setSenderData(senderInfo as User))
         dispatch(setChatState(true))
         dispatch(setChatId(chat._id))
         const res = await userRequest.get(`/message?chatId=${chat._id}&page=${page}&limit=${limit}`)

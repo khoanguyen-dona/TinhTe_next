@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/redux/userRedux";
-import { setChatList } from "@/redux/chatListRedux";
+import { setChatList, setChatListHasNext } from "@/redux/chatListRedux";
 import { publicRequest, userRequest } from "@/requestMethod";
 import { Post } from "@/dataTypes";
 
@@ -28,7 +28,7 @@ export default function Home() {
   const [page, setPage] = useState<number>(1)
   const [hasNext, setHasNext] = useState<boolean>()
   const limit:number = 10
-
+  const chatListLimit = 10
   setTimeout(()=>{
     window.location.reload()
   },600000)
@@ -49,7 +49,8 @@ export default function Home() {
           const res = await publicRequest(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/user`,{withCredentials: true})
           dispatch(setUser(res.data.user))
           if(res.data){
-            const res1 = await userRequest(`/chat/chat-list/${res.data.user?._id}`)
+            const res1 = await userRequest(`/chat/chat-list/${res.data.user?._id}?page=1&limit=${chatListLimit}`)
+            dispatch(setChatListHasNext(res1.data.hasNext))
             dispatch(setChatList(res1.data.chatList))   
             window.location.reload()       
           }     
@@ -74,7 +75,8 @@ export default function Home() {
     useEffect(()=>{
       const getData = async() => {   
           console.log('dispatch chatlist!')
-          const res = await userRequest(`/chat/chat-list/${user?._id}`)
+          const res = await userRequest(`/chat/chat-list/${user?._id}?page=1&limit=${chatListLimit}`)
+          dispatch(setChatListHasNext(res.data.hasNext))
           dispatch(setChatList(res.data.chatList))              
       }      
       getData()

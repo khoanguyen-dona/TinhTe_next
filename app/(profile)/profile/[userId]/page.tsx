@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { publicRequest, userRequest } from '@/requestMethod'
-import { ChatType, Post, User } from '@/dataTypes'
+import { ChatType, MessageType, Post, User } from '@/dataTypes'
 import Image from 'next/image'
 import { Check, Loader, MessageSquare } from 'lucide-react'
 import { Send } from 'lucide-react'
@@ -13,7 +13,7 @@ import { RootState } from '@/redux/store'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
 import { setChatId, setChatLoading, setChatPage, setChatState, setMessages, setSenderData } from '@/redux/chatRedux'
-import { setChatList, updateChatList } from '@/redux/chatListRedux'
+import { setChatList, setChatListHasNext, updateChatList } from '@/redux/chatListRedux'
 import { addChatToChatList } from '@/redux/chatListRedux'
 import { Socket,io } from 'socket.io-client'
 
@@ -121,22 +121,22 @@ const page = () => {
             console.log('1')
             const chat = chatList.find((chat:ChatType)=>chat._id===res.data.chat._id)
             if(chat){
-                const messages = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
+                const messages: MessageType[] = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
                 dispatch(setChatPage(1))
                 dispatch(setMessages(messages))
                 dispatch(setChatState(true))
                 dispatch(setChatId(chat?._id))
-                dispatch(setSenderData(user))
+                dispatch(setSenderData(user as User))
 
             //if not exists in local storage we push chat to our local storage chatList then set chatBox state
             } else {
-                const messages = await userRequest.get(`/message?chatId=${res.data.chat._id}&page=1&limit=6`)
+                const messages: MessageType[]|MessageType = await userRequest.get(`/message?chatId=${res.data.chat._id}&page=1&limit=6`)
                 dispatch(addChatToChatList(res.data.chat))
                 dispatch(setChatPage(1))
                 dispatch(setMessages(messages))
                 dispatch(setChatState(true))
                 dispatch(setChatId(res.data.chat._id))
-                dispatch(setSenderData(user))
+                dispatch(setSenderData(user as User))
             }
             
         }
@@ -152,17 +152,18 @@ const page = () => {
             })
             //get new chatId then insert to localStorage chatList , and set state for LocalStorage chatBox
             
-            if(createChat?.data){        
+            if(createChat.data){        
                 const getChatList = async() => {                
-                    const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}`)
+                    const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=3`)
                     if(res.data){
                         setMailLoading(false)
+                        dispatch(setChatListHasNext(res.data.hasNext))
                         dispatch(setChatList(res.data.chatList))
                         dispatch(setChatPage(1))
                         dispatch(setMessages([]))
                         dispatch(setChatState(true))
                         dispatch(setChatId(createChat.data.chat._id))
-                        dispatch(setSenderData(user))
+                        dispatch(setSenderData(user as User))
                     }
                 }
                 getChatList()

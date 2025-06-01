@@ -6,13 +6,13 @@ import {
     PopoverContent,
     PopoverTrigger,
   } from "@/components/ui/popover"
-import { Check, Loader, X } from 'lucide-react'
+import { Check, Loader, Volume2, VolumeX, X } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { SmilePlus } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
-import { setChatState } from '@/redux/chatRedux'
+import { setChatSound, setChatState } from '@/redux/chatRedux'
 import { setChatLoading } from '@/redux/chatRedux'
 import { MessageType } from '@/dataTypes'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
@@ -22,12 +22,11 @@ import { userRequest } from '@/requestMethod'
 import { setMessages } from '@/redux/chatRedux'
 import { User } from '@/dataTypes'
 import { setChatPage } from '@/redux/chatRedux'
-// import { useSocket } from '@/context/socketContext'
 import { Socket, io } from 'socket.io-client'
 import { useRef } from 'react'
 import { ChatType } from '@/dataTypes'
-import { addChatToChatList, setChatList, updateChatList } from '@/redux/chatListRedux'
-// import { useSocket } from '@/context/socketContext'
+import { addChatToChatList, setChatList, setChatListHasNext, updateChatList } from '@/redux/chatListRedux'
+
 const ChatBox = () => {
     const dispatch = useDispatch()
  
@@ -39,11 +38,12 @@ const ChatBox = () => {
     const chatId = useSelector((state: RootState)=>state.chat.chatId)
     const chatList = useSelector((state:RootState)=>state.chatList.currentChatList)
     const page = useSelector((state:RootState)=>state.chat.pageNumber)
-    const limit = 4
+    const sound: boolean = useSelector((state:RootState)=>state.chat.sound)
+    const messagelimit = 6
     const [text, setText] = useState<string>()
     const [sendLoading, setSendLoading] = useState<boolean>(false)
     const [newMessages, setNewMessages ] = useState<MessageType[]>([])
-    const [hasNext, setHasNext] = useState<boolean>(true)
+    const [hasNext, setHasNext] = useState<boolean>(false)
     const [arrivalMessage, setArrivalMessage] = useState<MessageType>()
     const scrollRef = useRef<HTMLDivElement |null>(null)
 
@@ -53,24 +53,36 @@ const ChatBox = () => {
         socket.current.emit('addUser', currentUser?._id)
         socket.current.on("getMessage", (data:any) => {
             console.log('heard a event')
-            setArrivalMessage({
-                _id: '',
-                chatId: data?.chatId,
-                sender: data?.sender,
-                imgs: data?.imgs,
-                text: data?.text,
-                createdAt: new Date()  ,
-                updatedAt: '',
-            });
-
-            // if chatId not exists in our chatId we set chatList to our localStorage chatList
+            
+            // if data.chatId not exists in our chatList localStorage we set new chatList to our localStorage chatList
             const chat = chatList?.find((chat)=>chat?._id===data?.chatId)        
             if(chat===undefined){
                 const findChatList = async() => {
-                    const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}`)
+                    const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=3`)
                     dispatch(setChatList(res?.data?.chatList))
+                    dispatch(setChatListHasNext(res.data.hasNext))
+                    setArrivalMessage({
+                        _id: '',
+                        chatId: data?.chatId,
+                        sender: data?.sender,
+                        imgs: data?.imgs,
+                        text: data?.text,
+                        createdAt: new Date()  ,
+                        updatedAt: '',
+                    });
                 }
                 findChatList()
+            // if chat already exist in chatList local ,no need to get new chatList
+            } else{
+                setArrivalMessage({
+                    _id: '',
+                    chatId: data?.chatId,
+                    sender: data?.sender,
+                    imgs: data?.imgs,
+                    text: data?.text,
+                    createdAt: new Date()  ,
+                    updatedAt: '',
+                });
             }
         })
     }, []);
@@ -79,8 +91,11 @@ const ChatBox = () => {
     console.log('socket',socket)
 
     const playNotificationSound = () => {
+
         const audio = new Audio('/notify-sound.mp3');
-        audio.play()
+        if(sound){
+            audio.play()
+        }
       };
 
     const handleClose = () =>{
@@ -99,15 +114,20 @@ const ChatBox = () => {
             playNotificationSound()
         } 
 
-        // update state of Chat in local
-        dispatch(updateChatList({chatId: arrivalMessage?.chatId as string, 
-            newData:{
-                lastMessage : arrivalMessage?.text,
-                isReceiverSeen : false,
-                senderId : arrivalMessage?.sender,
-                updatedAt: new Date()
+        // update state of Chat if it already exists in local
+        if(arrivalMessage){
+            const chat = chatList.find((chat)=>chat._id===arrivalMessage.chatId)
+            if(chat){   
+                dispatch(updateChatList({chatId: arrivalMessage?.chatId as string, 
+                    newData:{
+                        lastMessage : arrivalMessage?.text,
+                        isReceiverSeen : false,
+                        senderId : arrivalMessage?.sender,
+                        updatedAt: new Date()
+                    }
+                }))
             }
-        }))
+        }
 
     }, [arrivalMessage])
 
@@ -119,8 +139,8 @@ const ChatBox = () => {
     // add new messages to localStorage messages
     useEffect(()=>{
         const getMessage = async () =>{
-            const res = await userRequest.get(`/message?chatId=${chatId}&page=${page}&limit=${limit}`)
-            if(res.data && newMessages.length>0){          
+            const res = await userRequest.get(`/message?chatId=${chatId}&page=${page}&limit=${messagelimit}`)
+            if(res.data && newMessages.length){          
                 res.data.messages.reverse().map((message: MessageType)=>{
                     setNewMessages(prev=>[message,...prev])
                 })
@@ -141,26 +161,43 @@ const ChatBox = () => {
                 imgs:[]
             })
 
-            // update to chatList in mongodb
-            const res1 = await userRequest.put(`/chat/${chatId}`,{
+             // update to chatList in mongodb
+             const res_updateChat = await userRequest.put(`/chat/${chatId}`,{
                 isReceiverSeen: false ,
                 lastMessage: text,
                 senderId: currentUser?._id
-            })
+            }) 
 
-            if(res.data && res1.data){
+            if(res.data && res_updateChat.data ){
                 setText('')
-                // update to current chatId at local state
-                dispatch(updateChatList({chatId: chatId as string, 
-                    newData:{
-                        lastMessage : text,
-                        isReceiverSeen : true,
-                        senderId : currentUser?._id,
-                        updatedAt: new Date()
-                    }
-                }))
 
-                // push message to current messages localStorage
+                const existedChat = chatList.find((chat)=>chat._id===chatId)
+
+                if(existedChat){
+                    // update to current chat at local state
+                    dispatch(updateChatList({chatId: chatId as string, 
+                        newData:{
+                            lastMessage : text,
+                            isReceiverSeen : true,
+                            senderId : currentUser?._id,
+                            updatedAt: new Date()
+                        }
+                    }))
+                // update new Chat to chatList at local
+                } else {
+                    dispatch(addChatToChatList({
+                        _id: chatId,
+                        members: [currentUser?._id,senderData?._id] ,
+                        lastMessage: text,
+                        senderId: currentUser?._id,
+                        isReceiverSeen: true,
+                        updatedAt: new Date,
+                        createdAt: new Date()
+
+                    } as ChatType))
+                }
+
+                // push message to current messages at localStorage
                 const sentMessage=({
                     _id: res.data.data._id,
                     chatId: res.data.data.chatId,
@@ -178,7 +215,7 @@ const ChatBox = () => {
                 }
                 setSendLoading(false)
 
-                // send to socket
+                //  send to socket
                 socket?.current?.emit("sendMessage", {
                     chatId: chatId,
                     sender: currentUser?._id,
@@ -186,11 +223,6 @@ const ChatBox = () => {
                     imgs: [],
                     text: text,                  
                 })
-
-
-                
-              
-
             }
         } catch(err){
             console.log('send message failed',err)
@@ -253,7 +285,17 @@ const ChatBox = () => {
                     }  
                     <ChevronDown className='opacity-50 ml-4' />
                 </div>              
-                <div className=''>
+                <div className='flex items-center'>
+                    {sound ?
+                        <div title='Tắt âm thanh'>
+                            <Volume2 onClick={()=>dispatch(setChatSound(!sound))} className='text-gray-600 p-1 rounded-full hover:bg-blue-100 w-8 h-8 hover:cursor-pointer' />
+                        </div>
+                        :
+                        <div title='Mở âm thanh'>
+                            <VolumeX onClick={()=>dispatch(setChatSound(!sound))} className='text-gray-600 p-1 rounded-full hover:bg-blue-100 w-8 h-8 hover:cursor-pointer' />
+                        </div>
+
+                    }
                     <X onClick={handleClose} className='text-blue-500 hover:bg-blue-100 rounded-full p-1 w-8 h-8 hover:cursor-pointer ' />
                 </div>
             </div>   

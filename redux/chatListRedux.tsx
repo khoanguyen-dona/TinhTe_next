@@ -3,12 +3,14 @@ import { ChatType } from "@/dataTypes";
 
 type InitialState = {
     currentChatList: ChatType[],
-    notifyCount : number
+    notifyCount : number,
+    hasNext: boolean,
 }
 
 const initialState: InitialState = {
     currentChatList: [],
     notifyCount: 0,
+    hasNext: false
 
 }
 
@@ -34,10 +36,17 @@ const chatListSlice = createSlice({
     addChatToChatList: (state, action: PayloadAction<ChatType> )=>{
       // state.currentChatList.push(action.payload)
       state.currentChatList = [action.payload,...state.currentChatList]
+    },
+    addChatToChatListAtTail: (state, action: PayloadAction<ChatType> )=>{
+      // state.currentChatList.push(action.payload)
+      state.currentChatList = [...state.currentChatList,action.payload]
+    },
+    setChatListHasNext: (state, action: PayloadAction<boolean>)=>{
+      state.hasNext = action.payload
     }
 
   },
 });
 
-export const { setChatList, updateChatList, setNotifyCount, addChatToChatList } = chatListSlice.actions;
+export const { setChatList, updateChatList, setNotifyCount, addChatToChatList, setChatListHasNext, addChatToChatListAtTail } = chatListSlice.actions;
 export default chatListSlice.reducer;

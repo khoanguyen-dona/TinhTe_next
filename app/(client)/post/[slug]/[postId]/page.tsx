@@ -72,17 +72,7 @@ const page = () => {
     const [sadCount, setSadCount] = useState<number>()
     const [wowCount, setWowCount] = useState<number>()
 
-    //fet chatList when refesh
-        useEffect(()=>{
-          const getData = async() => {   
-              console.log('dispatch chatlist!')
-              const res = await userRequest(`/chat/chat-list/${user?._id}`)
-              dispatch(setChatList(res.data.chatList))              
-          }      
-          getData()
-        },[])
     
-
 
     //fetch user emotion
     useEffect(()=>{

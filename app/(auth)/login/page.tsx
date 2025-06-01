@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation'
 import { Loader } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux'
 import { setUser } from '@/redux/userRedux'
-import { setChatList } from '@/redux/chatListRedux'
+import { setChatList, setChatListHasNext } from '@/redux/chatListRedux'
 import { RootState } from '@/redux/store'
 
 const formSchema = z.object({
@@ -35,6 +35,7 @@ const page = () => {
     const [loading, setLoading] = useState(false)
     const [seePassword, setSeePassword] = useState<true|false>(false)
     const user = useSelector((state: RootState)=>state.user.currentUser)
+    const chatListLimit = 10
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -54,9 +55,10 @@ const page = () => {
                 dispatch(setUser(res.data.data))
                 const getChatList = async() =>{ 
                     try{
-                        const res2 = await userRequest.get(`/chat/chat-list/${res.data.data._id}`)
+                        const res2 = await userRequest.get(`/chat/chat-list/${res.data.data._id}?page=1&limit=${chatListLimit}`)
                         if(res2.data){
                           dispatch(setChatList(res2.data.chatList))
+                          dispatch(setChatListHasNext(res2.data.hasNext))
                         }
                     } catch(err){
                       console.log('get chat list failed',err)

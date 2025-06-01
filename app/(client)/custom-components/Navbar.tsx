@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation'
 import { ChatType, User } from '@/dataTypes'
 import ChatItem from './ChatItem'
 import { userRequest } from '@/requestMethod'
-import { setChatList } from '@/redux/chatListRedux'
+import { addChatToChatList, addChatToChatListAtTail, setChatList, setChatListHasNext } from '@/redux/chatListRedux'
 import { setMessages } from '@/redux/chatRedux'
 import { setSenderData } from '@/redux/chatRedux'
 import { setChatId } from '@/redux/chatRedux'
@@ -29,9 +29,11 @@ const Navbar = () => {
   const notiCount:number|null = useSelector((state:RootState)=>state.chatList.notifyCount)
   const user:User|null = useSelector((state: RootState)=>state.user.currentUser)
   const chatList: ChatType[] = useSelector((state: RootState)=>state.chatList.currentChatList)
+  const chatListHasNext = useSelector((state: RootState)=>state.chatList.hasNext)
   const [keyWord,setKeyWord] = useState<string>()
   const [loading, setLoading] = useState<boolean>(false)
-
+  const [page, setPage] = useState<number>(2)
+  const chatListlimit = 10
 
   const handleLogout = () => {
     dispatch(setUser(null))
@@ -40,7 +42,6 @@ const Navbar = () => {
     dispatch(setChatId(null))
     dispatch(setNotifyCount(0))
     dispatch(setSenderData(null))
-    dispatch(setChatId(null))
     dispatch(setChatState(false))
     dispatch(setMessages(null))
 
@@ -77,6 +78,20 @@ const Navbar = () => {
       console.log('clidke')
       router.push(`/search/${keyWord}`)
     }
+  }
+
+  const handleSeeMore = () => {
+      const getChatList = async() => {
+        const res = await userRequest.get(`/chat/chat-list/${user?._id}?page=${page}&limit=${chatListlimit}`)
+        if(res.data){
+          res.data.chatList.map((chat:ChatType)=>{
+            dispatch(addChatToChatListAtTail(chat))
+          })
+          dispatch(setChatListHasNext(res.data.hasNext))
+        }
+      }
+      getChatList()
+      setPage(page+1)
   }
   
   
@@ -128,10 +143,12 @@ const Navbar = () => {
                       <ChatItem chat={chat} key={index} userId={user?._id as string} />  
                       ))
                     }    
-                    <div className='p-2 text-center bg-blue-50 text-blue-500 hover:cursor-pointer hover:bg-blue-100 flex gap-2'>
+                    {chatListHasNext &&
+                      <div onClick={handleSeeMore} className='p-2 justify-center  bg-blue-50 text-blue-500 hover:cursor-pointer hover:bg-blue-100 flex gap-2'>
                       {loading && <Loader className='animate-spin' />}
                       Xem thêm
                     </div>
+                    }
                     </>                                        
                   </div>
                   {/* <div className='h-10 flex rounded-b-lg justify-center items-center hover:cursor-pointer bg-gray-100
