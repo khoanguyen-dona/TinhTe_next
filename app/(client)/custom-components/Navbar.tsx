@@ -117,7 +117,10 @@ const Navbar = () => {
               <div className='bg-gray-300 p-2  rounded-full hover:bg-blue-300 hover:cursor-pointer transition relative' title='Tin nhắn'>
                 <img src="/email.png"  className='w-8 h-8 text-gray-400 opacity-60' alt="" />
                 {notiCount>0 &&
+                <>
                   <div className='absolute bg-red-500 rounded-full top-0 w-6 h-6 -right-2 p-[1px] text-center text-white'>{notiCount}</div>
+                  <div className='bg-red-500 absolute top-0 animate-ping rounded-full -right-2 z-40 w-6 h-6  opacity-75'></div>
+                  </>
                 }
               </div>
           

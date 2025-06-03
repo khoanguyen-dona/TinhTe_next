@@ -154,7 +154,7 @@ export default function Home() {
             <div className="flex flex-col md:flex-wrap h-auto  w-full md:w-8/12  ">
               <div className=" h-auto md:h-110 flex flex-col space-y-2" >
                 <a  href={`/post/${posts?.[0].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') as string}/${posts?.[0]._id}`}>
-                  <Image width={600} height={600} src={posts?.[0].thumbnail as string}  className="w-full h-90 object-cover rounded-lg" alt="" />
+                  <Image width={600} height={600} src={posts?.[0]?.thumbnail as string}  className="w-full h-90 object-cover rounded-lg" alt="" />
                   <h1 className="text-xl font-bold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition ">{posts?.[0].title.split(/\s+/).slice(0, 20).join(' ')}</h1>
                   <h1 className="text-xl font-bold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[0].title.split(/\s+/).slice(0, 34).join(' ')}</h1>
                 </a>

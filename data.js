@@ -228,3 +228,43 @@ export const penIcon = <svg xmlns="http://www.w3.org/2000/svg" width="24" height
 //     },
 // ]
 
+export const emoji = [
+    {
+        type:'heart',
+        value:'❤️'
+    },
+    {
+        type:'smile',
+        value:'😆'
+    },
+    {
+        type:'cry',
+        value:'😭'
+    },
+    {
+        type:'sad',
+        value:'☹️'
+    },
+    {
+        type:'surprise',
+        value:'😮'
+    },
+    {
+        type:'angry',
+        value:'😡'
+    },
+    
+    {
+        type:'finger-cross',
+        value:'🤞'
+    },
+    {
+        type:'middle-finger',
+        value:'🖕'
+    },
+    {
+        type:'like',
+        value:'👍'    
+    }
+]
+
