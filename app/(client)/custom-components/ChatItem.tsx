@@ -70,7 +70,7 @@ const ChatItem = ({chat, userId}: Props) => {
         }else{      
             dispatch(setChatState(true))
             dispatch(setChatId(chat._id))
-            dispatch(setUserStatus(false))
+            dispatch(setUserStatus('offline'))
             dispatch(setChatPage(1))
             dispatch(setChatLoading(true))
             dispatch(setSenderData(senderInfo as User))

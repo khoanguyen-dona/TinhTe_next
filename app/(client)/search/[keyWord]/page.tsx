@@ -14,6 +14,7 @@ import { RootState } from "@/redux/store";
 import { setSearchType } from "@/redux/searchRedux";
 import { setChatId, setChatPage, setChatState, setMessages, setSenderData, setUserStatus } from "@/redux/chatRedux";
 import { addChatToChatList, setChatList, setChatListHasNext } from "@/redux/chatListRedux";
+import Link from "next/link";
 
 export default function Search() {
     const dispatch = useDispatch()
@@ -143,7 +144,7 @@ export default function Search() {
                 const chat = chatList.find((chat:ChatType)=>chat._id===res.data.chat._id)
                 if(chat){
                     const res_messages = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
-                    dispatch(setUserStatus(false))
+                    dispatch(setUserStatus('offline'))
                     dispatch(setChatId(chat._id))
                     dispatch(setChatPage(1))                
                     dispatch(setMessages(res_messages.data.messages))                
@@ -154,7 +155,7 @@ export default function Search() {
                 //if not exists in local storage we push chat to our local storage chatList then set chatBox state
                 } else {
                     const res_messages = await userRequest.get(`/message?chatId=${res.data.chat._id}&page=1&limit=6`)
-                    dispatch(setUserStatus(false))
+                    dispatch(setUserStatus('offline'))
                     dispatch(setChatPage(1))
                     dispatch(setMessages(res_messages.data.messages))
                     dispatch(setChatState(true))
@@ -183,7 +184,7 @@ export default function Search() {
                     const getChatList = async() => {                
                         const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}`)
                         if(res.data){
-                            dispatch(setUserStatus(false))
+                            dispatch(setUserStatus('offline'))
                             setMailLoading(false)
                             dispatch(setChatListHasNext(res.data.hasNext))
                             dispatch(setChatList(res.data.chatList))
@@ -257,9 +258,9 @@ export default function Search() {
                     </div>
                     <div className="flex justify-between w-full">
                         <div className="flex flex-col ">
-                            <div className="font-bold text-lg hover:cursor-pointer hover:text-blue-500 flex gap-2">{user?.username}
+                            <Link href={`/profile/${user._id}`} className="font-bold text-lg hover:cursor-pointer hover:text-blue-500 flex gap-2">{user?.username}
                                 {user?.verified && <Check className="bg-blue-500 text-white p-1 rounded-full"/>}
-                            </div>
+                            </Link>
                             <div className="flex items-center justify-center gap-2">
                                 <div>Ngày tham gia:</div>
                                 <div className=" text-gray-400">{moment(user?.createdAt).format('DD-MM-YYYY')}</div>
@@ -294,13 +295,13 @@ export default function Search() {
                     </div>
                     <div className="flex justify-between items-center w-full">
                         <div className="flex flex-col ">
-                            <a href={`/post/${post?.title?.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') as string}/${post?._id}`} 
-                                className="font-bold text-lg hover:cursor-pointer hover:text-blue-500">{post?.title?.slice(0,70)}...</a>
+                            <Link href={`/post/${post?.title?.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') as string}/${post?._id}`} 
+                                className="font-bold text-lg hover:cursor-pointer hover:text-blue-500">{post?.title?.slice(0,70)}...</Link>
                             <div>{post?.shortDescription?.slice(0,190)}...</div>
                             <div className=" flex justify-between items-center  ">
                                 <div className="flex items-center gap-2">
                                     <Image width={10} height={10} className="w-8 h-8 rounded-full object-cover" alt='avatar' src={post?.authorId?.img||'/user.png'}/>
-                                    <a href={`/profile/${post?.authorId._id}`} className=" hover:cursor-pointer hover:text-blue-500">{post?.authorId?.username}</a>
+                                    <Link href={`/profile/${post?.authorId._id}`} className=" hover:cursor-pointer hover:text-blue-500">{post?.authorId?.username}</Link>
                                 </div>
                                 <div>
                                     <div className=" text-gray-400">{moment(post?.createdAt).format('DD-MM-YYYY, hh:mm a')}</div>

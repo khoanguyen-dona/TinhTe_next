@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
 import { publicRequest } from '@/requestMethod'
 import Image from 'next/image'
+import Link from 'next/link'
 
 
 type Props = {
@@ -57,9 +58,9 @@ const PostItem = ({post}:Props) => {
                 <img src="/user.png" className='w-10 h-10 object-cover rounded-full' alt="" />
                 }
                 <div className='flex flex-col'>
-                    <a className='font-bold hover:text-blue-500' href={`/post/${post?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id} `}>
+                    <Link className='font-bold hover:text-blue-500' href={`/post/${post?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id} `}>
                         {post.title}
-                    </a>
+                    </Link>
                     <div className='flex gap-2'>
                         <p className='text-blue-500'>
                             {post.authorId.username} 

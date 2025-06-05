@@ -61,7 +61,7 @@ export const UsersTable = ({ data, handleDeleteUser, handleRoleChange }: UsersTa
         cell: ({row}) => {
             return (
                 <div className="w-10 h-10">
-                <Image src={row?.original.img} className="object-cover w-full h-full rounded-full" width={50} height={50} alt="" />
+                <Image src={row?.original.img||'/user.png'} className="object-cover w-full h-full rounded-full" width={50} height={50} alt="" />
                 </div>
             )
         }

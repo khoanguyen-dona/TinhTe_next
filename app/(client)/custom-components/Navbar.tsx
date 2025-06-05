@@ -23,6 +23,7 @@ import { setChatState } from '@/redux/chatRedux'
 import { setChatPage } from '@/redux/chatRedux'
 import { setNotifyCount } from '@/redux/chatListRedux'
 import { Loader, Search } from 'lucide-react'
+import Link from 'next/link'
 const Navbar = () => {
   const router = useRouter()
   const dispatch = useDispatch()
@@ -106,9 +107,9 @@ const Navbar = () => {
         </div>
 
         <div className='flex flex-row items-center space-x-2' >
-          <a href='/write-post' className='hidden md:block bg-blue-500 p-2 px-4 text-white rounded-full hover:cursor-pointer hover:bg-blue-700 transition'  >
+          <Link href='/write-post' className='hidden md:block bg-blue-500 p-2 px-4 text-white rounded-full hover:cursor-pointer hover:bg-blue-700 transition'  >
             Viết bài 
-          </a>
+          </Link>
 
          {/* mail button */}
           <Popover>
@@ -248,14 +249,14 @@ const Navbar = () => {
             </PopoverTrigger>
             <PopoverContent>
               <div className='flex flex-col w-48 h-auto mr-2 bg-white fixed top-0 -right-2 shadow-2xl border-2 border-gray-200 rounded-lg ' >
-                <a href='/account' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
+                <Link href='/account' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
                     <img src="/user.png" className='w-8 h-8' alt="" /> 
                     Thông tin cá nhân      
-                </a>
-                <a href='/account/my-post' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
+                </Link>
+                <Link href='/account/my-post' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
                     <img src="/my-post.png" className='w-8 h-8' alt="" /> 
                     Bài đăng của tôi      
-                </a>
+                </Link>
                 <div onClick={handleLogout}  className='flex  items-center gap-2  hover:cursor-pointer hover:bg-blue-300 p-2 rounded-lg transition'>
                   <img src="/power.png" className='w-8 h-8' alt="" />
                   Đăng xuất
@@ -265,9 +266,9 @@ const Navbar = () => {
           </Popover>
           : 
           <div className='bg-gray-300 rounded-full p-1 hover:bg-blue-300 transition' title='Đăng nhập' >
-            <a href="/login">
+            <Link href="/login">
               <img src="/user.png" className='w-10 h-10'  alt="" />
-            </a>
+            </Link>
           </div>
           } 
         </div>

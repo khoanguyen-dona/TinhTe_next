@@ -1,5 +1,5 @@
 import React from 'react'
-
+import Link from 'next/link'
 const Menu = () => {
   return (
     <div className='flex gap-5 font-semibold text-lg text-gray-600  ' >
@@ -15,6 +15,9 @@ const Menu = () => {
         <div className='hover:cursor-pointer'>
             Điện thoại
         </div>
+        <Link href='/forums'>
+            Forums
+        </Link>
     </div>
   )
 }

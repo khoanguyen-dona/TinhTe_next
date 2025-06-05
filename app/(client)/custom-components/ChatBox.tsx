@@ -12,13 +12,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { SmilePlus } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
-import { setChatId, setChatSound, setChatState, setUserStatus } from '@/redux/chatRedux'
+import { setChatId, setChatSound, setChatState, setUserLastAccess, setUserStatus } from '@/redux/chatRedux'
 import { setChatLoading } from '@/redux/chatRedux'
 import { MessageType } from '@/dataTypes'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
 import { CircleUserRound } from 'lucide-react'
 import { ChevronDown } from 'lucide-react'
-import { userRequest } from '@/requestMethod'
+import { publicRequest, userRequest } from '@/requestMethod'
 import { setMessages } from '@/redux/chatRedux'
 import { User } from '@/dataTypes'
 import { setChatPage } from '@/redux/chatRedux'
@@ -29,6 +29,7 @@ import { addChatToChatList, setChatList, setChatListHasNext, updateChatList } fr
 import { emoji } from '@/data'
 import { UploadMultipleImage } from './UploadMultipleImage'
 import Fancybox from './Fancybox'
+import { addUserToOnlineUsers, setOnlineUsers } from '@/redux/userRedux'
 
 type user = {
     userId: string,
@@ -57,16 +58,20 @@ const ChatBox = () => {
     const [hasNext, setHasNext] = useState<boolean>(false)
     const [arrivalMessage, setArrivalMessage] = useState<MessageType>()
     const scrollRef = useRef<HTMLDivElement |null>(null)
-    const userStatus: boolean = useSelector((state:RootState)=>state.chat.userStatus)   
+    const userStatus: string = useSelector((state:RootState)=>state.chat.userStatus)   
+    const lastAccess: string|Date|'' = useSelector((state:RootState)=>state.chat.lastAccess)
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [isSenderTyping, setIsSenderTyping] = useState<boolean>(false)
     const [userTyping, setUserTyping] = useState<boolean>(false)
-    const [users, setUsers] = useState<user[]>()
+    // const [users, setUsers] = useState<string[]>()
+    const onlineUsers: string[]|[]|null = useSelector((state:RootState)=>state.user.onlineUsers)
     const [content, setContent] = useState<string>()
+
+
     // init socket
     useEffect(() => {
         socket.current = io(process.env.NEXT_PUBLIC_SOCKET_IO)
-        socket.current.emit('addUser', currentUser?._id)
+        socket.current.emit('addUser', {userId: currentUser?._id, username: currentUser?.username, lastAccess: new Date().toISOString()})
         socket.current.on("getMessage", (data:any) => {
             console.log('heard a event')
             
@@ -102,17 +107,36 @@ const ChatBox = () => {
             }
         })
         // update userStatus when chatId changed
-        socket.current.on('userStatus', (data:{status:string}) =>{
-            if(data.status==='online'){
-                dispatch(setUserStatus(true))               
+        socket.current.on('userStatus', (data:{status:'online'|'offline', lastAccess: string}) =>{
+         
+               
+                console.log('status :',data)
+                dispatch(setUserStatus(data.status))      
+                dispatch(setUserLastAccess(data.lastAccess))         
+            
+        })
+
+        //update users  when a user offline
+        socket.current.on('userLeaving', (data:{userId: string}) => {
+          
+            const newUsers = onlineUsers?.filter((user: string)=>user!==data.userId)
+            if(newUsers){
+                console.log('newUsers',newUsers)
+                dispatch(setOnlineUsers(newUsers))
             }
         })
-        socket.current.on('getUsers', (data:user[] ) =>{
-            setUsers(data)
-        } )
-        socket.current.on('getUsers', (data: user[]) =>{
-            setUsers(data)
-        } )
+        //update users when a user online
+        socket.current.on('userJoining', (data:{userId:string})=>{
+            console.log('userJoining event heard', data.userId)
+                const findUser = onlineUsers.find(user=>user===data.userId)
+                if(findUser){
+                    return
+                } else {
+                    dispatch(addUserToOnlineUsers(data.userId))
+                }
+            }
+        )
+     
 
         // socket.current.on('typingStatus', (data: {chatId: string, status: boolean} ) =>{
         //     console.log('an event come:',data.chatId ,chatId)
@@ -123,18 +147,34 @@ const ChatBox = () => {
         // } )
         
     }, []);
-    
-    //check user status when users change
+        console.log('lastAccess',lastAccess)
+
+    // fetch online status of user 
     useEffect(()=>{
-        if(users && senderData){
-            const findUser = users.find((user: user)=>user.userId===senderData._id)
-            if(findUser){
-                dispatch(setUserStatus(true))
-            } else {
-                dispatch(setUserStatus(false))
+        socket.current?.emit('checkStatus', {userChecked_id: senderData?._id, userCheck_id: currentUser?._id})
+    },[chatId])
+
+    // fetch all online users first time
+    useEffect(()=>{
+        const getData = async() => {
+            const res =await publicRequest.get('/redis/all-users')
+            if(res.data){
+                dispatch(setOnlineUsers(res.data.userIds))
             }
         }
-    },[users])
+        getData()
+    },[])
+   
+    // check status of user when onlineUsers change
+    useEffect(()=>{
+        const findUser = onlineUsers?.find((user: string)=>user===senderData?._id)
+        if(findUser){
+            dispatch(setUserStatus('online'))
+        } else{
+            dispatch(setUserStatus('offline'))
+
+        }
+    },[onlineUsers])
 
     const playNotificationSound = () => {
         const audio = new Audio('/notify-sound.mp3');
@@ -308,7 +348,7 @@ const ChatBox = () => {
                     sender: currentUser?._id,
                     receiverId: senderData?._id,
                     imgs: imgGallery,
-                    text: content,                  
+                    text: text,                  
                 })
             }
         } catch(err){
@@ -343,10 +383,7 @@ const ChatBox = () => {
         setText(prev=>prev+emoji)   
     }
 
-    // fetch online status of user 
-    useEffect(()=>{
-        socket.current?.emit('checkStatus', {userChecked_id: senderData?._id, userCheck_id: currentUser?._id})
-    },[chatId])
+  
 
     const handleTyping = (e: string) => {
         setText(e)
@@ -406,21 +443,28 @@ const ChatBox = () => {
         <div className='flex flex-col w-full  relative'>
             {/* tab info */}
             <div className='h-12  rounded-t-lg flex justify-between items-center px-2  '>
-                <div  className='flex items-center  hover:bg-blue-100 p-1 rounded-lg hover:cursor-pointer '>
+                <div  className='flex items-center justify-start hover:bg-blue-100 px-1 rounded-lg hover:cursor-pointer '>
                     <div className='relative '>
                         <Image src={senderData?.img as string||'/user.png'} width={40} height={40} className='w-8 h-8 object-cover rounded-full' alt='' />                      
-                        <div className={`absolute  -bottom-1 -right-1 rounded-full w-3 h-3 opacity-70 ${userStatus?'bg-green-500 animate-ping':''} `} />
-                        <div className={`absolute -bottom-1 -right-1 rounded-full w-3 h-3   ${userStatus?'bg-green-500':'bg-red-500'} `} />               
+                        <div className={`absolute  -bottom-1 -right-1 rounded-full w-3 h-3 opacity-70 ${userStatus==='online'?'bg-green-500 animate-ping':''} `} />
+                        <div className={`absolute -bottom-1 -right-1 rounded-full w-3 h-3   ${userStatus==='online'?'bg-green-500':'bg-red-500'} `} />               
 
                     </div>
                     <Popover>
                         <PopoverTrigger asChild >
-                            <div className='p-2 rounded-md font-bold flex'>
-                                {senderData?.username.slice(0,16)}    
-                                {senderData?.verified &&
-                                    <Check className='rounded-full mt-[3px] ml-1 text-white bg-blue-500 w-4 h-4 p-[1px]' />
-                                }  
-                                <ChevronDown className='opacity-50 ml-4' />                       
+                            <div className='ml-2 rounded-md  flex flex-col'>
+                                <div className='flex font-bold'>
+                                    {senderData?.username.slice(0,16)}    
+                                    {senderData?.verified &&
+                                        <Check className='rounded-full mt-[3px] ml-1 text-white bg-blue-500 w-4 h-4 p-[1px]' />
+                                    }  
+                                    <ChevronDown className='opacity-50 ml-4' />                       
+                                </div>
+                                <div className='text-[12px] text-gray-400'>
+                                    {lastAccess===null ? "":
+                                        <ReactTimeAgoUtil date={new Date(lastAccess) as Date } locale='vi-VN'/>
+                                    }
+                                </div>
                             </div>
                         </PopoverTrigger>
                         <PopoverContent className='z-50 w-full '>

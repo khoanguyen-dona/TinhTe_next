@@ -30,6 +30,8 @@ import {
     DialogTrigger,
   } from "@/components/ui/dialog"
 import { setChatList } from '@/redux/chatListRedux'
+import Link from 'next/link'
+
 // import { useSocket } from '@/context/socketContext'
 
 type postEmotionType = {
@@ -294,12 +296,12 @@ const page = () => {
                         : <img src='/user.png' className='w-12 h-12 rounded-full ' alt="" />
                     }
                     <div className='flex flex-col'>
-                        <div className='text-blue-500 font-bold'>{post?.authorId.username}</div>
+                        <Link href={`/profile/${post?.authorId?._id}`} className='text-blue-500 font-bold'>{post?.authorId.username}</Link>
                         <div className='font-mono'>{moment(post?.createdAt).format('DD/MM/YYYY HH:mm:ss')}</div>
                     </div>
                 </div>
                 <div className=''>
-                    <Image width={800} height={800} src={post?.thumbnail as string} className='w-full object-cover h-60 sm:h-100 md:h-130 mt-4 rounded-xl ' alt="" />
+                    <Image width={800} height={800} src={post?.thumbnail as string}  className='w-full object-cover h-60 sm:h-100 md:h-130 mt-4 rounded-xl ' alt="" />
                 </div>
                 <JoditViewer data={post?.content}  />
 
@@ -476,12 +478,12 @@ const page = () => {
                 {
                 newestPosts?.map((post:Post)=>(
                     <div className='flex gap-2 '>
-                        <a href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`} className='w-2/5  hover:cursor-pointer'>
+                        <Link href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`} className='w-2/5  hover:cursor-pointer'>
                             <Image width={150} height={100} src={post?.thumbnail} className='object-cover w-full h-24 sm:h-36 md:h-48 lg:h-24  rounded-lg' alt='' />
-                        </a>
+                        </Link>
                         <div className='w-3/5 flex flex-col space-y-2 '> 
-                            <a href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`} className='font-bold hover:text-blue-500 hover:cursor-pointer hidden md:block'>{post.title}</a>
-                            <a href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`} className='font-bold hover:text-blue-500 hover:cursor-pointer block md:hidden'>{post.title.slice(0,65)}...</a>
+                            <Link href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`} className='font-bold hover:text-blue-500 hover:cursor-pointer hidden md:block'>{post.title}</Link>
+                            <Link href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`} className='font-bold hover:text-blue-500 hover:cursor-pointer block md:hidden'>{post.title.slice(0,65)}...</Link>
                             <p className='hidden md:block lg:hidden '>{post?.shortDescription.slice(0,220)}...</p>
                             <div className=' lg:hidden flex  gap-2 justify-start items-center hover:text-blue-500 hover:cursor-pointer'>
                                 <Image width={20} height={20} src={post?.authorId?.img||'/user.png'} className='object-cover rounded-full w-6 h-6 md:w-8 md:h-8' alt='' />

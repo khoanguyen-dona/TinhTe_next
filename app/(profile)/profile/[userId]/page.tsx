@@ -16,6 +16,7 @@ import { setChatId, setChatLoading, setChatPage, setChatState, setMessages, setS
 import { setChatList, setChatListHasNext, updateChatList } from '@/redux/chatListRedux'
 import { addChatToChatList } from '@/redux/chatListRedux'
 import { Socket,io } from 'socket.io-client'
+import Link from 'next/link'
 
 const page = () => {
     const dispatch = useDispatch()
@@ -125,8 +126,8 @@ const page = () => {
                 dispatch(setChatPage(1))
                 dispatch(setMessages(messages))
                 dispatch(setChatState(true))
-                dispatch(setChatId(chat?._id))
                 dispatch(setSenderData(user as User))
+                dispatch(setChatId(chat?._id))
 
             //if not exists in local storage we push chat to our local storage chatList then set chatBox state
             } else {
@@ -135,8 +136,8 @@ const page = () => {
                 dispatch(setChatPage(1))
                 dispatch(setMessages(messages))
                 dispatch(setChatState(true))
-                dispatch(setChatId(res.data.chat._id))
                 dispatch(setSenderData(user as User))
+                dispatch(setChatId(res.data.chat._id))
             }
             
         }
@@ -156,7 +157,7 @@ const page = () => {
                 const getChatList = async() => {                
                     const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=3`)
                     if(res.data){
-                        dispatch(setUserStatus(false))
+                        dispatch(setUserStatus("offline"))
                         setMailLoading(false)
                         dispatch(setChatListHasNext(res.data.hasNext))
                         dispatch(setChatList(res.data.chatList))
@@ -259,14 +260,14 @@ const page = () => {
                             <div className='w-[200px]'>
                                 <Image src={post?.thumbnail} className='w-40 h-30 rounded-lg object-cover' alt='post thumbnail' width={100} height={70} />
                             </div>
-                            <a  className='w-full flex flex-col ' 
+                            <Link  className='w-full flex flex-col ' 
                                 href={`/post/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`}  >
                                 <div className='font-bold text-xl hover:text-blue-500'>{post?.title}</div>
                                 <div>{post?.shortDescription}...</div>
                                 <div className='text-gray-400 text-sm'>
                                     <ReactTimeAgoUtil date={post?.createdAt} locale='vi-VN' />
                                 </div>
-                            </a>
+                            </Link>
                         </div>
                         ))
                     }

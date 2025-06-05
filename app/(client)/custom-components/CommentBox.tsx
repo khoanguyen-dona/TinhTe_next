@@ -25,6 +25,7 @@ import Image from 'next/image'
 import { X } from 'lucide-react'
 import { UploadMultipleImage } from './UploadMultipleImage'
 import { v4 as uuidv4 } from 'uuid';
+import Link from 'next/link'
 
 type Props = {
     user: User,
@@ -181,9 +182,9 @@ const CommentBox = ({user, postId, type, refCommentIdTypeThread, refCommentUserI
                                     
                                     <div className='flex justify-center gap-2'>
                                     <AlertDialogCancel>Thoát</AlertDialogCancel>
-                                    <a href="/login">
+                                    <Link href="/login">
                                         <div className='p-4 font-bold text-white bg-blue-500 hover:bg-blue-600 transition rounded-lg'>Đăng nhập</div>
-                                    </a>
+                                    </Link>
                                     </div>
                             
                                 </AlertDialogContent>
