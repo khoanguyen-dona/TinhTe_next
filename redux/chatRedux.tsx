@@ -13,7 +13,7 @@ type InitialState = {
     pageNumber: number ,
     sound: boolean,
     userStatus: 'online'|'offline',
-    lastAccess: Date|string|''
+    lastAccess: string|''
 }   
 
 const initialState: InitialState = {
@@ -56,7 +56,7 @@ const chatSlice = createSlice({
     setUserStatus: (state, action: PayloadAction<'online'|'offline'>) => {
         state.userStatus = action.payload
     },
-    setUserLastAccess: (state, action: PayloadAction<Date|string|''>) => {
+    setUserLastAccess: (state, action: PayloadAction<string|''>) => {
         state.lastAccess = action.payload
     },
   },

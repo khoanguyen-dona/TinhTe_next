@@ -2,7 +2,7 @@
 import Menu from "./custom-components/Menu";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -14,7 +14,9 @@ import { Post } from "@/dataTypes";
 import Link from "next/link";
 import Image from "next/image";
 import { Loader } from "lucide-react";
-
+import { Socket, io } from "socket.io-client";
+import { useSocket } from "@/context/socketContext";
+import { v4 as uuidv4 }from 'uuid'
 export default function Home() {
   const dispatch = useDispatch()
   const router = useRouter()
@@ -29,37 +31,26 @@ export default function Home() {
   const [hasNext, setHasNext] = useState<boolean>()
   const limit:number = 10
   const chatListLimit = 10
+  const { socket, isConnected} = useSocket()
+  const uuid = Math.random().toString(36).substring(2,10)
+  const [guestId, setGuestId] = useState<string>('')
+  
   // setTimeout(()=>{
   //   window.location.reload()
   // },600000)
 
 
+  useEffect(()=>{
+    if(user!==null){
+      socket?.emit('addUser', {userId: user?._id, username: user?.username, lastAccess: new Date().toISOString(), isGuest:'false' })
+    } else {
+      socket?.emit('addUser', {userId: `guest_${uuid}`, username: `guest_${uuid}`, lastAccess: new Date().toISOString(), isGuest:'true' })           
+    }  
+  }, [] )
+
+  
+
   useEffect(() => {
-    if(googleAuth==='true'){
-      // Remove the query param from the URL after setting message
-      //@ts-ignore
-      router.replace("/", undefined, { shallow: true });
-      // display notify when user redirected by googleAuth
-      toast.success('Đăng nhập thành công')
-
-      
-     // get chatList
-     const getData = async() => {
-        if(user===null){       
-          const res = await publicRequest(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/user`,{withCredentials: true})
-          dispatch(setUser(res.data.user))
-          if(res.data){
-            const res1 = await userRequest(`/chat/chat-list/${res.data.user?._id}?page=1&limit=${chatListLimit}`)
-            dispatch(setChatListHasNext(res1.data.hasNext))
-            dispatch(setChatList(res1.data.chatList))   
-            window.location.reload()       
-          }     
-        }    
-    }
-    getData()
-
-    }
-
     if(logout==='true'){
 
       // Remove the query param from the URL after setting message
@@ -68,11 +59,19 @@ export default function Home() {
       toast.success('Đăng xuất thành công')
     }
 
-
   }, [])
+
+  //set userId
+  useEffect(()=>{
+    if(user===null){
+      setGuestId(`guest_${uuid}`)
+    }
+  },[])
+  console.log('guestId: ',guestId)
 
   //get chatList 
     useEffect(()=>{
+      
       const getData = async() => {   
           console.log('dispatch chatlist!')
           const res = await userRequest(`/chat/chat-list/${user?._id}?page=1&limit=${chatListLimit}`)
@@ -154,7 +153,9 @@ export default function Home() {
             <div className="flex flex-col md:flex-wrap h-auto  w-full md:w-8/12  ">
               <div className=" h-auto md:h-110 flex flex-col space-y-2" >
                 <Link  href={`/post/${posts?.[0].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') as string}/${posts?.[0]._id}`}>
-                  <Image width={600} height={600} src={posts?.[0]?.thumbnail as string} blurDataURL={posts?.[0]?.thumbnail}  className="w-full h-90 object-cover rounded-lg" alt="" />
+                  {posts?.[0]?.thumbnail &&
+                    <Image width={600} height={600} src={posts?.[0]?.thumbnail as string} blurDataURL={posts?.[0]?.thumbnail}  className="w-full h-90 object-cover rounded-lg" alt="" />
+                  }
                   <h1 className="text-xl font-bold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition ">{posts?.[0].title.split(/\s+/).slice(0, 20).join(' ')}</h1>
                   <h1 className="text-xl font-bold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[0].title.split(/\s+/).slice(0, 34).join(' ')}</h1>
                 </Link>
@@ -163,7 +164,9 @@ export default function Home() {
               <div  className="flex h-auto md:h-80 space-x-4 lg:space-x-2 mt-4">
                 <div className=" w-1/2  space-y-2 " >
                   <Link href={`/post/${posts?.[1].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[1]._id}`}>
-                    <Image width={300} height={300} src={posts?.[1].thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
+                    {posts?.[1]?.thumbnail &&
+                      <Image width={300} height={300} src={posts?.[1]?.thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
+                    }
                     <h1 className="font-semibold text-medium block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[1].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
                     <h1 className="font-semibold text-medium hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[1].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </Link>
@@ -171,7 +174,9 @@ export default function Home() {
                 </div>
                 <div className=" w-1/2  space-y-2" >
                   <Link  href={`/post/${posts?.[2].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[2]._id}`}>
-                    <Image width={300} height={300} src={posts?.[2].thumbnail as string} className="w-full h-1/2  md:h-3/5 object-cover rounded-lg" alt="" />
+                    {posts?.[2].thumbnail &&
+                      <Image width={300} height={300} src={posts?.[2].thumbnail as string} className="w-full h-1/2  md:h-3/5 object-cover rounded-lg" alt="" />
+                    }
                     <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
                     <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </Link>
@@ -183,20 +188,24 @@ export default function Home() {
             <div className="flex h-auto w-full  md:flex-col md:w-4/12  gap-4">
               <div className="h-auto md:h-110  space-y-2 w-1/2 md:w-full mt-4 md:mt-0">
                   <Link  href={`/post/${posts?.[3].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[3]._id}`}>
-                    <Image width={300} height={300} src={posts?.[3].thumbnail as string} className="w-full h-1/2 md:h-2/5 object-cover rounded-lg" alt="" />
+                    {posts?.[3].thumbnail &&
+                      <Image width={300} height={300} src={posts?.[3].thumbnail as string} className="w-full h-1/2 md:h-2/5 object-cover rounded-lg" alt="" />
+                    }
                     <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
                     <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </Link>
-                  <a href={`/profile/${posts?.[3].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[3].authorId?.username}</a>
+                  <Link href={`/profile/${posts?.[3].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[3].authorId?.username}</Link>
                   <p className="hidden md:block" >{posts?.[3].shortDescription.slice(0, 210)}...</p> 
               </div>
               <div className="h-auto md:h-80  space-y-2 mt-4 md:mt-0 w-1/2 md:w-full " >
                   <Link  href={`/post/${posts?.[4].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[4]._id}`}>
-                    <Image width={300} height={300} src={posts?.[4].thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
+                    {posts?.[4].thumbnail &&
+                      <Image width={300} height={300} src={posts?.[4].thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
+                    }
                     <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 16).join(' ')}</h1>
                     <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                   </Link>
-                  <a href={`/profile/${posts?.[4].authorId._id}`} className="text-sm hover:text-blue-500  ">{posts?.[4].authorId?.username}</a>
+                  <Link href={`/profile/${posts?.[4].authorId._id}`} className="text-sm hover:text-blue-500  ">{posts?.[4].authorId?.username}</Link>
               </div>
             </div>
           </div>
@@ -216,7 +225,9 @@ export default function Home() {
                       <h1 className="font-semibold  hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{post?.title.split(/\s+/).slice(0, 12).join(' ')}...</h1>
                     </div>
                     <div className="w-2/5 sm:w-1/5 lg:w-2/5  h-20  ">
-                      <Image width={300} height={300} src={post?.thumbnail as string} className="object-cover h-full w-full rounded-md" alt="" />
+                      {post?.thumbnail &&
+                        <Image width={300} height={300} src={post?.thumbnail as string} className="object-cover h-full w-full rounded-md" alt="" />
+                      }
                     </div>
                   </Link>
                 ))
@@ -233,7 +244,9 @@ export default function Home() {
             posts?.slice(5).map((p: Post, index)=>(
                 <div key={index} className="flex  mt-0   hover:cursor-pointer">
                     <Link  href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`} className="w-2/5 md:w-1/3 lg:w-1/4 p-2 " >
-                      <Image width={150} height={150} src={p?.thumbnail as string} className="object-cover h-24 sm:h-36 md:h-36 w-64 rounded-lg " alt="" />
+                      {p?.thumbnail &&
+                        <Image width={150} height={150} src={p?.thumbnail as string} className="object-cover h-24 sm:h-36 md:h-36 w-64 rounded-lg " alt="" />
+                      }
                     </Link>
                     <div className="w-3/5 md:w-2/3 lg:w-3/4 flex flex-col space-y-2 p-2" >
                       <Link href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`}>
@@ -242,7 +255,9 @@ export default function Home() {
                       <p className="hidden sm:block md:hidden lg:block ">{p?.shortDescription.slice(0, 235)}...</p>
                       <p className="hidden md:block lg:hidden">{p?.shortDescription.slice(0, 180)}...</p>
                       <div className="flex  items-center gap-2 ">
-                        <Image width={30} height={30} src={p?.authorId?.img as string } className="w-8 h-8 rounded-full " alt="" />
+                        {p?.authorId?.img &&
+                          <Image width={30} height={30} src={p?.authorId?.img as string } className="w-8 h-8 rounded-full " alt="" />
+                        }
                         <Link href={`/profile/${p?.authorId._id}`} className=" hover:text-blue-500 transition">{p?.authorId?.username }</Link>
                       </div>
                     </div>

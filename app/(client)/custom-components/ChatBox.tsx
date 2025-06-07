@@ -30,16 +30,13 @@ import { emoji } from '@/data'
 import { UploadMultipleImage } from './UploadMultipleImage'
 import Fancybox from './Fancybox'
 import { addUserToOnlineUsers, setOnlineUsers } from '@/redux/userRedux'
-
-type user = {
-    userId: string,
-    socketId: string
-}
+import { useSocket } from '@/context/socketContext'
+import { v4 as uuidv4}  from 'uuid'
 
 const ChatBox = () => {
     const dispatch = useDispatch()
     const [emojiState, setEmojiState] = useState<boolean>(false)
-    const socket = useRef<Socket|null>(null)
+    const {socket, isConnected} = useSocket()
     const currentUser: User|null = useSelector((state: RootState)=>state.user.currentUser)
     const isOpen: boolean = useSelector((state: RootState)=>state.chat.isOpen)
     const senderData: User|null = useSelector((state: RootState)=>state.chat.senderData)
@@ -50,6 +47,7 @@ const ChatBox = () => {
     const sound: boolean = useSelector((state:RootState)=>state.chat.sound)
     const chatLoading: boolean = useSelector((state:RootState)=>state.chat.chatLoading)
     const messagelimit: number = 6
+    const chatListLimit: number = 10
     const [text, setText] = useState<string>('')
     const [imageFiles, setImageFiles] = useState<File[]>([])
     const [previewImages, setPreviewImages] = useState<string[]>([])
@@ -59,27 +57,26 @@ const ChatBox = () => {
     const [arrivalMessage, setArrivalMessage] = useState<MessageType>()
     const scrollRef = useRef<HTMLDivElement |null>(null)
     const userStatus: string = useSelector((state:RootState)=>state.chat.userStatus)   
-    const lastAccess: string|Date|'' = useSelector((state:RootState)=>state.chat.lastAccess)
+    const lastAccess: string|'' = useSelector((state:RootState)=>state.chat.lastAccess)
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [isSenderTyping, setIsSenderTyping] = useState<boolean>(false)
     const [userTyping, setUserTyping] = useState<boolean>(false)
-    // const [users, setUsers] = useState<string[]>()
-    const onlineUsers: string[]|[]|null = useSelector((state:RootState)=>state.user.onlineUsers)
     const [content, setContent] = useState<string>()
-
+    const uuid = uuidv4()
+    console.log('socket chatbox:', socket)
 
     // init socket
     useEffect(() => {
-        socket.current = io(process.env.NEXT_PUBLIC_SOCKET_IO)
-        socket.current.emit('addUser', {userId: currentUser?._id, username: currentUser?.username, lastAccess: new Date().toISOString()})
-        socket.current.on("getMessage", (data:any) => {
-            console.log('heard a event')
-            
+        socket?.on("getMessage", (data:any) => {
+         
             // if data.chatId not exists in our chatList localStorage we set new chatList to our localStorage chatList
-            const chat = chatList?.find((chat)=>chat?._id===data?.chatId)        
+            const chat = chatList?.find((chat)=>chat?._id===data?.chatId)     
+            console.log('chat',chat)   
             if(chat===undefined){
                 const findChatList = async() => {
-                    const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=3`)
+                    console.log('currUser',currentUser)
+                    const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=${chatListLimit}`)
+                    console.log('res cahtbox',res)
                     dispatch(setChatList(res?.data?.chatList))
                     dispatch(setChatListHasNext(res.data.hasNext))
                     setArrivalMessage({
@@ -107,74 +104,63 @@ const ChatBox = () => {
             }
         })
         // update userStatus when chatId changed
-        socket.current.on('userStatus', (data:{status:'online'|'offline', lastAccess: string}) =>{
-         
-               
-                console.log('status :',data)
+        socket?.on('userStatus', (data:{status:'online'|'offline', lastAccess: string}) =>{
                 dispatch(setUserStatus(data.status))      
                 dispatch(setUserLastAccess(data.lastAccess))         
             
         })
 
         //update users  when a user offline
-        socket.current.on('userLeaving', (data:{userId: string}) => {
-          
-            const newUsers = onlineUsers?.filter((user: string)=>user!==data.userId)
-            if(newUsers){
-                console.log('newUsers',newUsers)
-                dispatch(setOnlineUsers(newUsers))
-            }
-        })
+        // socket.current.on('userLeaving',async (data:{userId: string}) => {
+        //     console.log('a user leaving:',data.userId)
+        //     console.log('onlineUsers when leaving:', onlineUsers)
+        //     if(onlineUsers?.length  > 0 ){
+        //         const findUser = onlineUsers?.find((userId)=>userId.toString()===data.userId.toString())
+        //         console.log('findUserUser',findUser)
+        //         if(findUser){
+        //             const newUsers = onlineUsers?.filter((userId)=>userId.toString()!==data.userId.toString())
+        //             console.log('findUser 2',findUser)
+        //             dispatch(setOnlineUsers(newUsers))
+        //         }
+        //     }
+        // })
         //update users when a user online
-        socket.current.on('userJoining', (data:{userId:string})=>{
-            console.log('userJoining event heard', data.userId)
-                const findUser = onlineUsers.find(user=>user===data.userId)
-                if(findUser){
-                    return
-                } else {
-                    dispatch(addUserToOnlineUsers(data.userId))
-                }
-            }
-        )
+        // socket.current.on('userJoining', (data:{userId:string})=>{
+        //     console.log('a user join', data.userId)
+        //     console.log('onlineUsers when joining:', onlineUsers)
+        //     if(onlineUsers.length > 0){
+
+        //         const findUser = onlineUsers?.find((userId)=>userId===data.userId)
+        //         console.log('findUser',findUser)
+        //         if(findUser){
+        //             return
+        //         } else {
+        //             dispatch(addUserToOnlineUsers(data.userId))
+        //         }
+        //     }
+        // }
+        // )
      
 
-        // socket.current.on('typingStatus', (data: {chatId: string, status: boolean} ) =>{
-        //     console.log('an event come:',data.chatId ,chatId)
-        //     if(data.chatId==chatId ){
+        // socket.current.on('typingStatus', (data: {userId: string, status: boolean} ) =>{
+        //     console.log('an event come:',data)
+        //     if(data.userId!==senderData?._id ){    
+        //         return  
+        //     } else {
         //         console.log('setting Typing')
         //         setIsSenderTyping(data.status)
         //     }
         // } )
         
     }, []);
-        console.log('lastAccess',lastAccess)
-
+   
+    console.log('chat box socket', socket)
     // fetch online status of user 
     useEffect(()=>{
-        socket.current?.emit('checkStatus', {userChecked_id: senderData?._id, userCheck_id: currentUser?._id})
+        socket?.emit('checkStatus', {userChecked_id: senderData?._id, userCheck_id: currentUser?._id})
     },[chatId])
 
-    // fetch all online users first time
-    useEffect(()=>{
-        const getData = async() => {
-            const res =await publicRequest.get('/redis/all-users')
-            if(res.data){
-                dispatch(setOnlineUsers(res.data.userIds))
-            }
-        }
-        getData()
-    },[])
-   
-    // check status of user when onlineUsers change
-    useEffect(()=>{
-        const findUser = onlineUsers?.find((user: string)=>user===senderData?._id)
-        if(findUser){
-            dispatch(setUserStatus('online'))
-        } else{
-            dispatch(setUserStatus('offline'))
-
-        }
-    },[onlineUsers])
+ 
 
     const playNotificationSound = () => {
         const audio = new Audio('/notify-sound.mp3');
@@ -343,7 +329,7 @@ const ChatBox = () => {
                 setSendLoading(false)
 
                 //  send to socket
-                socket?.current?.emit("sendMessage", {
+                socket?.emit("sendMessage", {
                     chatId: chatId,
                     sender: currentUser?._id,
                     receiverId: senderData?._id,
@@ -390,7 +376,7 @@ const ChatBox = () => {
 
         // setUserTyping(true)
         // if (userTyping === false) {
-        //     socket.current?.emit("onTyping", {chatId: chatId,userId: senderData?._id});
+        //     socket.current?.emit("onTyping", {receiverId: senderData?._id,userId: currentUser?._id});
         // }
 
         //  // Clear previous timeout
@@ -401,7 +387,7 @@ const ChatBox = () => {
         // // Set new timeout for "stop typing"
         // typingTimeoutRef.current = setTimeout(() => {
         //     setUserTyping(false)
-        //     socket.current?.emit('stopTyping', {chatId: chatId,userId: senderData?._id}); // Notify others
+        //     socket.current?.emit('stopTyping', {receiverId: senderData?._id,userId: currentUser?._id}); // Notify others
         // }, 1500); // 1.5 seconds after last keypress
      
     }
@@ -447,8 +433,7 @@ const ChatBox = () => {
                     <div className='relative '>
                         <Image src={senderData?.img as string||'/user.png'} width={40} height={40} className='w-8 h-8 object-cover rounded-full' alt='' />                      
                         <div className={`absolute  -bottom-1 -right-1 rounded-full w-3 h-3 opacity-70 ${userStatus==='online'?'bg-green-500 animate-ping':''} `} />
-                        <div className={`absolute -bottom-1 -right-1 rounded-full w-3 h-3   ${userStatus==='online'?'bg-green-500':'bg-red-500'} `} />               
-
+                        <div className={`absolute -bottom-1 -right-1 rounded-full w-3 h-3   ${userStatus==='online'?'bg-green-500':'bg-red-500'} `} />                                      
                     </div>
                     <Popover>
                         <PopoverTrigger asChild >
@@ -462,7 +447,7 @@ const ChatBox = () => {
                                 </div>
                                 <div className='text-[12px] text-gray-400'>
                                     {lastAccess===null ? "":
-                                        <ReactTimeAgoUtil date={new Date(lastAccess) as Date } locale='vi-VN'/>
+                                        <ReactTimeAgoUtil date={new Date(lastAccess)  } locale='vi-VN'/>
                                     }
                                 </div>
                             </div>
@@ -509,116 +494,118 @@ const ChatBox = () => {
             </div>
                 :
             <div className='relative'>
-            <div className=' h-80   overflow-auto space-y-4 p-2 ' >
-                    {hasNext ?
-                        <div 
-                            onClick={handleLoadMessage}
-                            className='flex justify-center items-center hover:bg-blue-100 hover:cursor-pointer text-blue-500 bg-gray-100 rounded-lg text-sm p-2 ' >
-                        Xem tin cũ hơn
-                        </div>
-                        : ''
-                    }
-              
-                    {newMessages?.length>0 && newMessages?.map((message: MessageType,index)=>(
-                        
-                        <div ref={scrollRef}  >
-                        {message?.sender === currentUser?._id ?
-                            <div className='flex  flex-col '>
-                                <div className='flex  justify-end  '>  
-                                    <div className='flex flex-col gap-2 max-w-50   '>    
-                                        {message.text!=='' &&
-                                            <span className='text-lg max-w-50 w-auto   h-auto  p-2 rounded-xl bg-blue-600 text-white '  key={index} >
-                                            {message?.text}
-                                            </span>
-                                        }      
-                                        {message?.imgs?.length>0 &&                                          
-                                            <Fancybox
-                                                options={{
-                                                Carousel: {
-                                                    infinite: false,
-                                                },
-                                                }}
-                                            >
-                                                <div className='flex flex-wrap justify-end gap-1 mt-2'>
-                                                {
-                                                message.imgs?.map((img,index)=>(
-                                                    <a key={index} data-fancybox="gallery" href={img}>
-                                                        <Image
-                                                            className='rounded-lg object-cover w-20 h-20'
-                                                            alt="image"
-                                                            src={img}
-                                                            width={80}
-                                                            height={80}
-                                                        />
-                                                    </a>
-                                                ))
-                                                }
-                                                </div>
-                                            </Fancybox>
-                                        }
-                                    </div>
-                                </div>
-                                <div className='text-sm flex justify-end text-gray-400'>
-                                    <ReactTimeAgoUtil date={message?.createdAt as Date} locale='vi-VN'/>
-                                </div>
+                <div className=' h-80   overflow-auto space-y-4 p-2 ' >
+                        {hasNext ?
+                            <div 
+                                onClick={handleLoadMessage}
+                                className='flex justify-center items-center hover:bg-blue-100 hover:cursor-pointer text-blue-500 bg-gray-100 rounded-lg text-sm p-2 ' >
+                            Xem tin cũ hơn
                             </div>
-                            :
-                            <div className='flex flex-col'> 
-                                <div className='flex items-center'>
-                                    <div className='w-10'>
-                                        <Image src={senderData?.img||'/user.png'} className='w-8 h-8 rounded-full object-cover' alt='' width={40} height={40} />
-                                    </div>
-                                    <div className='flex flex-col gap-2 max-w-50'>
-                                        {message?.text!=='' &&
-                                            <div  className='text-lg max-w-50 w-auto h-auto  p-2 rounded-xl bg-gray-100' key={index} >
+                            : ''
+                        }
+                
+                        {newMessages?.length>0 && newMessages?.map((message: MessageType,index)=>(
+                            
+                            <div ref={scrollRef}  >
+                            {message?.sender === currentUser?._id ?
+                                <div className='flex  flex-col '>
+                                    <div className='flex  justify-end  '>  
+                                        <div className='flex flex-col gap-2 max-w-50   '>    
+                                            {message.text!=='' &&
+                                                <span className='text-lg max-w-50 w-auto   h-auto  p-2 rounded-xl bg-blue-600 text-white '  key={index} >
                                                 {message?.text}
-                                            </div>
-                                        }
-                                       {message?.imgs?.length>0 &&                                          
-                                            <Fancybox
-                                                options={{
-                                                Carousel: {
-                                                    infinite: false,
-                                                },
-                                                }}
-                                            >
-                                                <div className='flex flex-wrap  gap-1 mt-2'>
-                                                {
-                                                message.imgs?.map((img,index)=>(
-                                                    <a key={index} data-fancybox="gallery" href={img}>
-                                                        <Image
-                                                            className='rounded-lg object-cover w-20 h-20'
-                                                            alt="image"
-                                                            src={img}
-                                                            width={80}
-                                                            height={80}
-                                                        />
-                                                    </a>
-                                                ))
-                                                }
-                                                </div>
-                                            </Fancybox>
-                                        }
+                                                </span>
+                                            }      
+                                            {message?.imgs?.length>0 &&                                          
+                                                <Fancybox
+                                                    options={{
+                                                    Carousel: {
+                                                        infinite: false,
+                                                    },
+                                                    }}
+                                                >
+                                                    <div className='flex flex-wrap justify-end gap-1 mt-2'>
+                                                    {
+                                                    message.imgs?.map((img,index)=>(
+                                                        <a key={index} data-fancybox="gallery" href={img}>
+                                                            <Image
+                                                                className='rounded-lg object-cover w-20 h-20'
+                                                                alt="image"
+                                                                src={img}
+                                                                width={80}
+                                                                height={80}
+                                                            />
+                                                        </a>
+                                                    ))
+                                                    }
+                                                    </div>
+                                                </Fancybox>
+                                            }
+                                        </div>
                                     </div>
-                                </div>                  
-                                <div className='text-sm text-gray-400 ml-10'>
-                                    <ReactTimeAgoUtil date={message?.createdAt as Date } locale='vi-VN'/>
+                                    <div className='text-sm flex justify-end text-gray-400'>
+                                        <ReactTimeAgoUtil date={message?.createdAt as Date} locale='vi-VN'/>
+                                    </div>
                                 </div>
-                            </div>
-                        }                  
-                       </div>
+                                :
+                                <div className='flex flex-col'> 
+                                    <div className='flex items-center'>
+                                        <div className='w-10'>
+                                            <Image src={senderData?.img||'/user.png'} className='w-8 h-8 rounded-full object-cover' alt='' width={40} height={40} />
+                                        </div>
+                                        <div className='flex flex-col gap-2 max-w-50'>
+                                            {message?.text!=='' &&
+                                                <div  className='text-lg max-w-50 w-auto h-auto  p-2 rounded-xl bg-gray-100' key={index} >
+                                                    {message?.text}
+                                                </div>
+                                            }
+                                        {message?.imgs?.length>0 &&                                          
+                                                <Fancybox
+                                                    options={{
+                                                    Carousel: {
+                                                        infinite: false,
+                                                    },
+                                                    }}
+                                                >
+                                                    <div className='flex flex-wrap  gap-1 mt-2'>
+                                                    {
+                                                    message.imgs?.map((img,index)=>(
+                                                        <a key={index} data-fancybox="gallery" href={img}>
+                                                            <Image
+                                                                className='rounded-lg object-cover w-20 h-20'
+                                                                alt="image"
+                                                                src={img}
+                                                                width={80}
+                                                                height={80}
+                                                            />
+                                                        </a>
+                                                    ))
+                                                    }
+                                                    </div>
+                                                </Fancybox>
+                                            }
+                                        </div>
+                                    </div>                  
+                                    <div className='text-sm text-gray-400 ml-10'>
+                                        <ReactTimeAgoUtil date={message?.createdAt as Date } locale='vi-VN'/>
+                                    </div>
+                                </div>
+                            }                  
+                        </div>
 
-                    ))}           
-            </div>
-
-            {isSenderTyping &&         
-                <div className='absolute bottom-0 left-0 flex justify-center items-center w-full bg-white opacity-70 h-7 shadow-xl gap-1'>
-                    <div className='text-gray-500'>{senderData?.username} đang soạn tin</div>
-                    <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s] mt-2'></div>
-                    <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s] mt-2'></div>
-                    <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce mt-2'></div>
+                        ))}           
                 </div>
-            }
+
+                {/* {isSenderTyping &&         
+                    <div className='absolute bottom-0 left-0 flex justify-center items-center w-full bg-white opacity-70 h-7 shadow-xl gap-1'>
+                        <div className='text-gray-500'>{senderData?.username} đang soạn tin</div>
+                        <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s] mt-2'></div>
+                        <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s] mt-2'></div>
+                        <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce mt-2'></div>
+                    </div>
+                } */}
+
+            
             </div>
             }
             {/* writing  */}

@@ -10,6 +10,7 @@ type Props = {
     }
 }
 import  ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
+import Link from 'next/link'
 
 const CategoryItem = ({category}:Props) => {
 
@@ -56,7 +57,7 @@ const CategoryItem = ({category}:Props) => {
                 </div>
                 <div className='flex justify-center items-center  w-full'>       
                     <div className='flex flex-col w-2/6 md:w-1/2'>
-                        <a href={`/${category.value}`} className='font-bold hover:text-blue-500'>{category.title}</a>
+                        <Link href={`/${category.value}`} className='font-bold hover:text-blue-500'>{category.title}</Link>
                         <div className='flex '>
                             <div className='flex gap-1'>
                                 <p className='text-gray-400'>Chủ đề:</p>
@@ -71,9 +72,9 @@ const CategoryItem = ({category}:Props) => {
                     <div className='w-4/6 md:w-1/2  bg-blue-50 md:flex flex-col rounded-lg px-4 py-1'>
                         <div className='flex gap-2'>
                             <p>Mới nhất:</p>
-                            <a  href={`/post/${latestPost?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') as string}/${latestPost?._id}`}>
+                            <Link  href={`/post/${latestPost?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') as string}/${latestPost?._id}`}>
                                 <p className='text-blue-500'  >{latestPost?.title.slice(0,50)}...</p>
-                            </a>                       
+                            </Link>                       
                         </div>
                         <div className='flex gap-2'>
                             <p title='tác giả' className='text-blue-500'>{latestPost?.authorId?.username as string}</p>

@@ -34,7 +34,7 @@ const Navbar = () => {
   const [keyWord,setKeyWord] = useState<string>()
   const [loading, setLoading] = useState<boolean>(false)
   const [page, setPage] = useState<number>(2)
-  const chatListlimit = 10
+  const chatListLimit = 10
 
   const handleLogout = () => {
     dispatch(setUser(null))
@@ -48,6 +48,20 @@ const Navbar = () => {
 
     router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
   }
+
+  // useEffect(()=>{
+  //   if(chatList.length===0){
+  //     const getData = async() => {   
+  //       console.log('dispatch chatlist!')
+  //       const res = await userRequest(`/chat/chat-list/${user?._id}?page=1&limit=${chatListLimit}`)
+  //       dispatch(setChatListHasNext(res.data.hasNext))
+  //       dispatch(setChatList(res.data.chatList))              
+  //     }      
+  //     getData()
+  //   }
+  // },[])
+
+ 
 
   //calculate notifyCOunt
   useEffect(()=>{
@@ -81,7 +95,7 @@ const Navbar = () => {
 
   const handleSeeMore = () => {
       const getChatList = async() => {
-        const res = await userRequest.get(`/chat/chat-list/${user?._id}?page=${page}&limit=${chatListlimit}`)
+        const res = await userRequest.get(`/chat/chat-list/${user?._id}?page=${page}&limit=${chatListLimit}`)
         if(res.data){
           res.data.chatList.map((chat:ChatType)=>{
             dispatch(addChatToChatListAtTail(chat))
