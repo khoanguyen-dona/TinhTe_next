@@ -5,6 +5,7 @@ import draftReducer from './draftRedux'
 import chatListReducer from './chatListRedux'
 import chatReducer from './chatRedux'
 import searchReducer from './searchRedux'
+import groupChatReducer from './groupChatRedux'
 import {
   persistStore,
   persistReducer,
@@ -23,7 +24,7 @@ const persistConfig = {
   storage,
 };
 
-const rootReducer = combineReducers({ user: userReducer, draft: draftReducer, chatList: chatListReducer, chat: chatReducer, search: searchReducer});
+const rootReducer = combineReducers({ user: userReducer, draft: draftReducer, chatList: chatListReducer, chat: chatReducer, search: searchReducer, groupChat: groupChatReducer});
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 

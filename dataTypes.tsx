@@ -71,6 +71,17 @@ export type MessageType = {
     updatedAt: Date|string
 }
 
+export type MessageGroupChatType = {
+    _id: string,
+    avatar: string,
+    username: string,
+    chatId: string,
+    sender: string,
+    text: string,
+    imgs : string[],
+    createdAt: Date|string,
+}
+
 export type ArrivalMessageType = {
     chatId : string ,
     sender: string,

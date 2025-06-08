@@ -43,6 +43,7 @@ const ChatItem = ({chat, userId}: Props) => {
                 const res = await publicRequest.get(`/user/${senderId}`)
                 if(res.data){
                     setSenderInfo(res.data.user)
+                    dispatch(setSenderData(res.data.user))
                 }
             } catch(err){
                 console.log('fetch sender data failed', err)

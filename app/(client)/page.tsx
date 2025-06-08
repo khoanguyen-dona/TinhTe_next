@@ -10,13 +10,16 @@ import { useDispatch } from "react-redux";
 import { setUser } from "@/redux/userRedux";
 import { setChatList, setChatListHasNext } from "@/redux/chatListRedux";
 import { publicRequest, userRequest } from "@/requestMethod";
-import { Post } from "@/dataTypes";
+import { MessageGroupChatType, Post } from "@/dataTypes";
 import Link from "next/link";
 import Image from "next/image";
-import { Loader } from "lucide-react";
+import { Loader, SmilePlus } from "lucide-react";
 import { Socket, io } from "socket.io-client";
 import { useSocket } from "@/context/socketContext";
 import { v4 as uuidv4 }from 'uuid'
+import { Textarea } from "@/components/ui/textarea";
+import { emoji } from "@/data";
+import GroupChat from "./custom-components/GroupChat";
 export default function Home() {
   const dispatch = useDispatch()
   const router = useRouter()
@@ -34,17 +37,42 @@ export default function Home() {
   const { socket, isConnected} = useSocket()
   const uuid = Math.random().toString(36).substring(2,10)
   const [guestId, setGuestId] = useState<string>('')
+  const [groupMessages, setGroupMessages] = useState<MessageGroupChatType[]>([])
   
   // setTimeout(()=>{
   //   window.location.reload()
   // },600000)
 
 
+
+  // fetch group-chat-messages 
+  useEffect(()=>{
+    const getData = async() => {
+      const tempArray: any = []
+      try {
+        const res_groupMessages = await publicRequest.get('/redis/group-messages')
+        if(res_groupMessages.data){
+
+          res_groupMessages.data.messages.map((message: any)=>{
+              let objectMessage =  JSON.parse(message)
+              tempArray.push(objectMessage)
+          })
+          setGroupMessages(tempArray)
+          setGroupMessages(res_groupMessages.data.messages)
+        }        
+      } catch(err){
+        console.log('fetching group chat messages failed',err)
+      }
+    }
+    getData()
+  }, [])
+
+
   useEffect(()=>{
     if(user!==null){
-      socket?.emit('addUser', {userId: user?._id, username: user?.username, lastAccess: new Date().toISOString(), isGuest:'false' })
+      socket?.emit('addUser', {userId: user?._id, username: user?.username, avatar: user?.img , lastAccess: new Date().toISOString(), isGuest:'false' })
     } else {
-      socket?.emit('addUser', {userId: `guest_${uuid}`, username: `guest_${uuid}`, lastAccess: new Date().toISOString(), isGuest:'true' })           
+      socket?.emit('addUser', {userId: `guest_${uuid}`, username: `guest_${uuid}`,avatar:'/user.png', lastAccess: new Date().toISOString(), isGuest:'true' })           
     }  
   }, [] )
 
@@ -143,74 +171,120 @@ export default function Home() {
 
 
   return (  
-    <div className="w-full px-2 md:px-8  mt-16">
+    <div className="w-full px-2 md:px-8  mt-16 ">
       <Menu />
-      <div className=" mt-10 flex gap-2">
-        <div className="flex flex-col lg:flex-row md:gap-2">
+      <div className="w-full flex flex-col lg:flex-row">
 
-          <div className="flex w-full lg:w-9/12 flex-col  md:flex-row md:gap-2 ">
-            {/* 1st col */}
-            <div className="flex flex-col md:flex-wrap h-auto  w-full md:w-8/12  ">
-              <div className=" h-auto md:h-110 flex flex-col space-y-2" >
-                <Link  href={`/post/${posts?.[0].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') as string}/${posts?.[0]._id}`}>
-                  {posts?.[0]?.thumbnail &&
-                    <Image width={600} height={600} src={posts?.[0]?.thumbnail as string} blurDataURL={posts?.[0]?.thumbnail}  className="w-full h-90 object-cover rounded-lg" alt="" />
-                  }
-                  <h1 className="text-xl font-bold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition ">{posts?.[0].title.split(/\s+/).slice(0, 20).join(' ')}</h1>
-                  <h1 className="text-xl font-bold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[0].title.split(/\s+/).slice(0, 34).join(' ')}</h1>
-                </Link>
-                <Link href={`/profile/${posts?.[0].authorId._id}`} className="text-sm hover:text-blue-500">{posts?.[0].authorId?.username }</Link>
-              </div>
-              <div  className="flex h-auto md:h-80 space-x-4 lg:space-x-2 mt-4">
-                <div className=" w-1/2  space-y-2 " >
-                  <Link href={`/post/${posts?.[1].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[1]._id}`}>
-                    {posts?.[1]?.thumbnail &&
-                      <Image width={300} height={300} src={posts?.[1]?.thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
+        <div className=" mt-10 w-full lg:w-8/12 flex flex-col  gap-2 ">
+          <div className="flex  flex-col lg:flex-row w-full  md:gap-2 ">
+
+            <div className="flex w-full  flex-col  md:flex-row md:gap-2 ">
+              {/* 1st col */}
+              <div className="flex flex-col md:flex-wrap h-auto w-full md:w-8/12  ">
+                <div className=" h-auto md:h-110 flex flex-col space-y-2" >
+                  <Link  href={`/post/${posts?.[0].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') as string}/${posts?.[0]._id}`}>
+                    {posts?.[0]?.thumbnail &&
+                      <Image width={600} height={600} src={posts?.[0]?.thumbnail as string} blurDataURL={posts?.[0]?.thumbnail}  className="w-full h-90 object-cover rounded-lg" alt="" />
                     }
-                    <h1 className="font-semibold text-medium block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[1].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
-                    <h1 className="font-semibold text-medium hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[1].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
+                    <h1 className="text-xl font-bold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition ">{posts?.[0].title.split(/\s+/).slice(0, 20).join(' ')}</h1>
+                    <h1 className="text-xl font-bold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[0].title.split(/\s+/).slice(0, 34).join(' ')}</h1>
                   </Link>
-                  <Link href={`/profile/${posts?.[1].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[1].authorId?.username}</Link>
+                  <Link href={`/profile/${posts?.[0].authorId._id}`} className="text-sm hover:text-blue-500">{posts?.[0].authorId?.username }</Link>
                 </div>
-                <div className=" w-1/2  space-y-2" >
-                  <Link  href={`/post/${posts?.[2].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[2]._id}`}>
-                    {posts?.[2].thumbnail &&
-                      <Image width={300} height={300} src={posts?.[2].thumbnail as string} className="w-full h-1/2  md:h-3/5 object-cover rounded-lg" alt="" />
-                    }
-                    <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
-                    <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
-                  </Link>
-                  <Link href={`/profile/${posts?.[2].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[2].authorId?.username}</Link>
+                <div  className="flex h-auto md:h-80 space-x-4 lg:space-x-2 mt-4">
+                  <div className=" w-1/2  space-y-2 " >
+                    <Link href={`/post/${posts?.[1].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[1]._id}`}>
+                      {posts?.[1]?.thumbnail &&
+                        <Image width={300} height={300} src={posts?.[1]?.thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
+                      }
+                      <h1 className="font-semibold text-medium block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[1].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
+                      <h1 className="font-semibold text-medium hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[1].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
+                    </Link>
+                    <Link href={`/profile/${posts?.[1].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[1].authorId?.username}</Link>
+                  </div>
+                  <div className=" w-1/2  space-y-2" >
+                    <Link  href={`/post/${posts?.[2].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[2]._id}`}>
+                      {posts?.[2].thumbnail &&
+                        <Image width={300} height={300} src={posts?.[2].thumbnail as string} className="w-full h-1/2  md:h-3/5 object-cover rounded-lg" alt="" />
+                      }
+                      <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
+                      <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
+                    </Link>
+                    <Link href={`/profile/${posts?.[2].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[2].authorId?.username}</Link>
+                  </div>
+                </div>
+              </div>
+              {/* 2nd col */}
+              <div className="flex h-auto w-full  md:flex-col md:w-4/12  gap-4">
+                <div className="h-auto md:h-110  space-y-2 w-1/2 md:w-full mt-4 md:mt-0">
+                    <Link  href={`/post/${posts?.[3].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[3]._id}`}>
+                      {posts?.[3].thumbnail &&
+                        <Image width={300} height={300} src={posts?.[3].thumbnail as string} className="w-full h-1/2 md:h-2/5 object-cover rounded-lg" alt="" />
+                      }
+                      <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
+                      <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
+                    </Link>
+                    <Link href={`/profile/${posts?.[3].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[3].authorId?.username}</Link>
+                    <p className="hidden md:block" >{posts?.[3].shortDescription.slice(0, 210)}...</p> 
+                </div>
+                <div className="h-auto md:h-80  space-y-2 mt-4 md:mt-0 w-1/2 md:w-full " >
+                    <Link  href={`/post/${posts?.[4].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[4]._id}`}>
+                      {posts?.[4].thumbnail &&
+                        <Image width={300} height={300} src={posts?.[4].thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
+                      }
+                      <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 16).join(' ')}</h1>
+                      <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
+                    </Link>
+                    <Link href={`/profile/${posts?.[4].authorId._id}`} className="text-sm hover:text-blue-500  ">{posts?.[4].authorId?.username}</Link>
                 </div>
               </div>
             </div>
-            {/* 2nd col */}
-            <div className="flex h-auto w-full  md:flex-col md:w-4/12  gap-4">
-              <div className="h-auto md:h-110  space-y-2 w-1/2 md:w-full mt-4 md:mt-0">
-                  <Link  href={`/post/${posts?.[3].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[3]._id}`}>
-                    {posts?.[3].thumbnail &&
-                      <Image width={300} height={300} src={posts?.[3].thumbnail as string} className="w-full h-1/2 md:h-2/5 object-cover rounded-lg" alt="" />
-                    }
-                    <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
-                    <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
-                  </Link>
-                  <Link href={`/profile/${posts?.[3].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[3].authorId?.username}</Link>
-                  <p className="hidden md:block" >{posts?.[3].shortDescription.slice(0, 210)}...</p> 
-              </div>
-              <div className="h-auto md:h-80  space-y-2 mt-4 md:mt-0 w-1/2 md:w-full " >
-                  <Link  href={`/post/${posts?.[4].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[4]._id}`}>
-                    {posts?.[4].thumbnail &&
-                      <Image width={300} height={300} src={posts?.[4].thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
-                    }
-                    <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 16).join(' ')}</h1>
-                    <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
-                  </Link>
-                  <Link href={`/profile/${posts?.[4].authorId._id}`} className="text-sm hover:text-blue-500  ">{posts?.[4].authorId?.username}</Link>
-              </div>
-            </div>
+
+            
+
+          </div> 
+
+          <div className="lg:hidden  w-full  mt-10">
+              <GroupChat socket={socket} username={user?.username as string} userId={user?._id||guestId} avatar={user?.img as string} messages={groupMessages} />
           </div>
+          
+          <div className="w-full   mb-10 ">
+            {
+              posts?.slice(5).map((p: Post, index)=>(
+                  <div key={index} className="flex  mt-0   hover:cursor-pointer">
+                      <Link  href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`} className="w-2/5 md:w-1/3 lg:w-1/4 p-2 " >
+                        {p?.thumbnail &&
+                          <Image width={150} height={150} src={p?.thumbnail as string} className="object-cover h-24 sm:h-36 md:h-36 w-64 rounded-lg " alt="" />
+                        }
+                      </Link>
+                      <div className="w-3/5 md:w-2/3 lg:w-3/4 flex flex-col space-y-2 p-2" >
+                        <Link href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`}>
+                          <h1 className="font-bold text-sm md:text-lg hover:text-blue-500  transition" >{p?.title}</h1>
+                        </Link>
+                        <p className="hidden sm:block md:hidden lg:block ">{p?.shortDescription.slice(0, 235)}...</p>
+                        <p className="hidden md:block lg:hidden">{p?.shortDescription.slice(0, 180)}...</p>
+                        <div className="flex  items-center gap-2 ">
+                          {p?.authorId?.img &&
+                            <Image width={30} height={30} src={p?.authorId?.img as string } className="w-8 h-8 rounded-full " alt="" />
+                          }
+                          <Link href={`/profile/${p?.authorId._id}`} className=" hover:text-blue-500 transition">{p?.authorId?.username }</Link>
+                        </div>
+                      </div>
+                  </div>
+              ))
+            }
 
-          <div className="w-full lg:w-3/12 flex flex-col ">
+            {/* Xem thêm button */}
+            {hasNext ?
+              <div onClick={()=>setPage((prev)=>prev+1)} className="flex justify-center items-center text-blue-500 mb-10 bg-blue-50 p-4 rounded-xl 
+              text-xl font-bold transition hover:bg-blue-100 hover:cursor-pointer mt-20">
+                {loading?<Loader className="animate-spin w-8 h-8 opacity-50" /> : 'Xem thêm ' }
+              </div> : ''
+            }
+          </div>
+        </div>
+        
+        <div className="w-full lg:w-4/12 flex flex-col mt-10 ">
             {/* Xem nhiều col */}
             <div className="flex flex-col">
               <div className="flex justify-between p-2">
@@ -234,46 +308,15 @@ export default function Home() {
               }
             </div>
 
-          </div>
+            <div className="mt-20 ml-1 hidden lg:block">
+              <GroupChat socket={socket} username={user?.username as string} userId={user?._id||guestId} avatar={user?.img as string} messages={groupMessages} />
+            </div>
+            
+        </div>
 
-        </div> 
       </div>
 
-      <div className="w-full lg:w-9/12 mb-10 ">
-          {
-            posts?.slice(5).map((p: Post, index)=>(
-                <div key={index} className="flex  mt-0   hover:cursor-pointer">
-                    <Link  href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`} className="w-2/5 md:w-1/3 lg:w-1/4 p-2 " >
-                      {p?.thumbnail &&
-                        <Image width={150} height={150} src={p?.thumbnail as string} className="object-cover h-24 sm:h-36 md:h-36 w-64 rounded-lg " alt="" />
-                      }
-                    </Link>
-                    <div className="w-3/5 md:w-2/3 lg:w-3/4 flex flex-col space-y-2 p-2" >
-                      <Link href={`/post/${p?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${p?._id}`}>
-                        <h1 className="font-bold text-sm md:text-lg hover:text-blue-500  transition" >{p?.title}</h1>
-                      </Link>
-                      <p className="hidden sm:block md:hidden lg:block ">{p?.shortDescription.slice(0, 235)}...</p>
-                      <p className="hidden md:block lg:hidden">{p?.shortDescription.slice(0, 180)}...</p>
-                      <div className="flex  items-center gap-2 ">
-                        {p?.authorId?.img &&
-                          <Image width={30} height={30} src={p?.authorId?.img as string } className="w-8 h-8 rounded-full " alt="" />
-                        }
-                        <Link href={`/profile/${p?.authorId._id}`} className=" hover:text-blue-500 transition">{p?.authorId?.username }</Link>
-                      </div>
-                    </div>
-                </div>
-            ))
-          }
-
-          {/* Xem thêm button */}
-          {hasNext ?
-            <div onClick={()=>setPage((prev)=>prev+1)} className="flex justify-center items-center text-blue-500 mb-10 bg-blue-50 p-4 rounded-xl 
-            text-xl font-bold transition hover:bg-blue-100 hover:cursor-pointer mt-20">
-              {loading?<Loader className="animate-spin w-8 h-8 opacity-50" /> : 'Xem thêm ' }
-            </div> : ''
-          }
-      </div>
-
+     
     </div>
 
   );

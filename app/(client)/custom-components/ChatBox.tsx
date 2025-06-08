@@ -62,8 +62,12 @@ const ChatBox = () => {
     const [isSenderTyping, setIsSenderTyping] = useState<boolean>(false)
     const [userTyping, setUserTyping] = useState<boolean>(false)
     const [content, setContent] = useState<string>()
-    const uuid = uuidv4()
-    console.log('socket chatbox:', socket)
+    const [currentSenderId, setCurrentSenderId] = useState<string>(senderData?._id as string)
+
+    //set currentChatId
+    useEffect(()=>{
+        setCurrentSenderId(senderData?._id as string )
+    }, [senderData])
 
     // init socket
     useEffect(() => {
@@ -142,13 +146,14 @@ const ChatBox = () => {
         // )
      
 
-        // socket.current.on('typingStatus', (data: {userId: string, status: boolean} ) =>{
+        // socket?.on('typingStatus', (data: {userId: string, status: boolean, chatId: string} ) =>{
         //     console.log('an event come:',data)
-        //     if(data.userId!==senderData?._id ){    
-        //         return  
-        //     } else {
+        //     // if(data.userId!==currentSenderId &&  data.chatId!==chatId ){    
+        //     if( data.chatId===chatId ){    
         //         console.log('setting Typing')
         //         setIsSenderTyping(data.status)
+        //     } else {
+        //         return  
         //     }
         // } )
         
@@ -376,7 +381,7 @@ const ChatBox = () => {
 
         // setUserTyping(true)
         // if (userTyping === false) {
-        //     socket.current?.emit("onTyping", {receiverId: senderData?._id,userId: currentUser?._id});
+        //     socket?.emit("onTyping", {receiverId: currentSenderId, senderId: currentUser?._id, chatId: chatId});
         // }
 
         //  // Clear previous timeout
@@ -387,7 +392,7 @@ const ChatBox = () => {
         // // Set new timeout for "stop typing"
         // typingTimeoutRef.current = setTimeout(() => {
         //     setUserTyping(false)
-        //     socket.current?.emit('stopTyping', {receiverId: senderData?._id,userId: currentUser?._id}); // Notify others
+        //     socket?.emit('stopTyping', {receiverId: currentSenderId, senderId: currentUser?._id,  chatId: chatId}); // Notify others
         // }, 1500); // 1.5 seconds after last keypress
      
     }
@@ -596,14 +601,14 @@ const ChatBox = () => {
                         ))}           
                 </div>
 
-                {/* {isSenderTyping &&         
+                {isSenderTyping &&         
                     <div className='absolute bottom-0 left-0 flex justify-center items-center w-full bg-white opacity-70 h-7 shadow-xl gap-1'>
                         <div className='text-gray-500'>{senderData?.username} đang soạn tin</div>
                         <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s] mt-2'></div>
                         <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s] mt-2'></div>
                         <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce mt-2'></div>
                     </div>
-                } */}
+                }
 
             
             </div>

@@ -180,7 +180,7 @@ const page = () => {
   return (
     <div className='flex flex-col   mt-16 h-auto w-full'>
         {/* user info */}
-        <div className={`flex flex-col justify-center items-center bg-red-100  py-8 px-2  bg-no-repeat bg-cover bg-center
+        <div className={`flex flex-col justify-center items-center   py-8 px-2  bg-no-repeat bg-cover bg-center
          bg-[url('https://img.freepik.com/free-photo/close-up-pretty-flowers-with-blurred-person-background_23-2147604837.jpg?size=626&ext=jpg')] `}>
             <div className='relative'>
                 <Image width={100} height={100} src={user?.img as string||'/user.png'} className='w-30 h-30 object-cover rounded-full' alt='avatar' />

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Check } from 'lucide-react';
+import ThreeDotLoading from '../custom-components/ThreeDotLoading';
 const page = () => {
    const dispatch = useDispatch()
     const user = useSelector((state:RootState)=>state.user.currentUser)
@@ -48,10 +49,9 @@ const page = () => {
                 <Check className='text-white bg-green-500 p-1 w-8 h-8  rounded-full' />
                 <h1 className='text-2xl text-green-500 font-bold text-center' >Đăng nhập thành công </h1>
             </div>       
-            <div className='flex justify-center items-center gap-2 '> 
-                        <div className='h-10 w-10 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s] mt-2'></div>
-                        <div className='h-10 w-10 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s] mt-2'></div>
-                        <div className='h-10 w-10 bg-gray-500 rounded-full animate-bounce mt-2'></div>
+            <div className='text-gray-400 text-xl font-bold flex gap-2 justify-center'>
+              Đang chuyển hướng
+              <ThreeDotLoading className={'w-4 h-4'} />
             </div>
                       
         </div>

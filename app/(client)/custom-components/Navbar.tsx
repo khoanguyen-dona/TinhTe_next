@@ -111,17 +111,17 @@ const Navbar = () => {
   return (
     <div className='fixed top-0 left-0 h-16 bg-gray-100 w-full  z-50 p-2 flex justify-between  items-center gap-10 px-5' >
         <a className='flex  items-center gap-2  ' href='/' >
-            <img src="/favicon.png" className='w-12 h-12' alt="" />
-            <p className='font-bold text-xl ' >TinhTe.vn</p>
+            <img src="/favicon.png" className='w-8  md:w-12 h-8 md:h-12' alt="" />
+            <p className='font-bold text-lg md:text-xl ' >TinhTe.vn</p>
         </a>
 
         <div className='hidden md:flex items-center bg-white rounded-full '  >
-          <input onKeyDown={handleKeyPress} onChange={(e)=>setKeyWord(e.target.value)} value={keyWord} type="text" placeholder="Tìm" className=' border-none p-2 focus:outline-none md:w-60 lg:w-96' />
+          <input onKeyDown={handleKeyPress} onChange={(e)=>setKeyWord(e.target.value)} value={keyWord} type="text" placeholder="Tìm" className=' border-none p-2 focus:outline-none  md:w-60 lg:w-96' />
           <Search onClick={handleSearch} className=' hover:cursor-pointer hover:bg-blue-500 hover:text-white  rounded-full p-2 w-10 h-10 transition' />
         </div>
 
         <div className='flex flex-row items-center space-x-2' >
-          <Link href='/write-post' className='hidden md:block bg-blue-500 p-2 px-4 text-white rounded-full hover:cursor-pointer hover:bg-blue-700 transition'  >
+          <Link href='/write-post' className='hidden md:block bg-blue-500 p-3 px-2 w-[80px] text-center text-white rounded-full hover:cursor-pointer hover:bg-blue-700 transition'  >
             Viết bài 
           </Link>
 
