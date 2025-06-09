@@ -60,7 +60,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
     // take event from groupChat
     useEffect(()=>{
         socket?.on('getGroupMessage', (data: MessageGroupChatType) =>{
-            console.log('data',data)
+            playNotificationSound()
             setNewMessages(prev=>[...prev,data])
         } )
 
@@ -100,7 +100,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
         getData()
       },[])
 
-    // parse  to json
+    // parse messages to json
     useEffect(()=>{
         let tempArray:any = []
 
@@ -112,6 +112,12 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
         setNewMessages(tempArray)
     },[messages])
 
+    const playNotificationSound = () => {
+        const audio = new Audio('/notify-sound.mp3');
+        if(sound){
+            audio.play()
+        }
+      };
 
     const handleTyping = (text: string) => {
         setText(text)
@@ -541,7 +547,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                     <button disabled={text?.trim().length===0 && imageFiles.length===0 } className='w-14 h-14' >
                         <Image onClick={handleSendMessage} 
                             src='/paper-plane.png' width={50} height={50} 
-                            className={`w-10 h-10 p-1 hover:bg-blue-100 object-cover rounded-lg  `} alt='' title='Gửi'
+                            className={`w-10 h-10 p-1  object-cover rounded-lg ${text.length===0?'opacity-50':'hover:bg-blue-100'} `} alt='' title='Gửi'
                         />  
                     </button>
                 }  

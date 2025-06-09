@@ -63,8 +63,15 @@ const ChatBox = () => {
     const [userTyping, setUserTyping] = useState<boolean>(false)
     const [content, setContent] = useState<string>()
     const chatIdRef = useRef(chatId)
+    const senderIdRef = useRef(senderData?._id)
 
-    // update chatId to chatIdRef
+    // update senderIdRef when senderData change
+    useEffect(()=>{
+        senderIdRef.current = senderData?._id
+    },[senderData])
+
+
+    // update chatIdRef when chatId change
     useEffect(()=>{
         chatIdRef.current = chatId
     },[chatId])
@@ -110,47 +117,26 @@ const ChatBox = () => {
         // update userStatus when chatId changed
         socket?.on('userStatus', (data:{status:'online'|'offline', lastAccess: string}) =>{
                 dispatch(setUserStatus(data.status))      
-                dispatch(setUserLastAccess(data.lastAccess))         
-            
+                dispatch(setUserLastAccess(data.lastAccess))                    
         })
 
-        //update users  when a user offline
-        // socket.current.on('userLeaving',async (data:{userId: string}) => {
-        //     console.log('a user leaving:',data.userId)
-        //     console.log('onlineUsers when leaving:', onlineUsers)
-        //     if(onlineUsers?.length  > 0 ){
-        //         const findUser = onlineUsers?.find((userId)=>userId.toString()===data.userId.toString())
-        //         console.log('findUserUser',findUser)
-        //         if(findUser){
-        //             const newUsers = onlineUsers?.filter((userId)=>userId.toString()!==data.userId.toString())
-        //             console.log('findUser 2',findUser)
-        //             dispatch(setOnlineUsers(newUsers))
-        //         }
-        //     }
-        // })
-        //update users when a user online
-        // socket.current.on('userJoining', (data:{userId:string})=>{
-        //     console.log('a user join', data.userId)
-        //     console.log('onlineUsers when joining:', onlineUsers)
-        //     if(onlineUsers.length > 0){
-
-        //         const findUser = onlineUsers?.find((userId)=>userId===data.userId)
-        //         console.log('findUser',findUser)
-        //         if(findUser){
-        //             return
-        //         } else {
-        //             dispatch(addUserToOnlineUsers(data.userId))
-        //         }
-        //     }
-        // }
-        // )
+        // update users  when a user offline
+        socket?.on('userLeaving',async (data:{userId: string}) => {
+            if(senderData && senderIdRef.current===data.userId){
+                dispatch(setUserStatus('offline'))                
+            }
+        })
+        // update users when a user online
+        socket?.on('userJoining', (data:{userId:string, username: string, avatar: string})=>{
+            if(senderData && senderIdRef.current===data.userId){
+                dispatch(setUserStatus('online'))               
+            }
+        }
+        )
      
-
-        socket?.on('typingStatus', (data: {userId: string, status: boolean, chatId: string} ) =>{    
+        socket?.on('typingStatus', (data: {status: boolean, chatId: string} ) =>{    
             console.log('chatId before if: ', chatIdRef)
-            if( data.chatId===chatIdRef.current ){                  
-                console.log('chatId after if: ',chatIdRef)
-                console.log('chatId from event: ', data.chatId)
+            if( data.chatId===chatIdRef.current ){                      
                 setIsSenderTyping(data.status)
             } else {
                 return  
@@ -164,8 +150,6 @@ const ChatBox = () => {
     useEffect(()=>{
         socket?.emit('checkStatus', {userChecked_id: senderData?._id, userCheck_id: currentUser?._id})
     },[chatId])
-
- 
 
     const playNotificationSound = () => {
         const audio = new Audio('/notify-sound.mp3');
@@ -381,7 +365,7 @@ const ChatBox = () => {
 
         setUserTyping(true)
         if (userTyping === false) {
-            socket?.emit("onTyping", {receiverId: senderData?._id, senderId: currentUser?._id, chatId: chatIdRef.current});
+            socket?.emit("onTyping", {receiverId: senderData?._id, chatId: chatIdRef.current});
         }
 
          // Clear previous timeout
@@ -392,7 +376,7 @@ const ChatBox = () => {
         // Set new timeout for "stop typing"
         typingTimeoutRef.current = setTimeout(() => {
             setUserTyping(false)
-            socket?.emit('stopTyping', {receiverId: senderData?._id, senderId: currentUser?._id,  chatId:  chatIdRef.current}); // Notify others
+            socket?.emit('stopTyping', {receiverId: senderData?._id, chatId:  chatIdRef.current}); // Notify others
         }, 1500); // 1.5 seconds after last keypress
      
     }
