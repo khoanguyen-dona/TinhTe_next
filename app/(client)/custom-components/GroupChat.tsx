@@ -57,6 +57,13 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
     const [onlineUsers, setOnlineUsers] = useState<onlineUserType[]>([])
     const [mailLoading,setMailLoading] = useState<boolean>(false)
 
+    const soundRef = useRef(sound)
+
+    // update status of soundRef
+    useEffect(()=>{
+         soundRef.current = sound
+    },[sound])
+
     // take event from groupChat
     useEffect(()=>{
         socket?.on('getGroupMessage', (data: MessageGroupChatType) =>{
@@ -114,7 +121,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
 
     const playNotificationSound = () => {
         const audio = new Audio('/notify-sound.mp3');
-        if(sound){
+        if(soundRef.current){
             audio.play()
         }
       };
