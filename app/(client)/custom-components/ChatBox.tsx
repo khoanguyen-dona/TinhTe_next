@@ -35,8 +35,8 @@ import { v4 as uuidv4}  from 'uuid'
 
 const ChatBox = () => {
     const dispatch = useDispatch()
-    const [emojiState, setEmojiState] = useState<boolean>(false)
-    const {socket, isConnected} = useSocket()
+    const [ emojiState, setEmojiState ] = useState<boolean>(false)
+    const { socket, isConnected } = useSocket()
     const currentUser: User|null = useSelector((state: RootState)=>state.user.currentUser)
     const isOpen: boolean = useSelector((state: RootState)=>state.chat.isOpen)
     const senderData: User|null = useSelector((state: RootState)=>state.chat.senderData)
@@ -48,13 +48,13 @@ const ChatBox = () => {
     const chatLoading: boolean = useSelector((state:RootState)=>state.chat.chatLoading)
     const messagelimit: number = 6
     const chatListLimit: number = 10
-    const [text, setText] = useState<string>('')
-    const [imageFiles, setImageFiles] = useState<File[]>([])
-    const [previewImages, setPreviewImages] = useState<string[]>([])
-    const [sendLoading, setSendLoading] = useState<boolean>(false)
-    const [newMessages, setNewMessages ] = useState<MessageType[]>([])
-    const [hasNext, setHasNext] = useState<boolean>(false)
-    const [arrivalMessage, setArrivalMessage] = useState<MessageType>()
+    const [ text, setText ] = useState<string>('')
+    const [ imageFiles, setImageFiles ] = useState<File[]>([])
+    const [ previewImages, setPreviewImages ] = useState<string[]>([])
+    const [ sendLoading, setSendLoading ] = useState<boolean>(false)
+    const [ newMessages, setNewMessages ] = useState<MessageType[]>([])
+    const [ hasNext, setHasNext ] = useState<boolean>(false)
+    const [ arrivalMessage, setArrivalMessage ] = useState<MessageType>()
     const scrollRef = useRef<HTMLDivElement |null>(null)
     const userStatus: string = useSelector((state:RootState)=>state.chat.userStatus)   
     const lastAccess: string|'' = useSelector((state:RootState)=>state.chat.lastAccess)
@@ -62,12 +62,12 @@ const ChatBox = () => {
     const [isSenderTyping, setIsSenderTyping] = useState<boolean>(false)
     const [userTyping, setUserTyping] = useState<boolean>(false)
     const [content, setContent] = useState<string>()
-    const [currentSenderId, setCurrentSenderId] = useState<string>(senderData?._id as string)
+    const chatIdRef = useRef(chatId)
 
-    //set currentChatId
+    // update chatId to chatIdRef
     useEffect(()=>{
-        setCurrentSenderId(senderData?._id as string )
-    }, [senderData])
+        chatIdRef.current = chatId
+    },[chatId])
 
     // init socket
     useEffect(() => {
@@ -80,7 +80,7 @@ const ChatBox = () => {
                 const findChatList = async() => {
                     console.log('currUser',currentUser)
                     const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=${chatListLimit}`)
-                    console.log('res cahtbox',res)
+               
                     dispatch(setChatList(res?.data?.chatList))
                     dispatch(setChatListHasNext(res.data.hasNext))
                     setArrivalMessage({
@@ -146,20 +146,20 @@ const ChatBox = () => {
         // )
      
 
-        // socket?.on('typingStatus', (data: {userId: string, status: boolean, chatId: string} ) =>{
-        //     console.log('an event come:',data)
-        //     // if(data.userId!==currentSenderId &&  data.chatId!==chatId ){    
-        //     if( data.chatId===chatId ){    
-        //         console.log('setting Typing')
-        //         setIsSenderTyping(data.status)
-        //     } else {
-        //         return  
-        //     }
-        // } )
+        socket?.on('typingStatus', (data: {userId: string, status: boolean, chatId: string} ) =>{    
+            console.log('chatId before if: ', chatIdRef)
+            if( data.chatId===chatIdRef.current ){                  
+                console.log('chatId after if: ',chatIdRef)
+                console.log('chatId from event: ', data.chatId)
+                setIsSenderTyping(data.status)
+            } else {
+                return  
+            }
+        } )
         
-    }, []);
+    }, [socket]);
    
-    console.log('chat box socket', socket)
+
     // fetch online status of user 
     useEffect(()=>{
         socket?.emit('checkStatus', {userChecked_id: senderData?._id, userCheck_id: currentUser?._id})
@@ -379,21 +379,21 @@ const ChatBox = () => {
     const handleTyping = (e: string) => {
         setText(e)
 
-        // setUserTyping(true)
-        // if (userTyping === false) {
-        //     socket?.emit("onTyping", {receiverId: currentSenderId, senderId: currentUser?._id, chatId: chatId});
-        // }
+        setUserTyping(true)
+        if (userTyping === false) {
+            socket?.emit("onTyping", {receiverId: senderData?._id, senderId: currentUser?._id, chatId: chatIdRef.current});
+        }
 
-        //  // Clear previous timeout
-        // if (typingTimeoutRef.current) {
-        //     clearTimeout(typingTimeoutRef.current);
-        // }
+         // Clear previous timeout
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
 
-        // // Set new timeout for "stop typing"
-        // typingTimeoutRef.current = setTimeout(() => {
-        //     setUserTyping(false)
-        //     socket?.emit('stopTyping', {receiverId: currentSenderId, senderId: currentUser?._id,  chatId: chatId}); // Notify others
-        // }, 1500); // 1.5 seconds after last keypress
+        // Set new timeout for "stop typing"
+        typingTimeoutRef.current = setTimeout(() => {
+            setUserTyping(false)
+            socket?.emit('stopTyping', {receiverId: senderData?._id, senderId: currentUser?._id,  chatId:  chatIdRef.current}); // Notify others
+        }, 1500); // 1.5 seconds after last keypress
      
     }
 
@@ -451,7 +451,7 @@ const ChatBox = () => {
                                     <ChevronDown className='opacity-50 ml-4' />                       
                                 </div>
                                 <div className='text-[12px] text-gray-400'>
-                                    {lastAccess===null ? "":
+                                    {lastAccess==='' ? '':
                                         <ReactTimeAgoUtil date={new Date(lastAccess)  } locale='vi-VN'/>
                                     }
                                 </div>
@@ -602,7 +602,7 @@ const ChatBox = () => {
                 </div>
 
                 {isSenderTyping &&         
-                    <div className='absolute bottom-0 left-0 flex justify-center items-center w-full bg-white opacity-70 h-7 shadow-xl gap-1'>
+                    <div className='absolute bottom-2 left-0 flex justify-center items-center w-full bg-white opacity-70 h-7 shadow-xl gap-1'>
                         <div className='text-gray-500'>{senderData?.username} đang soạn tin</div>
                         <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s] mt-2'></div>
                         <div className='h-2 w-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s] mt-2'></div>

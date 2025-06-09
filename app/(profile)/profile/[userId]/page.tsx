@@ -111,15 +111,14 @@ const page = () => {
 
     console.log('chatList',chatList)
 
-    const handleOpenChatBox = async  () => {
-        console.log('clicked')
+    const handleOpenChatBox = async  () => {    
 
         // find chat between 2 user
         const res = await userRequest.get(`/chat?user1=${currentUser?._id}&user2=${userId}`) 
 
         // if existed ,go find chatId in out localStorage then set chatBox state
         if(res.data.chat !== null){
-            console.log('1')
+    
             const chat = chatList.find((chat:ChatType)=>chat._id===res.data.chat._id)
             if(chat){
                 const messages: MessageType[] = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
@@ -138,8 +137,7 @@ const page = () => {
                 dispatch(setChatState(true))
                 dispatch(setSenderData(user as User))
                 dispatch(setChatId(res.data.chat._id))
-            }
-            
+            }           
         }
 
         //if not exists we create a chat then response the chatId
@@ -175,8 +173,7 @@ const page = () => {
 
     }
 
-    // console.log('comment count',commentCount)
-    // console.log("postcount",postCount)
+
   return (
     <div className='flex flex-col   mt-16 h-auto w-full'>
         {/* user info */}

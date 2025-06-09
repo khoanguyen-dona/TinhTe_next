@@ -15,11 +15,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { emoji } from '@/data'
 import { UploadMultipleImage } from './UploadMultipleImage'
 import { publicRequest, userRequest } from '@/requestMethod'
-import { MessageGroupChatType, MessageType, User } from '@/dataTypes'
+import { ChatType, MessageGroupChatType, MessageType, User } from '@/dataTypes'
 import { Socket } from 'socket.io-client'
 import Fancybox from './Fancybox'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
 import ThreeDotLoading from './ThreeDotLoading'
+import Link from 'next/link'
+import { setChatId, setChatPage, setChatState, setMessages, setSenderData, setUserStatus } from '@/redux/chatRedux'
+import { addChatToChatList, setChatList, setChatListHasNext } from '@/redux/chatListRedux'
 
 
 type Props = {
@@ -30,8 +33,16 @@ type Props = {
     messages: MessageGroupChatType[],
 }
 
+type onlineUserType = {
+    avatar: string,
+    userId: string,
+    username: string
+}
+
 const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
 
+    const chatList = useSelector((state:RootState)=>state.chatList.currentChatList)
+    const currentUser = useSelector((state:RootState)=>state.user.currentUser)
     const chatLoading: boolean = useSelector((state:RootState)=>state.groupChat.loading)
     const sound: boolean = useSelector((state:RootState)=>state.groupChat.sound)
     const dispatch = useDispatch()
@@ -43,7 +54,8 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
     const [newMessages, setNewMessages] = useState<MessageGroupChatType[]>([])
     const scrollRef = useRef<HTMLDivElement |null>(null)
     const uuid = Math.random().toString(36).substring(2,10)
-    const [onlineUsers, setOnlineUsers] = useState<[]>([])
+    const [onlineUsers, setOnlineUsers] = useState<onlineUserType[]>([])
+    const [mailLoading,setMailLoading] = useState<boolean>(false)
 
     // take event from groupChat
     useEffect(()=>{
@@ -51,7 +63,25 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
             console.log('data',data)
             setNewMessages(prev=>[...prev,data])
         } )
-    },[])
+
+        socket?.on('userLeaving', ( data: {userId: string} ) => {   
+            setOnlineUsers(prevUsers=>{
+                const newUsers = prevUsers.filter((user: onlineUserType)=> user.userId!==data.userId)
+                return newUsers
+            })
+        })
+
+        socket?.on('userJoining', ( data:{userId: string, username: string, avatar: string} ) => {
+            setOnlineUsers(prevUsers=>{
+                const isExist = prevUsers.find((user: onlineUserType)=> user.userId===data.userId)
+                if(isExist){
+                    return prevUsers
+                } else {
+                    return [data,...prevUsers]
+                }
+            })   
+        })
+    },[socket])
 
     //fetch onlineUsers
     useEffect(()=>{
@@ -60,7 +90,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
             dispatch(setGroupChatLoading(true))
             const res_onlineUsers = await publicRequest.get('/redis/all-users')
             if(res_onlineUsers.data){
-              setOnlineUsers(res_onlineUsers.data.userIds)
+              setOnlineUsers(res_onlineUsers.data.onlineUsers)
               dispatch(setGroupChatLoading(false))
             }
           }catch(err){  
@@ -70,7 +100,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
         getData()
       },[])
 
-    console.log('onlineUsers',onlineUsers)
+    // parse  to json
     useEffect(()=>{
         let tempArray:any = []
 
@@ -178,6 +208,77 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
         scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [newMessages]);
 
+    
+    const handleOpenChatBox = async (userId: string) => {
+        
+        //find info of senderData
+        const sender = await publicRequest.get(`/user/${userId}`)
+
+        // find chat between 2 user
+        const res = await userRequest.get(`/chat?user1=${currentUser?._id}&user2=${userId}`) 
+            
+        // if existed ,go find chatId in out localStorage then set chatBox state
+        if(res.data.chat !== null && sender.data){
+    
+            const chat = chatList.find((chat:ChatType)=>chat._id===res.data.chat._id)
+            if(chat){
+                const res_messages = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
+                // dispatch(setUserStatus('offline'))
+                dispatch(setChatId(chat._id))
+                dispatch(setChatPage(1))                
+                dispatch(setMessages(res_messages.data.messages))                
+                dispatch(setChatState(true))
+                dispatch(setChatId(chat?._id))
+                dispatch(setSenderData(sender.data.user))
+
+            //if not exists in local storage we push chat to our local storage chatList then set chatBox state
+            } else {
+                const res_messages = await userRequest.get(`/message?chatId=${res.data.chat._id}&page=1&limit=6`)
+                // dispatch(setUserStatus('offline'))
+                dispatch(setChatPage(1))
+                dispatch(setMessages(res_messages.data.messages))
+                dispatch(setChatState(true))
+                dispatch(setChatId(res.data.chat._id))
+                dispatch(setSenderData(sender.data.user))
+                dispatch(addChatToChatList(res.data.chat))                   
+            }               
+        }
+
+        //if not exists we create a chat then response the chatId
+        if(res.data.chat === null && sender.data){
+    
+            setMailLoading(true)
+            const createChat = await userRequest.post(`/chat`,{
+                members:[currentUser?._id, userId],
+                lastMessage:'',
+                senderId:'',
+                isReceiverSeen: true
+            })
+
+            //get new chatId then insert to localStorage chatList , and set state for LocalStorage chatBox             
+            if(createChat?.data){        
+                const getChatList = async() => {                
+                    const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}`)
+                    if(res.data){
+                        // dispatch(setUserStatus('offline'))
+                        setMailLoading(false)
+                        dispatch(setChatListHasNext(res.data.hasNext))
+                        dispatch(setChatList(res.data.chatList))
+                        dispatch(setChatPage(1))
+                        dispatch(setMessages([]))
+                        dispatch(setChatState(true))
+                        dispatch(setChatId(createChat.data.chat._id))
+                        dispatch(setSenderData(sender.data.user))
+                    }
+                }
+                getChatList()
+        
+            }
+        }
+    
+        }
+
+
   return (
 
     <div className="w-auto h-132 md:h-170 border-2 border-gray-100 rounded-lg mb-4 md:mb-0 ">
@@ -200,9 +301,9 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                             </div>
                         </div>
                     </PopoverTrigger>
-                    <PopoverContent className='z-50 w-full  '>
+                    <PopoverContent className='z-10 w-full  '>
                         <div className='flex flex-col  w-full max-h-100 overflow-auto'>
-                            {onlineUsers.map((user: any, index)=>(   
+                            {onlineUsers.map((user: onlineUserType, index)=>(   
                                                                                              
                                 <>
                                     {user.username.slice(0,5) === 'guest' 
@@ -215,15 +316,42 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                                             {user.username}
                                         </div>
                                     </div>
-                                    : 
-                                    <a key={index} href={`/profile/${user.userId}`}   className='flex gap-2 hover:bg-blue-100 w-full p-2 rounded-lg hover:cursor-pointer'>
-                                        <div>
-                                            <Image src={user.avatar as any||'/user.png'} width={20} height={20} alt='' className='w-8 h-8 object-cover rounded-full' />
-                                        </div>
-                                        <div>
-                                            {user.username}
-                                        </div>
-                                    </a>
+                                    :                              
+                                    <Popover>
+                                        <PopoverTrigger className='border-none outline-none'>
+                                            <div key={index}  className={`flex gap-2 hover:bg-blue-100 w-full p-2 rounded-lg hover:cursor-pointer `}>
+                                                <div>
+                                                    <Image src={user.avatar as any||'/user.png'} width={20} height={20} alt='' className='w-8 h-8 object-cover rounded-full' />
+                                                </div>
+                                                <div>
+                                                    {user.username}
+                                                </div>
+                                            </div>
+                                        </PopoverTrigger>
+                                        <PopoverContent>
+                                            <Link href={`/profile/${user.userId}`}   className='flex items-center gap-2 hover:bg-blue-100 w-full p-2 rounded-lg hover:cursor-pointer'>
+                                                <div>
+                                                    <Image src='/user.png' width={20} height={20} alt='' className='w-8 h-8 object-cover rounded-full' />
+                                                </div>
+                                                <div>
+                                                    Xem trang cá nhân
+                                                </div>
+                                            </Link>
+                                            {currentUser?._id === user.userId ? '': 
+                                            <div onClick={()=>handleOpenChatBox(user.userId)} key={index}  className={`flex items-center gap-2 hover:bg-blue-100
+                                             w-full p-2 rounded-lg hover:cursor-pointer ${mailLoading?'opacity-40':''} `}>
+                                                <div>
+                                                    <Image src='/email.png' width={20} height={20} alt='' className='w-8 h-8  opacity-60 ' />
+                                                </div>
+                                                <div className='flex gap-2' >
+                                                    Nhắn tin
+                                                    {mailLoading && <Loader className='animate-spin w-6 h-6'/>}
+                                                </div>
+                                            </div>
+                                            }
+
+                                        </PopoverContent>
+                                    </Popover>                     
                                 } 
                                 </>                                                                                                             
                             ))}
@@ -392,7 +520,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                         ))}
                     </div>
                 </div>
-                <div className={`absolute bottom-0 p-4 left-0 rounded-lg w-full bg-black opacity-60 z-10 h-24`}> 
+                <div className={`absolute bottom-0 p-4 left-0 rounded-lg w-full bg-black opacity-80 z-10 h-24`}> 
 
                 </div> 
             </>

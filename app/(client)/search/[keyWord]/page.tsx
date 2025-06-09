@@ -129,43 +129,42 @@ export default function Search() {
  
 
     const handleOpenChatBox = async (userId:string) => {
-            console.log('clicked')
+        
             //find info of senderData
             const sender = await publicRequest.get(`/user/${userId}`)
-    
+            setMailLoading(true)
             // find chat between 2 user
             const res = await userRequest.get(`/chat?user1=${currentUser?._id}&user2=${userId}`) 
-
-            
-    
+              
             // if existed ,go find chatId in out localStorage then set chatBox state
             if(res.data.chat !== null && sender.data){
       
                 const chat = chatList.find((chat:ChatType)=>chat._id===res.data.chat._id)
                 if(chat){
                     const res_messages = await userRequest.get(`/message?chatId=${chat._id}&page=1&limit=6`)
-                    dispatch(setUserStatus('offline'))
+                    // dispatch(setUserStatus('offline'))
                     dispatch(setChatId(chat._id))
                     dispatch(setChatPage(1))                
                     dispatch(setMessages(res_messages.data.messages))                
                     dispatch(setChatState(true))
                     dispatch(setChatId(chat?._id))
                     dispatch(setSenderData(sender.data.user))
+                    setMailLoading(false)
+
     
                 //if not exists in local storage we push chat to our local storage chatList then set chatBox state
                 } else {
                     const res_messages = await userRequest.get(`/message?chatId=${res.data.chat._id}&page=1&limit=6`)
-                    dispatch(setUserStatus('offline'))
+                    // dispatch(setUserStatus('offline'))
                     dispatch(setChatPage(1))
                     dispatch(setMessages(res_messages.data.messages))
                     dispatch(setChatState(true))
                     dispatch(setChatId(res.data.chat._id))
                     dispatch(setSenderData(sender.data.user))
-                    dispatch(addChatToChatList(res.data.chat))
-                    
+                    dispatch(addChatToChatList(res.data.chat))  
+                    setMailLoading(false)
 
-                }
-                
+                }               
             }
     
             //if not exists we create a chat then response the chatId
@@ -184,7 +183,7 @@ export default function Search() {
                     const getChatList = async() => {                
                         const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}`)
                         if(res.data){
-                            dispatch(setUserStatus('offline'))
+                            // dispatch(setUserStatus('offline'))
                             setMailLoading(false)
                             dispatch(setChatListHasNext(res.data.hasNext))
                             dispatch(setChatList(res.data.chatList))
@@ -201,7 +200,6 @@ export default function Search() {
             }
     
         }
-
 
 
   return (  

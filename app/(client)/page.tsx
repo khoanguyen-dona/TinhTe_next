@@ -67,7 +67,7 @@ export default function Home() {
     getData()
   }, [])
 
-
+  // sent event to socket when user connected to page
   useEffect(()=>{
     if(user!==null){
       socket?.emit('addUser', {userId: user?._id, username: user?.username, avatar: user?.img , lastAccess: new Date().toISOString(), isGuest:'false' })
@@ -77,7 +77,7 @@ export default function Home() {
   }, [] )
 
   
-
+  // display logout success when user logout
   useEffect(() => {
     if(logout==='true'){
 
@@ -97,7 +97,7 @@ export default function Home() {
   },[])
   console.log('guestId: ',guestId)
 
-  //get chatList 
+  // get chatList 
     useEffect(()=>{
       
       const getData = async() => {   
@@ -135,6 +135,7 @@ export default function Home() {
       try {
         const res = await publicRequest.get(`/post?page=1&limit=5&isPosted=&isApproved=&mostWatch=true`)
         if(res.data){
+          console.log('trnding posts',res.data.posts)
           setTrendingPosts(res.data.posts)
         }
       } catch(err){
