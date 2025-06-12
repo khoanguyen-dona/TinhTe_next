@@ -35,6 +35,7 @@ const Navbar = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [page, setPage] = useState<number>(2)
   const chatListLimit = 10
+  const [open, setOpen] = useState<boolean>(false)
 
   const handleLogout = () => {
     dispatch(setUser(null))
@@ -49,20 +50,7 @@ const Navbar = () => {
     router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
   }
 
-  // useEffect(()=>{
-  //   if(chatList.length===0){
-  //     const getData = async() => {   
-  //       console.log('dispatch chatlist!')
-  //       const res = await userRequest(`/chat/chat-list/${user?._id}?page=1&limit=${chatListLimit}`)
-  //       dispatch(setChatListHasNext(res.data.hasNext))
-  //       dispatch(setChatList(res.data.chatList))              
-  //     }      
-  //     getData()
-  //   }
-  // },[])
-
  
-
   //calculate notifyCOunt
   useEffect(()=>{
       const calculate = () => {
@@ -175,7 +163,7 @@ const Navbar = () => {
 
           
           {/* notification button */}
-          <Popover>
+          <Popover   >
             <PopoverTrigger asChild >
               <div className='bg-gray-300 p-2  rounded-full hover:bg-blue-300 hover:cursor-pointer transition ' title='Thông báo'>
                 <img src="/bell.png"  className='w-8 h-8 opacity-60' alt="" />
@@ -252,7 +240,7 @@ const Navbar = () => {
 
             {/* user button */}
           {user !== null ?
-          <Popover>
+          <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild >
               <div className='bg-gray-300  p-1 rounded-full hover:bg-blue-300 hover:cursor-pointer transition '>
                 {user!==null && user?.img!=='' ? 
@@ -263,11 +251,11 @@ const Navbar = () => {
             </PopoverTrigger>
             <PopoverContent>
               <div className='flex flex-col w-48 h-auto mr-2 bg-white fixed top-0 -right-2 shadow-2xl border-2 border-gray-200 rounded-lg ' >
-                <Link href='/account' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
+                <Link onClick={()=>setOpen(false)} href='/account' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
                     <img src="/user.png" className='w-8 h-8' alt="" /> 
                     Thông tin cá nhân      
                 </Link>
-                <Link href='/account/my-post' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
+                <Link onClick={()=>setOpen(false)} href='/account/my-post' className='flex  items-center gap-2 hover:cursor-pointer hover:bg-blue-300 rounded-lg p-2 transition'>
                     <img src="/my-post.png" className='w-8 h-8' alt="" /> 
                     Bài đăng của tôi      
                 </Link>

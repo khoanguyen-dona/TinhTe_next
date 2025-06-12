@@ -88,6 +88,16 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                 }
             })   
         })
+
+        //cleanup function
+        return () => {
+            socket?.off('getGroupMessage');
+            socket?.off('userLeaving');
+            socket?.off('userJoining');
+   
+          };
+
+
     },[socket])
 
     //fetch onlineUsers
@@ -109,7 +119,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
 
     // parse messages to json
     useEffect(()=>{
-        let tempArray:any = []
+        let tempArray: MessageGroupChatType[] = []
 
         messages.map((message: any)=>{
             let objectMessage =  JSON.parse(message)

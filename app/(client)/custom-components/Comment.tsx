@@ -160,21 +160,25 @@ const Comment = ({comment, user, postId, setLoading, reportComments, setReportCo
     const handleReportComment = async () => {
         
         try {
-            setLoadingFlag(true)
-            const res = await userRequest.post(`/report-comment`,{
-                commentId: comment._id ,
-                postId: postId , 
-                userId: user._id,
-            })
-            if(res.data){
-                setLoadingFlag(false)
-                if(res.data.unReport===true){       
-                    const reports = reportComments.filter(id=>id!==comment._id)
-                    setReportComments(reports)
+            if ( user !== null ){
+                setLoadingFlag(true)
+                const res = await userRequest.post(`/report-comment`,{
+                    commentId: comment._id ,
+                    postId: postId , 
+                    userId: user._id,
+                })
+                if(res.data){
+                    setLoadingFlag(false)
+                    if(res.data.unReport===true){       
+                        const reports = reportComments.filter(id=>id!==comment._id)
+                        setReportComments(reports)
+                    }
+                    if(res.data.unReport===false){                    
+                        reportComments.push(comment._id)
+                    }
                 }
-                if(res.data.unReport===false){                    
-                    reportComments.push(comment._id)
-                }
+            } else {
+                toast.error('Đăng nhập để báo cáo')
             }
         } catch(err){
             toast.error('Lỗi')
@@ -183,14 +187,18 @@ const Comment = ({comment, user, postId, setLoading, reportComments, setReportCo
 
     const handleEmotion = async (emotionType: EmotionType) => {
         try {
-            setLoadingEmotion(true)
-            const res = await userRequest.post(`/comment-emotion`,{
-                commentId: comment._id,
-                userId: user._id,
-                type: emotionType
-            })
-            if(res.status==200){
-                setReload(!reload)
+            if(user!==null){
+                setLoadingEmotion(true)
+                const res = await userRequest.post(`/comment-emotion`,{
+                    commentId: comment._id,
+                    userId: user._id,
+                    type: emotionType
+                })
+                if(res.status==200){
+                    setReload(!reload)
+                }
+            } else {
+                toast.error('Đăng nhập để tương tác')
             }
         } catch(err){
             toast.error('Lỗi')

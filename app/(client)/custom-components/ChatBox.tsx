@@ -81,8 +81,7 @@ const ChatBox = () => {
         socket?.on("getMessage", (data:any) => {
          
             // if data.chatId not exists in our chatList localStorage we set new chatList to our localStorage chatList
-            const chat = chatList?.find((chat)=>chat?._id===data?.chatId)     
-            console.log('chat',chat)   
+            const chat = chatList?.find((chat)=>chat?._id===data?.chatId)       
             if(chat===undefined){
                 const findChatList = async() => {
                     console.log('currUser',currentUser)
@@ -135,13 +134,22 @@ const ChatBox = () => {
         )
      
         socket?.on('typingStatus', (data: {status: boolean, chatId: string} ) =>{    
-            console.log('chatId before if: ', chatIdRef)
             if( data.chatId===chatIdRef.current ){                      
                 setIsSenderTyping(data.status)
             } else {
                 return  
             }
         } )
+
+        // cleanup function
+        return ()=> {
+            socket?.off('getMessage')
+            socket?.off('userStatus') 
+            socket?.off('typingStatus')
+            socket?.off('userLeaving')
+            socket?.off('userJoining')
+
+        }
         
     }, [socket]);
    

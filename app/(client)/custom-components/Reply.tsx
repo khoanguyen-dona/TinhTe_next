@@ -80,21 +80,25 @@ const Reply = ({replyData, user, postId, setLoading, reportComments, setReportCo
 
     const handleReportComment = async () => {     
         try {
-            setLoading2(true)
-            const res = await userRequest.post(`/report-comment`,{
-                commentId: replyData._id ,
-                postId: postId , 
-                userId: user._id,
-            })
-            if(res.data){
-                setLoading2(false)
-                if(res.data.unReport===true){       
-                    const reports = reportComments.filter(id=>id!==replyData._id)
-                    setReportComments(reports)
+            if (user !== null){
+                setLoading2(true)
+                const res = await userRequest.post(`/report-comment`,{
+                    commentId: replyData._id ,
+                    postId: postId , 
+                    userId: user._id,
+                })
+                if(res.data){
+                    setLoading2(false)
+                    if(res.data.unReport===true){       
+                        const reports = reportComments.filter(id=>id!==replyData._id)
+                        setReportComments(reports)
+                    }
+                    if(res.data.unReport===false){                    
+                        reportComments.push(replyData._id)
+                    }
                 }
-                if(res.data.unReport===false){                    
-                    reportComments.push(replyData._id)
-                }
+            } else {
+                toast.error('Đăng nhập để báo cáo')
             }
         } catch(err){
             toast.error('Lỗi')
@@ -104,13 +108,13 @@ const Reply = ({replyData, user, postId, setLoading, reportComments, setReportCo
     //fetch emotion of user 
     useEffect(()=>{
         const getEmotion = async () => {
-            try {
+            try {                    
                 const res = await publicRequest.get(`/comment-emotion/${replyData._id}?userId=${user._id}`)
                 if(res.data.emotion.length>0){
                     setUserEmotion(res.data.emotion[0].type)
                 }else{
                     setUserEmotion(undefined)
-                }
+                }                                               
             } catch(err){   
                 console.log('fetch user emotion failed',err)
             }
@@ -120,14 +124,18 @@ const Reply = ({replyData, user, postId, setLoading, reportComments, setReportCo
  
     const handleEmotion = async (emotionType: string) => {
             try {
-                setLoadingEmotion(true)
-                const res = await userRequest.post(`/comment-emotion`,{
-                    commentId: replyData._id,
-                    userId: user._id,
-                    type: emotionType
-                })
-                if(res.status===200){
-                   setReload(!reload)
+                if (user !== null ){
+                    setLoadingEmotion(true)
+                    const res = await userRequest.post(`/comment-emotion`,{
+                        commentId: replyData._id,
+                        userId: user._id,
+                        type: emotionType
+                    })
+                    if(res.status===200){
+                    setReload(!reload)
+                    }
+                } else {
+                    toast.error('Đăng nhập để tương tác')
                 }
             } catch(err){
                 console.log('post emotion failed', err)

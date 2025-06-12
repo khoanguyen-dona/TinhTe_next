@@ -119,14 +119,18 @@ const page = () => {
     //handlelike
     const handleEmotion = async (value: EmotionType) =>{
         try {
-            setEmotionLoading(true)
-            const res = await userRequest.post(`/post-emotion`,{
-                postId: postId,
-                userId: user._id,
-                type: value
-            })
-            if(res.data){
-                setReload(!reload)
+            if (user !== null){
+                setEmotionLoading(true)
+                const res = await userRequest.post(`/post-emotion`,{
+                    postId: postId,
+                    userId: user._id,
+                    type: value
+                })
+                if(res.data){
+                    setReload(!reload)
+                }
+            } else {
+                toast.error('Đăng nhập để tương tác')
             }
         } catch(err){
             toast.error('Lỗi')

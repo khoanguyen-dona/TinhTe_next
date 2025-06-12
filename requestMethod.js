@@ -26,6 +26,6 @@ export const publicRequest = axios.create({
 
 export const userRequest = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BASE_URL,
-    headers: { token: `Bearer ${TOKEN};UserId ${currentUser?._id}` },
+    headers: { token: `Bearer ${TOKEN}` },
     
 })
