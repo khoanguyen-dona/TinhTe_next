@@ -31,11 +31,10 @@ export default function Search() {
     const [loading, setLoading] = useState<boolean>(false)
     const [mailLoading,setMailLoading] = useState<boolean>(false)
 
-    console.log('search type:', findType)
 
     //fetch first time and when switch type
     useEffect(()=>{ 
-        console.log('it run')
+
 
         if(findType==='user'){
             const getUsers = async() => {
@@ -76,7 +75,7 @@ export default function Search() {
 
     //fetch when page change
     useEffect(()=>{ 
-        console.log('it run')
+
 
         if(findType==='user'){
             const getUsers = async() => {
@@ -177,7 +176,7 @@ export default function Search() {
                     senderId:'',
                     isReceiverSeen: true
                 })
-
+                
                 //get new chatId then insert to localStorage chatList , and set state for LocalStorage chatBox             
                 if(createChat?.data){        
                     const getChatList = async() => {                

@@ -20,7 +20,7 @@ import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { Loader } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux'
-import { setUser } from '@/redux/userRedux'
+import { setAccessToken, setUser } from '@/redux/userRedux'
 import { setChatList, setChatListHasNext } from '@/redux/chatListRedux'
 import { RootState } from '@/redux/store'
 
@@ -53,6 +53,7 @@ const page = () => {
             })
             if(res.data){        
                 dispatch(setUser(res.data.data))
+                dispatch(setAccessToken(res.data.accessToken))
                 const getChatList = async() =>{ 
                     try{
                         const res2 = await userRequest.get(`/chat/chat-list/${res.data.data._id}?page=1&limit=${chatListLimit}`)

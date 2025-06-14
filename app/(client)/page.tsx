@@ -38,12 +38,12 @@ export default function Home() {
   const uuid = Math.random().toString(36).substring(2,10)
   const [guestId, setGuestId] = useState<string>('')
   const [groupMessages, setGroupMessages] = useState<MessageGroupChatType[]>([])
-  
+  const accessToken = useSelector((state:RootState)=>state.user.accessToken)
   // setTimeout(()=>{
   //   window.location.reload()
   // },600000)
 
-
+console.log('accTOkewn', accessToken)
 
   // fetch group-chat-messages 
   useEffect(()=>{
@@ -101,10 +101,11 @@ export default function Home() {
     useEffect(()=>{
       
       const getData = async() => {   
-          console.log('dispatch chatlist!')
-          const res = await userRequest(`/chat/chat-list/${user?._id}?page=1&limit=${chatListLimit}`)
-          dispatch(setChatListHasNext(res.data.hasNext))
-          dispatch(setChatList(res.data.chatList))              
+          if(user!==null){         
+            const res = await userRequest.get(`/chat/chat-list/${user?._id}?page=1&limit=${chatListLimit}`)
+            dispatch(setChatListHasNext(res.data.hasNext))
+            dispatch(setChatList(res.data.chatList))              
+          }
       }      
       getData()
     },[])

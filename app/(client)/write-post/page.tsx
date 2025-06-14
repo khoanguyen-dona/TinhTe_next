@@ -8,7 +8,7 @@ import toast from 'react-hot-toast'
 import { categories } from '@/data'
 import { useSelector } from 'react-redux'
 
-import { publicRequest } from '@/requestMethod'
+import { publicRequest, userRequest } from '@/requestMethod'
 import { RootState } from '@/redux/store'
 import { useDispatch } from 'react-redux'
 import { setDraft } from '@/redux/draftRedux'
@@ -82,7 +82,7 @@ const page = () => {
     const uploadToMongo = async(img: string, value: string) =>{
         const isPosted = value==='saved'?false:true
             try {
-                    const res = await publicRequest.post('/post',{
+                    const res = await userRequest.post('/post',{
                         title: title ,
                         shortDescription: shortDescription, 
                         content: content,
@@ -106,7 +106,7 @@ const page = () => {
     const updateMongo = async (img : string, value: string) => {
         const isPosted = value==='saved'?false:true
         try {
-            const res = await publicRequest.put(`/post/${postId}`,{
+            const res = await userRequest.put(`/post/${postId}`,{
                 title: title ,
                 shortDescription: shortDescription, 
                 content: content,

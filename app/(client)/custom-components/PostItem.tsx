@@ -47,7 +47,6 @@ const PostItem = ({post}:Props) => {
         getComment()
     },[])
 
-    console.log('---lat com',latestComment)
   return (
     <>
     <div className='flex items-center p-2'>

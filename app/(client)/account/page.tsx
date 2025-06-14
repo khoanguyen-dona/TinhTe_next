@@ -25,7 +25,7 @@ import {
   } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { useState, useEffect } from 'react'
-import { publicRequest } from '@/requestMethod'
+import { publicRequest, userRequest } from '@/requestMethod'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { Loader } from 'lucide-react';
@@ -124,7 +124,7 @@ const page = () => {
         const handleUpdateUser = async (imgUrl: string|'') => {
             try {
                 if(imgUrl !== ''){
-                    const res = await publicRequest.put(`/user/${user?._id}`,{
+                    const res = await userRequest.put(`/user/${user?._id}`,{
                         username: values.username,
                         img: imgUrl,
                         description: values.description
@@ -136,7 +136,7 @@ const page = () => {
                     }
                     await handleRemoveAvatar()
                 } else {
-                    const res = await publicRequest.put(`/user/${user?._id}`,{
+                    const res = await userRequest.put(`/user/${user?._id}`,{
                         username: values.username,
                         description: values.description
                     })
@@ -184,7 +184,7 @@ const page = () => {
         } else {      
             setLoading(true)
             try {
-                const res = await publicRequest.put(`/user/${user?._id}/update-password`,{
+                const res = await userRequest.put(`/user/${user?._id}/update-password`,{
                     password: values.password,
                     password1: values.password1,
                     password2: values.password2,             

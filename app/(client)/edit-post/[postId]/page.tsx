@@ -11,7 +11,7 @@ import toast from 'react-hot-toast'
 import { categories } from '@/data'
 import { useSelector } from 'react-redux'
 
-import { publicRequest } from '@/requestMethod'
+import { publicRequest, userRequest } from '@/requestMethod'
 import { RootState } from '@/redux/store'
 import { useDispatch } from 'react-redux'
 import { setDraft } from '@/redux/draftRedux'
@@ -35,7 +35,7 @@ const page = () => {
     const [shortDescription, setShortDescription] = useState<string|undefined>(post?.shortDescription)
     const [linkUrl, setLinkUrl] = useState<string>()
  
-    // fetch data of base on postId
+    // fetch data by postId
     useEffect(()=>{
         setLoading(true)
         const getData = async () => {
@@ -102,7 +102,7 @@ const page = () => {
     const updateMongo = async (img : string, value: string) => {
         const isPosted = value==='saved'?false:true
         try {
-            const res = await publicRequest.put(`/post/${postId}`,{
+            const res = await userRequest.put(`/post/${postId}`,{
                 title: title ,
                 shortDescription: shortDescription,
                 content: content,
@@ -115,12 +115,12 @@ const page = () => {
                 toast.success('cập nhật thành công')
                 setThumbnailFile(undefined)
             }
-    } catch(err) {
-        toast.error('Lỗi')
-        console.log('err while post to mongo',err)
-    } finally {
-        setLoading(false)
-    }
+        } catch(err) {
+            toast.error('Lỗi')
+            console.log('err while post to mongo',err)
+        } finally {
+            setLoading(false)
+        }
     }
     const handleSubmit = async (value: string) => {
             if(title===undefined||title===''||thumbnail===undefined||content===undefined||content===''){

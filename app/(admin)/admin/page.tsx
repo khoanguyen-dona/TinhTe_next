@@ -15,7 +15,7 @@ const page = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  console.log(width)
+
   return (
     <div className= 'flex justify-center p-2 md:px-8  w-screen '  >
       <div className='w-full  h-auto  flex flex-col justify-center items-center  space-y-10 mt-10 bg-red-100'>

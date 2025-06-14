@@ -83,10 +83,9 @@ const page = () => {
             toast.success('Cập nhật thành công')
           }
         } catch(err){
-          toast.error('Lỗi dây')
-        } finally {
+          toast.error('Lỗi ')
           setLoading(false)
-        }
+        } 
     }
 
     const handlePageLimit = async (number: number) =>{
@@ -94,7 +93,7 @@ const page = () => {
       setPage(1)
     } 
 
-console.log('limit',limit)
+    console.log('limit',limit)
 
     return (
         

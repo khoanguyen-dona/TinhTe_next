@@ -38,14 +38,6 @@ const items = [
     },
   ]
    
-// const data = {
-//     user:{
-//         name:'dona',
-//         email:'dona@gmail.com',
-//         avatar: '/user.png'
-//     }
-// }
-
   export function AppSidebar() {
     const {
         state,

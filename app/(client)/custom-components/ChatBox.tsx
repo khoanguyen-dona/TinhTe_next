@@ -78,17 +78,31 @@ const ChatBox = () => {
 
     // init socket
     useEffect(() => {
-        socket?.on("getMessage", (data:any) => {
-         
-            // if data.chatId not exists in our chatList localStorage we set new chatList to our localStorage chatList
-            const chat = chatList?.find((chat)=>chat?._id===data?.chatId)       
-            if(chat===undefined){
-                const findChatList = async() => {
-                    console.log('currUser',currentUser)
-                    const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=${chatListLimit}`)
-               
-                    dispatch(setChatList(res?.data?.chatList))
-                    dispatch(setChatListHasNext(res.data.hasNext))
+        if(currentUser!==null){
+            socket?.on("getMessage", (data:any) => {
+             
+                // if data.chatId not exists in our chatList localStorage we set new chatList to our localStorage chatList
+                const chat = chatList?.find((chat)=>chat?._id===data?.chatId)       
+                if(chat===undefined){
+                    const findChatList = async() => {
+                        console.log('currUser',currentUser)
+                        const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=${chatListLimit}`)
+                   
+                        dispatch(setChatList(res?.data?.chatList))
+                        dispatch(setChatListHasNext(res.data.hasNext))
+                        setArrivalMessage({
+                            _id: '',
+                            chatId: data?.chatId,
+                            sender: data?.sender,
+                            imgs: data?.imgs,
+                            text: data?.text,
+                            createdAt: new Date()  ,
+                            updatedAt: '',
+                        });
+                    }
+                    findChatList()
+                // if chat already exist in chatList local ,no need to get new chatList
+                } else{
                     setArrivalMessage({
                         _id: '',
                         chatId: data?.chatId,
@@ -99,20 +113,8 @@ const ChatBox = () => {
                         updatedAt: '',
                     });
                 }
-                findChatList()
-            // if chat already exist in chatList local ,no need to get new chatList
-            } else{
-                setArrivalMessage({
-                    _id: '',
-                    chatId: data?.chatId,
-                    sender: data?.sender,
-                    imgs: data?.imgs,
-                    text: data?.text,
-                    createdAt: new Date()  ,
-                    updatedAt: '',
-                });
-            }
-        })
+            })
+        }
         // update userStatus when chatId changed
         socket?.on('userStatus', (data:{status:'online'|'offline', lastAccess: string}) =>{
                 dispatch(setUserStatus(data.status))      
@@ -209,12 +211,14 @@ const ChatBox = () => {
     // add new messages to localStorage messages
     useEffect(()=>{
         const getMessage = async () =>{
-            const res = await userRequest.get(`/message?chatId=${chatId}&page=${page}&limit=${messagelimit}`)
-            if(res.data && newMessages.length){          
-                res.data.messages.reverse().map((message: MessageType)=>{
-                    setNewMessages(prev=>[message,...prev])
-                })
-                setHasNext(res.data.hasNext)
+            if(currentUser!==null && chatId !== null){
+                const res = await userRequest.get(`/message?chatId=${chatId}&page=${page}&limit=${messagelimit}`)
+                if(res.data && newMessages.length){          
+                    res.data.messages.reverse().map((message: MessageType)=>{
+                        setNewMessages(prev=>[message,...prev])
+                    })
+                    setHasNext(res.data.hasNext)
+                }
             }
         }
         getMessage()

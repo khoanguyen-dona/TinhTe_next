@@ -3,11 +3,13 @@ import { User } from "@/dataTypes";
 type InitialState = {
     currentUser: User|null
     onlineUsers: string[]
+    accessToken: string|null
 }
 
 const initialState: InitialState = {
     currentUser: null,
-    onlineUsers: []
+    onlineUsers: [],
+    accessToken: null,
 }
 
 const userSlice = createSlice({
@@ -24,10 +26,13 @@ const userSlice = createSlice({
 
     addUserToOnlineUsers: (state, action: PayloadAction<string>) => {
       state.onlineUsers = [...state.onlineUsers, action.payload]
+    },
+    setAccessToken: (state, action: PayloadAction<string>) => {
+      state.accessToken = action.payload
     }
   }
 });
 
 
-export const { setUser, setOnlineUsers, addUserToOnlineUsers } = userSlice.actions;
+export const { setUser, setOnlineUsers, addUserToOnlineUsers, setAccessToken } = userSlice.actions;
 export default userSlice.reducer;

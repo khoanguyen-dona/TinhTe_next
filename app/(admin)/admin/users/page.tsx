@@ -30,7 +30,7 @@ const page = () => {
     useEffect(()=>{
         const getUsers = async ()=>{
             setLoading(true)
-            const res = await publicRequest.get(`/user?page=${page}&limit=${limit}&isAdmin=&isReporter=`)
+            const res = await userRequest.get(`/user?page=${page}&limit=${limit}&isAdmin=&isReporter=`)
             if (res.data){
                 setUsers(res.data.users)
                 setTotalPage(res.data.totalPage)
@@ -39,8 +39,7 @@ const page = () => {
         }
         getUsers()
     },[page, limit, reload])
-    console.log('users',users)
-
+ 
 
     const handleDeleteUser = async (userId: string) => {
         try{

@@ -21,16 +21,14 @@ const page = () => {
     const [page, setPage] = useState<number>(1)
     const [totalPage, setTotalPage] = useState<number>()
     const limit:number = 10
-    console.log(posts)
-    console.log('date',new Date())
+
     //fetch post by userId
     useEffect(()=>{ 
       const getPosts = async () =>{
         setLoading(true)
         try {
-          const res = await publicRequest.get(`/post?userId=${user?._id}&page=${page}&limit=${limit}`)
+          const res = await userRequest.get(`/post?userId=${user?._id}&page=${page}&limit=${limit}`)
           if(res.data){
-            console.log('data',res.data)
             setPosts(res.data.posts)
             setTotalPage(res.data.totalPage)
           }
@@ -67,9 +65,22 @@ const page = () => {
       }
   }
 
-  const handleApprove =() =>{
-
-  }
+  const handleApprove = async (postId: string, value: boolean) => {
+    try{
+      setLoading(true)
+      const res = await userRequest.put(`/post/${postId}`,{
+        isApproved: value
+      })
+      if(res.status===200){
+        setReload(!reload)
+        toast.success('Cập nhật thành công')
+      }
+    } catch(err){
+      toast.error('Lỗi ')
+    } finally {
+      setLoading(false)
+    }
+}
 
   return (
     <div className='flex justify-center '>

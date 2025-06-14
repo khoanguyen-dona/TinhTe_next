@@ -1,7 +1,7 @@
 'use client'
 import { setChatList } from '@/redux/chatListRedux';
 import { RootState } from '@/redux/store';
-import { setUser } from '@/redux/userRedux';
+import { setAccessToken, setUser } from '@/redux/userRedux';
 import { publicRequest } from '@/requestMethod';
 import { Router } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -22,6 +22,7 @@ const page = () => {
                     const res_user = await publicRequest(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/user`,{withCredentials: true})
                     if(res_user.data){
                         dispatch(setUser(res_user.data.user))
+                        dispatch(setAccessToken(res_user.data.accessToken))
                         dispatch(setChatList(res_user.data.chatList))
                         setTimeout(()=>{
                             window.location.href = '/'    

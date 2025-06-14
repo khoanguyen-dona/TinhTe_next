@@ -12,8 +12,8 @@ const getStoredValue = () => {
   const user = JSON.parse(getStoredValue())?.user;
 
 // const user = JSON.parse(localStorage.getItem("persist:root"))?.user;
-const currentUser = user && JSON.parse(user).currentUser
-const TOKEN = user && JSON.parse(user).currentUser?.accessToken
+// const currentUser = user && JSON.parse(user).currentUser
+const TOKEN = user && JSON.parse(user).accessToken
 
 
 
@@ -29,3 +29,4 @@ export const userRequest = axios.create({
     headers: { token: `Bearer ${TOKEN}` },
     
 })
+console.log('TOKEN:', TOKEN)
