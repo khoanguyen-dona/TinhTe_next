@@ -24,6 +24,17 @@ import { setChatPage } from '@/redux/chatRedux'
 import { setNotifyCount } from '@/redux/chatListRedux'
 import { Loader, Search } from 'lucide-react'
 import Link from 'next/link'
+import { AlignJustify } from 'lucide-react'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+
+
 const Navbar = () => {
   const router = useRouter()
   const dispatch = useDispatch()
@@ -36,7 +47,7 @@ const Navbar = () => {
   const [page, setPage] = useState<number>(2)
   const chatListLimit = 10
   const [open, setOpen] = useState<boolean>(false)
-
+  const [sheetStatus, setSheetStatus] = useState<boolean>(false)
   const handleLogout = () => {
     dispatch(setUser(null))
     dispatch(setChatList([]))
@@ -72,12 +83,14 @@ const Navbar = () => {
   
   const handleSearch = () => {
     if(keyWord && keyWord?.length>0){
+      setSheetStatus(false)
       router.push(`/search/${keyWord}`)
     }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if(e.key==='Enter' && keyWord && keyWord.length>0 ){
+      setSheetStatus(false)
       router.push(`/search/${keyWord}`)
     }
   }
@@ -98,12 +111,40 @@ const Navbar = () => {
   
 
   return (
-    <div className='fixed top-0 left-0 h-16 bg-gray-100 w-full  z-50 p-2 flex justify-between  items-center gap-10 px-5' >
+    <div className='fixed top-0 left-0 h-16 bg-gray-100 w-full  z-50 p-2 flex justify-between  items-center gap-2 md:gap-10 px-5' >
+      
+        <Sheet open={sheetStatus} onOpenChange={setSheetStatus} >
+          <SheetTrigger> 
+            <AlignJustify className='hover:cursor-pointer md:hidden  bg-gray-300 p-2 w-10 h-10 rounded-md' />
+          </SheetTrigger>
+          <SheetContent side='left' className='w-full ' >
+            <SheetHeader>
+              <SheetTitle >
+                <a href='/' className='flex items-center gap-2 hover:cursor-pointer'  >
+                  <img src="/favicon.png" className='w-8    md:w-12 h-8 md:h-12' alt="" />
+                  <div className='text-2xl'>
+                    TinhTe.vn            
+                  </div>
+                </a>                 
+              </SheetTitle>
+              <SheetDescription>
+                <div className='flex flex-col mt-10'>
+                  <div className=' flex items-center bg-gray-200 rounded-full '  >
+                    <input onKeyDown={handleKeyPress} onChange={(e)=>setKeyWord(e.target.value)} value={keyWord} type="text" placeholder="Tìm kiếm" className=' border-none p-2 focus:outline-none  w-full' />
+                    <Search onClick={handleSearch} className=' hover:cursor-pointer hover:bg-blue-500 hover:text-white  rounded-full p-2 w-10 h-10 transition' />
+                  </div>
+                  <Link onClick={()=>setSheetStatus(false)} href='/write-post' className='p-2 rounded-md text-black text-xl font-bold mt-4 hover:cursor-pointer' >
+                    Đăng bài
+                  </Link>
+                </div>
+              </SheetDescription>
+            </SheetHeader>
+          </SheetContent>
+        </Sheet>
         <a className='flex  items-center gap-2  ' href='/' >
-            <img src="/favicon.png" className='w-8  md:w-12 h-8 md:h-12' alt="" />
+            <img src="/favicon.png" className='w-8 hidden md:block  md:w-12 h-8 md:h-12' alt="" />
             <p className='font-bold text-lg md:text-xl ' >TinhTe.vn</p>
         </a>
-
         <div className='hidden md:flex items-center bg-white rounded-full '  >
           <input onKeyDown={handleKeyPress} onChange={(e)=>setKeyWord(e.target.value)} value={keyWord} type="text" placeholder="Tìm" className=' border-none p-2 focus:outline-none  md:w-60 lg:w-96' />
           <Search onClick={handleSearch} className=' hover:cursor-pointer hover:bg-blue-500 hover:text-white  rounded-full p-2 w-10 h-10 transition' />
