@@ -70,7 +70,7 @@ const ChatBox = () => {
         senderIdRef.current = senderData?._id
     },[senderData])
 
-
+    
     // update chatIdRef when chatId change
     useEffect(()=>{
         chatIdRef.current = chatId
@@ -118,7 +118,8 @@ const ChatBox = () => {
         // update userStatus when chatId changed
         socket?.on('userStatus', (data:{status:'online'|'offline', lastAccess: string}) =>{
                 dispatch(setUserStatus(data.status))      
-                dispatch(setUserLastAccess(data.lastAccess))                    
+                dispatch(setUserLastAccess(data.lastAccess)) 
+                console.log('data',data)                   
         })
 
         // update users  when a user offline
@@ -447,7 +448,7 @@ const ChatBox = () => {
                                     <ChevronDown className='opacity-50 ml-4' />                       
                                 </div>
                                 <div className='text-[12px] text-gray-400'>
-                                    {lastAccess==='' ? '':
+                                    {lastAccess===null ? '':
                                         <ReactTimeAgoUtil date={new Date(lastAccess)  } locale='vi-VN'/>
                                     }
                                 </div>
