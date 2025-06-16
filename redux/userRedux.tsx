@@ -27,7 +27,7 @@ const userSlice = createSlice({
     addUserToOnlineUsers: (state, action: PayloadAction<string>) => {
       state.onlineUsers = [...state.onlineUsers, action.payload]
     },
-    setAccessToken: (state, action: PayloadAction<string>) => {
+    setAccessToken: (state, action: PayloadAction<string|null>) => {
       state.accessToken = action.payload
     }
   }

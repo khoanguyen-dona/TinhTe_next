@@ -43,7 +43,8 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
 
     const chatList = useSelector((state:RootState)=>state.chatList.currentChatList)
     const currentUser = useSelector((state:RootState)=>state.user.currentUser)
-    const chatLoading: boolean = useSelector((state:RootState)=>state.groupChat.loading)
+    // const chatLoading: boolean = useSelector((state:RootState)=>state.groupChat.loading)
+    const [chatLoading, setChatLoading] = useState<boolean>(false)
     const sound: boolean = useSelector((state:RootState)=>state.groupChat.sound)
     const dispatch = useDispatch()
     const [text, setText] = useState<string>('')
@@ -56,13 +57,27 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
     const uuid = Math.random().toString(36).substring(2,10)
     const [onlineUsers, setOnlineUsers] = useState<onlineUserType[]>([])
     const [mailLoading,setMailLoading] = useState<boolean>(false)
-
+    const [reload, setReload] = useState<boolean>(false)
     const soundRef = useRef(sound)
+    // const chatLoadingRef = useRef(chatLoading)
+
 
     // update status of soundRef
     useEffect(()=>{
          soundRef.current = sound
     },[sound])
+
+    // update status of chatLoadingRef
+//     useEffect(()=>{
+//         chatLoadingRef.current = chatLoading
+//    },[chatLoading])
+
+    // add currentUser to onlineUsers
+    // useEffect(()=>{
+    //     if(userId && username && avatar){
+    //         setOnlineUsers((prev)=>[{userId, username, avatar},...prev])
+    //     }
+    // },[])
 
     // take event from groupChat
     useEffect(()=>{
@@ -89,12 +104,18 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
             })   
         })
 
+        socket?.on('getOnlineUsers', ( data: any) => {
+            console.log('getOnlineUsers event: ',data)
+            // setOnlineUsers(data)
+            
+        })
+ 
         //cleanup function
         return () => {
             socket?.off('getGroupMessage');
             socket?.off('userLeaving');
             socket?.off('userJoining');
-   
+            socket?.off('getOnlineUsers')
           };
 
 
@@ -103,19 +124,42 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
     //fetch onlineUsers
     useEffect(()=>{
         const getData = async() => {
-          try {
-            dispatch(setGroupChatLoading(true))
+          try {    
+            console.log('chatlo',chatLoading)
+            // dispatch(setGroupChatLoading(true))
+            setChatLoading(true)
             const res_onlineUsers = await publicRequest.get('/redis/all-users')
-            if(res_onlineUsers.data){
-              setOnlineUsers(res_onlineUsers.data.onlineUsers)
-              dispatch(setGroupChatLoading(false))
+          
+            if(res_onlineUsers && res_onlineUsers.data){
+                setOnlineUsers(res_onlineUsers.data.onlineUsers)
+                // dispatch(setGroupChatLoading(false))    
+                setChatLoading(false)
+
             }
+        
           }catch(err){  
             console.log('fetch onlineUsers failed',err)
-          }
+          } 
         } 
         getData()
-      },[])
+    }, [])
+
+    // handle fetch onlineUsers
+    const getOnlineUsers = async () => {
+        try {
+            console.log('getOnlineUsers run !')
+            setChatLoading(true)
+            const res = await publicRequest.get('/redis/all-users')
+            if(res.data){
+                setOnlineUsers(res.data.onlineUsers)
+                setChatLoading(false)
+            }
+        } catch(err){
+            console.log('fetch onlineUsers failed', err)
+        }
+    }
+   
+
 
     // parse messages to json
     useEffect(()=>{
@@ -313,23 +357,21 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                 </div>
                 <Popover>
                     <PopoverTrigger asChild >
-                        <div className='ml-2 rounded-md  flex flex-col'>
+                        <div className='ml-2 rounded-md  flex items-center '>
                             <div className='flex  '>
                                 
-                                ({onlineUsers.length}) Người tham gia 
+                                ({onlineUsers?.length}) Người tham gia 
                                 <ChevronDown className='opacity-50 ml-4' />                       
                             </div>
-                            <div className='text-[12px] text-gray-400'>
                             
-                            </div>
                         </div>
                     </PopoverTrigger>
                     <PopoverContent className='z-10 w-full  '>
                         <div className='flex flex-col  w-full max-h-100 overflow-auto'>
-                            {onlineUsers.map((user: onlineUserType, index)=>(   
+                            {onlineUsers?.map((user: onlineUserType, index)=>(   
                                                                                              
                                 <>
-                                    {user.username.slice(0,5) === 'guest' 
+                                    {user?.username?.slice(0,5) === 'guest' 
                                         ?                              
                                     <div key={index}   className='flex gap-2 hover:bg-blue-100 w-full p-2 rounded-lg '>
                                         <div>
@@ -383,7 +425,12 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                 </Popover>
                 
                 
-            </div>              
+            </div>     
+            {/* update4 onlineUsers */}
+            <div title='Cập nhật'>
+                <Image onClick={getOnlineUsers} src='/renew.png' width={30} height={30} alt='renew' 
+                className={`w-8 h-8 opacity-70 hover:cursor-pointer hover:bg-blue-200 p-1 rounded-full ${chatLoading?'animate-spin':''} `}  />         
+            </div>
             <div className='flex items-center'>
                 {sound ?
                     <div title='Tắt âm thanh'>
@@ -402,17 +449,17 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
 
         {/* content  */}
 
-        {chatLoading? 
-        <div className=' top-0   w-full h-90 md:h-120 relative ' >
-            <div className='absolute inset-0 flex items-center justify-center'>
-                <ThreeDotLoading className={'w-6 h-6 '} />
-            </div>
-        </div>
-        :
+        {/* {chatLoading?  */}
+         {/* <div className=' top-0   w-full h-90 md:h-120 relative ' >
+             <div className='absolute inset-0 flex items-center justify-center'>
+                 <ThreeDotLoading className={'w-6 h-6 '} />
+             </div>
+         </div> */}
+        {/* : */}
         <div className='relative ' >
             <div className='h-90 md:h-120   overflow-y-auto space-y-2 p-2 ' >           
                     {newMessages?.length>0 && newMessages?.map((message: MessageGroupChatType,index)=>(                       
-                        <div className='' >
+                        <div key={index} className='' >
                             {message?.sender === userId ?                    
                                 <div  className='flex  flex-col '>
                                     <div className='flex  gap-1 '>  
@@ -550,7 +597,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
              } 
 
         </div>
-        }
+        {/* } */}
         
 
         {/* writing  */}

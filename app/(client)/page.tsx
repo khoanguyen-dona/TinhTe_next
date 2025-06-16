@@ -43,7 +43,6 @@ export default function Home() {
   //   window.location.reload()
   // },600000)
 
-console.log('accTOkewn', accessToken)
 
   // fetch group-chat-messages 
   useEffect(()=>{

@@ -20,7 +20,7 @@ import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { Loader } from 'lucide-react';
 import { useDispatch } from 'react-redux'
-import { setUser } from '@/redux/userRedux'
+import { setAccessToken, setUser } from '@/redux/userRedux'
 
 const formSchema = z.object({
     email: z.string().email('This is not a email').min(4).max(50),
@@ -50,6 +50,7 @@ const page = () => {
             })
             if(res.data){        
                 dispatch(setUser(res.data.data))
+                dispatch(setAccessToken(res.data.accessToken))
                 toast.success("Đăng nhập thành công")
                 router.push('/admin')
             }

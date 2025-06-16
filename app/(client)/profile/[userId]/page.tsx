@@ -155,7 +155,7 @@ const page = () => {
                 const getChatList = async() => {                
                     const res = await userRequest.get(`/chat/chat-list/${currentUser?._id}?page=1&limit=3`)
                     if(res.data){
-                        dispatch(setUserStatus("offline"))
+                        // dispatch(setUserStatus("offline"))
                         setMailLoading(false)
                         dispatch(setChatListHasNext(res.data.hasNext))
                         dispatch(setChatList(res.data.chatList))

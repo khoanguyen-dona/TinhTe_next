@@ -6,7 +6,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import Image from 'next/image'
-import { setUser } from '@/redux/userRedux'
+import { setAccessToken, setUser } from '@/redux/userRedux'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
@@ -46,6 +46,7 @@ const Navbar = () => {
     dispatch(setSenderData(null))
     dispatch(setChatState(false))
     dispatch(setMessages(null))
+    dispatch(setAccessToken(null))
 
     router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
   }
