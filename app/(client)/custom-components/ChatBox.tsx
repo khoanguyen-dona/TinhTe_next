@@ -351,7 +351,8 @@ const ChatBox = () => {
 
     // updated chat state field: isReceiverSeen? , set it to true in local state
     const handleSeen = async () => {
-        dispatch(updateChatList({chatId: chatId as string, 
+        dispatch(updateChatList({
+            chatId: chatId as string, 
             newData:{
                 isReceiverSeen : true,      
             }

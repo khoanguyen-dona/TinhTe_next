@@ -20,6 +20,7 @@ import { v4 as uuidv4 }from 'uuid'
 import { Textarea } from "@/components/ui/textarea";
 import { emoji } from "@/data";
 import GroupChat from "./custom-components/GroupChat";
+import { setNotifications, setNotificationsHasNext } from "@/redux/notificationRedux";
 export default function Home() {
   const dispatch = useDispatch()
   const router = useRouter()
@@ -32,17 +33,31 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>()
   const [page, setPage] = useState<number>(1)
   const [hasNext, setHasNext] = useState<boolean>()
-  const limit:number = 10
+  const limit:number = 10 // use for get posts 
+  const notifyLimit:number = 10
   const chatListLimit = 10
   const { socket, isConnected} = useSocket()
   const uuid = Math.random().toString(36).substring(2,10)
   const [guestId, setGuestId] = useState<string>('')
   const [groupMessages, setGroupMessages] = useState<MessageGroupChatType[]>([])
   const accessToken = useSelector((state:RootState)=>state.user.accessToken)
+
+  
   // setTimeout(()=>{
   //   window.location.reload()
   // },600000)
 
+  // fetch notification
+  useEffect(()=>{
+    const getData = async() => {
+      const res = await userRequest.get(`/notification/${user?._id}?limit=${notifyLimit}&page=1`)
+      if(res.data){
+        dispatch(setNotifications(res.data.notifications))
+        dispatch(setNotificationsHasNext(res.data.hasNext))
+      }
+    }
+    getData()
+  }, [])
 
   // fetch group-chat-messages 
   useEffect(()=>{
@@ -94,7 +109,7 @@ export default function Home() {
       setGuestId(`guest_${uuid}`)
     }
   },[])
-  console.log('guestId: ',guestId)
+
 
   // get chatList 
     useEffect(()=>{
@@ -135,7 +150,6 @@ export default function Home() {
       try {
         const res = await publicRequest.get(`/post?page=1&limit=5&isPosted=&isApproved=&mostWatch=true`)
         if(res.data){
-          console.log('trnding posts',res.data.posts)
           setTrendingPosts(res.data.posts)
         }
       } catch(err){
@@ -194,49 +208,49 @@ export default function Home() {
                 </div>
                 <div  className="flex h-auto md:h-80 space-x-4 lg:space-x-2 mt-4">
                   <div className=" w-1/2  space-y-2 " >
-                    <Link href={`/post/${posts?.[1].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[1]._id}`}>
+                    <Link href={`/post/${posts?.[1]?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[1]?._id}`}>
                       {posts?.[1]?.thumbnail &&
                         <Image width={300} height={300} src={posts?.[1]?.thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
                       }
-                      <h1 className="font-semibold text-medium block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[1].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
-                      <h1 className="font-semibold text-medium hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[1].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
+                      <h1 className="font-semibold text-medium block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[1]?.title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
+                      <h1 className="font-semibold text-medium hidden lg:block hover:cursor-pointer hover:text-blue-500 transition">{posts?.[1]?.title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                     </Link>
-                    <Link href={`/profile/${posts?.[1].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[1].authorId?.username}</Link>
+                    <Link href={`/profile/${posts?.[1]?.authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[1]?.authorId?.username}</Link>
                   </div>
                   <div className=" w-1/2  space-y-2" >
-                    <Link  href={`/post/${posts?.[2].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[2]._id}`}>
-                      {posts?.[2].thumbnail &&
+                    <Link  href={`/post/${posts?.[2]?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[2]?._id}`}>
+                      {posts?.[2]?.thumbnail &&
                         <Image width={300} height={300} src={posts?.[2].thumbnail as string} className="w-full h-1/2  md:h-3/5 object-cover rounded-lg" alt="" />
                       }
-                      <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
-                      <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
+                      <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2]?.title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
+                      <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[2]?.title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                     </Link>
-                    <Link href={`/profile/${posts?.[2].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[2].authorId?.username}</Link>
+                    <Link href={`/profile/${posts?.[2]?.authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[2]?.authorId?.username}</Link>
                   </div>
                 </div>
               </div>
               {/* 2nd col */}
               <div className="flex h-auto w-full  md:flex-col md:w-4/12  gap-4">
                 <div className="h-auto md:h-110  space-y-2 w-1/2 md:w-full mt-4 md:mt-0">
-                    <Link  href={`/post/${posts?.[3].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[3]._id}`}>
-                      {posts?.[3].thumbnail &&
-                        <Image width={300} height={300} src={posts?.[3].thumbnail as string} className="w-full h-1/2 md:h-2/5 object-cover rounded-lg" alt="" />
+                    <Link  href={`/post/${posts?.[3]?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[3]?._id}`}>
+                      {posts?.[3]?.thumbnail &&
+                        <Image width={300} height={300} src={posts?.[3]?.thumbnail as string} className="w-full h-1/2 md:h-2/5 object-cover rounded-lg" alt="" />
                       }
-                      <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
-                      <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
+                      <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3]?.title.split(/\s+/).slice(0, 15).join(' ')}...</h1>
+                      <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[3]?.title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                     </Link>
-                    <Link href={`/profile/${posts?.[3].authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[3].authorId?.username}</Link>
-                    <p className="hidden md:block" >{posts?.[3].shortDescription.slice(0, 210)}...</p> 
+                    <Link href={`/profile/${posts?.[3]?.authorId._id}`} className="text-sm hover:text-blue-500 ">{posts?.[3]?.authorId?.username}</Link>
+                    <p className="hidden md:block" >{posts?.[3]?.shortDescription.slice(0, 210)}...</p> 
                 </div>
                 <div className="h-auto md:h-80  space-y-2 mt-4 md:mt-0 w-1/2 md:w-full " >
-                    <Link  href={`/post/${posts?.[4].title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[4]._id}`}>
-                      {posts?.[4].thumbnail &&
-                        <Image width={300} height={300} src={posts?.[4].thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
+                    <Link  href={`/post/${posts?.[4]?.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${posts?.[4]?._id}`}>
+                      {posts?.[4]?.thumbnail &&
+                        <Image width={300} height={300} src={posts?.[4]?.thumbnail as string} className="w-full h-1/2 md:h-3/5 object-cover rounded-lg" alt="" />
                       }
                       <h1 className="font-semibold block lg:hidden hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 16).join(' ')}</h1>
                       <h1 className="font-semibold hidden lg:block hover:cursor-pointer hover:text-blue-500 transition" >{posts?.[4].title.split(/\s+/).slice(0, 25).join(' ')}</h1>
                     </Link>
-                    <Link href={`/profile/${posts?.[4].authorId._id}`} className="text-sm hover:text-blue-500  ">{posts?.[4].authorId?.username}</Link>
+                    <Link href={`/profile/${posts?.[4]?.authorId._id}`} className="text-sm hover:text-blue-500  ">{posts?.[4]?.authorId?.username}</Link>
                 </div>
               </div>
             </div>

@@ -26,8 +26,10 @@ import { X } from 'lucide-react'
 import { UploadMultipleImage } from './UploadMultipleImage'
 import { v4 as uuidv4 } from 'uuid';
 import Link from 'next/link'
+import { useSocket } from '@/context/socketContext'
 
 type Props = {
+  
     user: User,
     postId: string
     type: 'thread'|'comment',
@@ -41,12 +43,12 @@ type Props = {
 
 
 
-const CommentBox = ({user, postId, type, refCommentIdTypeThread, refCommentUserId, refCommentUsername, isReplied, setLoading, closeBoxAfterComment }:Props) => {
+const CommentBox = ({ user, postId, type, refCommentIdTypeThread, refCommentUserId, refCommentUsername, isReplied, setLoading, closeBoxAfterComment }:Props) => {
 
     const [comment, setComment] = useState<string>()
     const [data, setData] = useState<CommentRedType[]>([])
     const [closeCommentBox, setCloseCommentBox] = useState<boolean>(false)
-
+    const { socket, isConnected} = useSocket()
     const [previewImages, setPreviewImages] = useState<string[]>([])
     const [imageFiles, setImageFiles] = useState<File[]>([])
     const uuid = uuidv4()
@@ -69,7 +71,11 @@ const CommentBox = ({user, postId, type, refCommentIdTypeThread, refCommentUserI
                 refCommentUserId: refCommentUserId ,
                 isReplied: isReplied,
             })
-            if(res.data){
+        
+
+            // send to socket
+
+            if(res.data ){
                 data.push({
                     avatar: user.img,
                     content: comment as string,
@@ -77,8 +83,37 @@ const CommentBox = ({user, postId, type, refCommentIdTypeThread, refCommentUserI
                     imgGallery: previewImages
                 })
                 toast.success('Bình luận thành công')  
-                setCloseCommentBox(true)     
+                setCloseCommentBox(true)   
+                
+                //create notifi in mongo
+                const res_notification =  await userRequest.post(`/notification`, {
+                    userId: refCommentUserId ,
+                    content: 'nhắc đến bạn trong 1 bình luận' ,
+                    userIdRef: user._id ,
+                    usernameRef: user.username,
+                    commentId: res.data.comment._id ,
+                    refCommentIdTypeThread: refCommentIdTypeThread ,
+                })
+
+                //send to socket
+                if(res_notification.data){
+                    socket?.emit('pushNotification', {
+                        receiverId: refCommentUserId,
+                        data:{
+                            _id : res_notification.data.notification._id,
+                            userId: refCommentUserId ,
+                            content: 'nhắc đến bạn trong 1 bình luận' ,
+                            userIdRef: user._id ,
+                            usernameRef: user.username,
+                            isReceiverSeen: false,
+                            commentId: res.data.comment._id ,
+                            refCommentIdTypeThread: refCommentIdTypeThread ,
+                            createdAt: new Date().toISOString()
+                        }
+                    })
+                }
             }
+
         } catch(err){
             toast.error('Lỗi')
         }finally{

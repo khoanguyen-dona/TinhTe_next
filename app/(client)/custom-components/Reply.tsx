@@ -375,7 +375,7 @@ const Reply = ({replyData, user, postId, setLoading, reportComments, setReportCo
     
     {openCommentBox &&
         <div className='ml-16 mt-4'  >
-            <CommentBox  user={user} postId={postId} type={'comment'} refCommentIdTypeThread={replyData.refCommentIdTypeThread} 
+            <CommentBox   user={user} postId={postId} type={'comment'} refCommentIdTypeThread={replyData.refCommentIdTypeThread} 
             refCommentUsername={replyData.userId.username}  closeBoxAfterComment={true} 
             refCommentUserId={replyData.userId._id} isReplied={false} setLoading={setLoading}/>
         </div>

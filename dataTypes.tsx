@@ -90,6 +90,18 @@ export type ArrivalMessageType = {
     text: string
 }
 
+export type NotificationType = {
+    _id: string,
+    userId: User|string ,
+    content: string ,
+    userIdRef: string|null ,
+    usernameRef: string|null ,
+    isReceiverSeen: boolean ,
+    commentId: string|null ,
+    refCommentIdTypeThread: string|null ,
+    createdAt: Date
+}
+
 export type EmotionType = 'like'|'love'|'fun'|'sad'|'wow'
 export type EmotionArray = ['like','love','fun','sad','wow']
 export type UserRole = 'Admin'|'Reporter'
