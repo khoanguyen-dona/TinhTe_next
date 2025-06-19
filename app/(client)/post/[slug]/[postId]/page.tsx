@@ -6,7 +6,7 @@ import JoditViewer from '@/app/(client)/custom-components/JoditViewer'
 import Image from 'next/image'
 import { Post } from '@/dataTypes'
 import { publicRequest, userRequest } from '@/requestMethod'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams} from 'next/navigation'
 import moment from 'moment'
 import { Separator } from "@/components/ui/separator"
 import { Loader, MessageSquare } from 'lucide-react'
@@ -41,10 +41,17 @@ type postEmotionType = {
 }
 
 const page = () => {
+    const searchParams = useSearchParams()
+    const commentId = searchParams.get('commentId')
+    const commentIdTypeThread = searchParams.get('refCommentIdTypeThread')
+    const commentIdRef = useRef(commentId)
+    const commentIdTypeThreadRef = useRef(commentIdTypeThread)
+    
     const sectionRef = useRef<HTMLDivElement>(null);
     const scrollToSection = () => {
         sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-      };
+    };
+    
     const dispatch = useDispatch()
     const [reload, setReload] = useState<boolean>(false)
     const EmotionArray = ['like','love','fun','sad','wow']
@@ -67,6 +74,7 @@ const page = () => {
     const [emotionTypeOfPost, setEmotionTypeOfPost] = useState<EmotionType[]>() //type of emotions have in this post eg..[like,love,fun]
     const [currentEmotion, setCurrentEmotion] = useState<EmotionType|'all'>() // current emotion user choose from
     const [currentPostEmotions, setCurrentPostEmotions] = useState<postEmotionType[]>() //current emotions data base on type of emotion
+    const [commentTypeThreadRef, setCommentTypeThreadRef] = useState<CommentType|null>(null)
 
     const [likeCount, setLikeCount] = useState<number>()
     const [loveCount, setLoveCount] = useState<number>()
@@ -74,7 +82,31 @@ const page = () => {
     const [sadCount, setSadCount] = useState<number>()
     const [wowCount, setWowCount] = useState<number>()
 
-    
+    // update value of commentId through commentIdRef
+    useEffect(()=>{
+        commentIdRef.current=commentId
+    },[commentId])
+
+    // update value of commentIdTypeThread through commentIdTypeThreadRef
+    useEffect(()=>{
+        commentIdTypeThreadRef.current=commentIdTypeThread
+    },[commentIdTypeThread])
+
+     
+    useEffect(()=>{
+        const getData = async() => {
+            try {
+                const res = await publicRequest.get(`/comment/commentId/${commentIdTypeThread}`)
+                if(res.data){
+                    setCommentTypeThreadRef(res.data.comment)
+                }
+            } catch(err){
+                console.log('get commentIdTypeThread failed',err)
+            }
+        }
+        getData()
+    },[commentIdTypeThread,commentId])
+
 
     //fetch user emotion
     useEffect(()=>{
@@ -278,6 +310,8 @@ const page = () => {
         publicRequest.get(`/post/${post?._id}/increase-view`)
     }, 20000)
 
+    
+
   return (
     <div className='flex justify-center'>
     {loading && 
@@ -448,16 +482,29 @@ const page = () => {
 
                 {/* comment box */}
                 <div ref={sectionRef} className=''>
-                    <CommentBox user={user} postId={postId as string} type={'thread'} refCommentIdTypeThread={null} closeBoxAfterComment={false} 
+                    <CommentBox  user={user} postId={postId as string} slug={decodeURIComponent(slug as string)}  type={'thread'} refCommentIdTypeThread={null} closeBoxAfterComment={false} 
                                 refCommentUserId={null} refCommentUsername={null} isReplied={false} setLoading={setLoading} />
                 </div>
-   
+
+                {/* commentTypeThreadRef */}
+                {commentTypeThreadRef !== null && user!==null && commentId !== commentIdTypeThread && commentId!==null &&
+
+                    <div  >
+                        <Comment commentIdTypeThread={commentIdTypeThreadRef.current} commentId={commentIdRef.current} fetchAllReply={true}  comment={commentTypeThreadRef as CommentType }  user={user as User} postId={postId as string} slug={decodeURIComponent(slug as string)} setLoading={setLoading} reportComments={reportComments as string[]} 
+                        setReportComments={setReportComments} />
+                    </div>
+                }
+
                 {/* comment list */}
                 <div>
                     {comments?.map((comment, index)=>(
                         // @ts-ignore
-                        <Comment comment={comment } key={index} user={user} postId={postId} setLoading={setLoading} reportComments={reportComments} 
-                            setReportComments={setReportComments} />
+                        <>
+                        {comment._id === commentIdTypeThread ?  '':
+                            <Comment commentIdTypeThread={null} commentId={null} fetchAllReply={false}  comment={comment } key={index} user={user} postId={postId as string} slug={decodeURIComponent(slug as string)} setLoading={setLoading} 
+                            reportComments={reportComments as string[]} setReportComments={setReportComments} />
+                        }
+                        </>
                     ))
                     }
                 </div>

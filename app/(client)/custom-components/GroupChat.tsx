@@ -427,11 +427,11 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                 
             </div>     
             {/* update4 onlineUsers */}
-            <div title='Cập nhật'>
-                <Image onClick={getOnlineUsers} src='/renew.png' width={30} height={30} alt='renew' 
-                className={`w-8 h-8 opacity-70 hover:cursor-pointer hover:bg-blue-200 p-1 rounded-full ${chatLoading?'animate-spin':''} `}  />         
-            </div>
-            <div className='flex items-center'>
+            <div className='flex items-center gap-4'>
+                <div title='Cập nhật'>
+                    <Image onClick={getOnlineUsers} src='/renew.png' width={30} height={30} alt='renew' 
+                    className={`w-8 h-8 opacity-70 hover:cursor-pointer hover:bg-blue-200 p-1 rounded-full ${chatLoading?'animate-spin':''} `}  />         
+                </div>
                 {sound ?
                     <div title='Tắt âm thanh'>
                         <Volume2 onClick={()=>dispatch(setGroupChatSound(!sound))} className='text-gray-600 p-1 rounded-full hover:bg-blue-100 w-8 h-8 hover:cursor-pointer' />

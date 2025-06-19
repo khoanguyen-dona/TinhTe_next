@@ -99,6 +99,8 @@ export type NotificationType = {
     isReceiverSeen: boolean ,
     commentId: string|null ,
     refCommentIdTypeThread: string|null ,
+    postSlug: string|null,
+    postId: string|null,
     createdAt: Date
 }
 

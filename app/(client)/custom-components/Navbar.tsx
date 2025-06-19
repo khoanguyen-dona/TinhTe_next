@@ -91,7 +91,11 @@ const Navbar = () => {
             dispatch(addToNotifications(data))
           }
       })
-  },[])
+      return () => {
+        socket?.off('getNotification');
+      }
+
+  },[socket])
 
    //calculate notificationCount for mail 
    useEffect(()=>{
@@ -320,20 +324,29 @@ const Navbar = () => {
 
                   <div className='h-140   overflow-auto'>
                     {notifications?.map((notification: NotificationType, index)=>(
-                      <div key={index} className={`p-2 hover:bg-gray-200 flex-col hover:cursor-pointer ${notification?.isReceiverSeen?'':'bg-red-100'} `} 
-                      onClick={()=>handleSeenNotification(notification?._id)}>
-                        <div className='flex  items-center gap-2'>
-                          <div className='font-bold'>
-                            {notification?.usernameRef}
+                    <>
+                      <div className={`hover:bg-gray-100  p-2 ${notification.isReceiverSeen?'':'bg-red-100'} `}>
+                        <Link href={`/post/${notification.postSlug}/${notification.postId}?commentId=${notification.commentId}&refCommentIdTypeThread=${notification.refCommentIdTypeThread} `} 
+                              key={index} className={`  flex-col hover:cursor-pointer  `} 
+                              onClick={()=>handleSeenNotification(notification?._id)}>
+                          <div className='flex  items-center gap-2'>
+                            <div className=' flex flex-col w-2/5'>
+                              <p className='font-bold'>
+                                {notification?.usernameRef?.slice(0,15)}
+                              </p>
+                              <p className='text-sm text-gray-400'>
+                                <ReactTimeAgoUtil date={notification?.createdAt as Date} locale='vi-VN'  />           
+                              </p> 
+                            </div>
+                            <div className='text-[15px] flex items-center w-3/5'>
+                              {notification?.content}   
+                            </div>
                           </div>
-                          <div className='text-[14px]'>
-                            {notification?.content}   
-                          </div>
-                        </div>
-                        <p className='text-sm text-gray-400'>
-                          <ReactTimeAgoUtil date={notification?.createdAt as Date} locale='vi-VN'  />           
-                        </p> 
+                          
+                        </Link>
                       </div>
+                      <hr />
+                    </>
                       ))              
                     }
                     {

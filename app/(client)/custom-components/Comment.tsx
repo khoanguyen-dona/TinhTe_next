@@ -25,9 +25,14 @@ import {
 
 
 type Props = {
-    comment: CommentType,
+    commentIdTypeThread: string|null ,
+    commentId: string|null // use to find specific commentId when click on notify button
+    fetchAllReply: boolean, // if the commentId we find in reply we will set to true to fetch all reply
+    // colorRed: boolean, // highlight the specific commentId that other user remind of
+    comment: CommentType, // commentData
     user: User,
     postId: string,
+    slug: string|null ,
     setLoading: (value:boolean) => void,
     reportComments: string[],
     setReportComments: (value: string[])=> void
@@ -43,7 +48,7 @@ type commentEmotionType = {
     type: EmotionType
 }
 
-const Comment = ({comment, user, postId, setLoading, reportComments, setReportComments}:Props) => {
+const Comment = ({commentIdTypeThread, commentId, fetchAllReply, comment, user, postId, slug, setLoading, reportComments, setReportComments}:Props) => {
     const [reload, setReload] = useState<boolean>(false)
     const EmotionArray = ['like','love','fun','sad','wow']
     const [showEmoji, setShowEmoji] = useState<boolean>(false);
@@ -90,6 +95,25 @@ const Comment = ({comment, user, postId, setLoading, reportComments, setReportCo
         }
         getData()
     },[reload])
+
+    //fetch all reply
+    useEffect(()=> {
+        const getData = async () => {
+            try{
+                const res = await publicRequest.get(`/comment/refCommentId/${comment._id}?limit=999&page=1`)
+                if(res.data){
+                    setReplies(res.data.comments)
+                    setShowReplies(true)
+                    setFetchedAll(true)
+                }
+            }catch(err){
+                console.log('fetch get all reply failed',err)
+            }
+        }
+        if(fetchAllReply){
+            getData()
+        }
+    },[fetchAllReply, commentIdTypeThread, commentId])
 
 
     // fetch replyData
@@ -255,7 +279,7 @@ const Comment = ({comment, user, postId, setLoading, reportComments, setReportCo
 
   return (
     <>
-        <div className='flex gap-2 mt-6'>
+        <div className={`flex gap-2 mt-6  `}>
             { comment.userId.img ?
                 <Image width={30} height={30} className="w-10 h-10 object-cover rounded-full" src={comment.userId.img} alt="" />
                 :
@@ -263,7 +287,7 @@ const Comment = ({comment, user, postId, setLoading, reportComments, setReportCo
             }
 
             <div className='w-full'>
-                <div className=' flex flex-col  p-4 bg-gray-100  rounded-lg relative'>
+                <div className={` flex flex-col  p-4  rounded-lg relative bg-gray-100 `}>
                     <div className='flex gap-5'>
                         <div className='text-blue-500 font-bold'>{comment.userId.username }</div>
                         <div><ReactTimeAgoUtil date={comment.createdAt} locale="vi-VN"/></div>
@@ -449,7 +473,7 @@ const Comment = ({comment, user, postId, setLoading, reportComments, setReportCo
 
         {openCommentBox &&
             <div className='ml-12 mt-6 border-l-2 pl-2 '  >
-                <CommentBox  user={user} postId={postId} type={'comment'} refCommentIdTypeThread={comment._id} closeBoxAfterComment={true} 
+                <CommentBox  user={user} postId={postId} slug={slug} type={'comment'} refCommentIdTypeThread={comment._id} closeBoxAfterComment={true} 
                 refCommentUserId={comment.userId._id} refCommentUsername={comment.userId.username} isReplied={false} setLoading={setLoading}/>
             </div>
         }
@@ -458,7 +482,7 @@ const Comment = ({comment, user, postId, setLoading, reportComments, setReportCo
         {showReplies &&
             <div className='border-l-2 ml-12'>
             {replies.length>0 && replies.map((reply,index)=>(
-                <Reply replyData={reply} key={index} user={user} postId={postId} setLoading={setLoading} reportComments={reportComments} 
+                <Reply commentId={commentId} replyData={reply} key={index} user={user} postId={postId} slug={slug} setLoading={setLoading} reportComments={reportComments} 
                         setReportComments={setReportComments} />
             ))}
             </div>

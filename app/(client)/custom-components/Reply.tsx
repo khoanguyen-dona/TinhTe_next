@@ -2,7 +2,7 @@
 import { CommentType, EmotionType } from '@/dataTypes'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
 import { Flag, Loader } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import CommentBox from './CommentBox'
 import { User } from '@/dataTypes'
@@ -23,9 +23,11 @@ import { Separator } from '@/components/ui/separator'
 
 
 type Props = {
+    commentId: string|null, // specific commentId appear on notification
     replyData: CommentType,
     user: User,
     postId: string,
+    slug: string|null,
     setLoading: (value: boolean) => void,
     reportComments: string[],
     setReportComments: (value: string[]) => void
@@ -37,7 +39,7 @@ type commentEmotionType = {
     type: EmotionType
 }
 
-const Reply = ({replyData, user, postId, setLoading, reportComments, setReportComments }:Props) => {
+const Reply = ({commentId, replyData, user, postId, slug, setLoading, reportComments, setReportComments }:Props) => {
     
     const [showEmoji, setShowEmoji] = useState<boolean>(false);
     const [openCommentBox, setOpenCommentBox] = useState<boolean>(false)
@@ -56,6 +58,7 @@ const Reply = ({replyData, user, postId, setLoading, reportComments, setReportCo
     const [funCount, setFunCount] = useState<number>()
     const [sadCount, setSadCount] = useState<number>()
     const [wowCount, setWowCount] = useState<number>()
+    const scrollRef = useRef<HTMLDivElement |null>(null)
 
     //fetch emotions of comment
     useEffect(()=>{
@@ -190,6 +193,14 @@ const Reply = ({replyData, user, postId, setLoading, reportComments, setReportCo
     },[currentEmotion])
 
 
+    // scroll to bottom when  have commentIdTypeThread
+    useEffect(() => {
+        if(commentId!==null){
+            scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [ commentId]);
+
+
   return (
     <>
     {/* <div className='flex gap-2  py-2 ml-12 border-l-2 pl-2  '> */}
@@ -203,8 +214,8 @@ const Reply = ({replyData, user, postId, setLoading, reportComments, setReportCo
                 <Image width={30} height={30} className="w-10 h-10 object-cover rounded-full" src='/user.png' alt="" />
             }
 
-            <div className='w-full'>
-                <div className=' flex flex-col  p-4 bg-gray-100  rounded-lg relative'>
+            <div className='w-full '>
+                <div ref={scrollRef} className={` flex flex-col  p-4   rounded-lg relative ${commentId===replyData._id?'bg-red-100':'bg-gray-100'} `}>
                     <div className='flex gap-5'>
                         <div className='text-blue-500 font-bold'>{replyData.userId.username }</div>
                         <div><ReactTimeAgoUtil date={replyData.createdAt} locale="vi-VN"/></div>
@@ -375,9 +386,9 @@ const Reply = ({replyData, user, postId, setLoading, reportComments, setReportCo
     
     {openCommentBox &&
         <div className='ml-16 mt-4'  >
-            <CommentBox   user={user} postId={postId} type={'comment'} refCommentIdTypeThread={replyData.refCommentIdTypeThread} 
-            refCommentUsername={replyData.userId.username}  closeBoxAfterComment={true} 
-            refCommentUserId={replyData.userId._id} isReplied={false} setLoading={setLoading}/>
+            <CommentBox   user={user} postId={postId} slug={slug} type={'comment'} refCommentIdTypeThread={replyData.refCommentIdTypeThread} 
+                            refCommentUsername={replyData.userId.username}  closeBoxAfterComment={true} 
+                            refCommentUserId={replyData.userId._id} isReplied={false} setLoading={setLoading}/>
         </div>
     }
 

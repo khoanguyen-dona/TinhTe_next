@@ -31,7 +31,8 @@ import { useSocket } from '@/context/socketContext'
 type Props = {
   
     user: User,
-    postId: string
+    postId: string ,
+    slug: string|null,
     type: 'thread'|'comment',
     refCommentIdTypeThread: string|null ,
     refCommentUserId: string|null,
@@ -43,7 +44,7 @@ type Props = {
 
 
 
-const CommentBox = ({ user, postId, type, refCommentIdTypeThread, refCommentUserId, refCommentUsername, isReplied, setLoading, closeBoxAfterComment }:Props) => {
+const CommentBox = ({ user, postId, slug, type, refCommentIdTypeThread, refCommentUserId, refCommentUsername, isReplied, setLoading, closeBoxAfterComment }:Props) => {
 
     const [comment, setComment] = useState<string>()
     const [data, setData] = useState<CommentRedType[]>([])
@@ -93,6 +94,8 @@ const CommentBox = ({ user, postId, type, refCommentIdTypeThread, refCommentUser
                     usernameRef: user.username,
                     commentId: res.data.comment._id ,
                     refCommentIdTypeThread: refCommentIdTypeThread ,
+                    postSlug: slug,
+                    postId: postId
                 })
 
                 //send to socket
@@ -108,7 +111,9 @@ const CommentBox = ({ user, postId, type, refCommentIdTypeThread, refCommentUser
                             isReceiverSeen: false,
                             commentId: res.data.comment._id ,
                             refCommentIdTypeThread: refCommentIdTypeThread ,
-                            createdAt: new Date().toISOString()
+                            createdAt: new Date().toISOString(),
+                            postSlug: slug ,
+                            postId: postId
                         }
                     })
                 }
