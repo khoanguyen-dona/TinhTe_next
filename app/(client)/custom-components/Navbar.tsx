@@ -16,7 +16,7 @@ import { ChatType, NotificationType, User } from '@/dataTypes'
 import ChatItem from './ChatItem'
 import { userRequest } from '@/requestMethod'
 import { addChatToChatList, addChatToChatListAtTail, setChatList, setChatListHasNext } from '@/redux/chatListRedux'
-import { setMessages } from '@/redux/chatRedux'
+import { setChatLoading, setMessages } from '@/redux/chatRedux'
 import { setSenderData } from '@/redux/chatRedux'
 import { setChatId } from '@/redux/chatRedux'
 import { setChatState } from '@/redux/chatRedux'
@@ -79,6 +79,7 @@ const Navbar = () => {
     dispatch(setChatState(false))
     dispatch(setMessages(null))
     dispatch(setAccessToken(null))
+    dispatch(setChatLoading(false))
     router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
   }
 

@@ -13,7 +13,6 @@ import { useDispatch } from 'react-redux'
 import { setChatPage, setChatState, setSenderData, setUserStatus } from '@/redux/chatRedux'
 import { setMessages } from '@/redux/chatRedux'
 import { setChatId } from '@/redux/chatRedux'
-// import { setChatPage } from '@/redux/chatRedux'
 import { RootState } from '@/redux/store'
 import { useSelector } from 'react-redux'
 import { setChatLoading } from '@/redux/chatRedux'
@@ -30,11 +29,9 @@ const ChatItem = ({chat, userId}: Props) => {
     const chatList = useSelector((state:RootState)=>state.chatList.currentChatList)
     const [senderInfo, setSenderInfo] = useState<User>()
     const dispatch = useDispatch()
-    const limit = 10
+    const limit = 5
     const page = 1
     
-    // console.log('senderInfo',senderInfo)
-    // console.log('chat',chat)
 
     // get info of sender
     useEffect(()=>{
@@ -73,13 +70,14 @@ const ChatItem = ({chat, userId}: Props) => {
             dispatch(setChatId(chat._id))
             dispatch(setUserStatus('offline'))
             dispatch(setChatPage(1))
-            dispatch(setChatLoading(true))
             dispatch(setSenderData(senderInfo as User))
-            const res = await userRequest.get(`/message?chatId=${chat._id}&page=${page}&limit=${limit}`)
-            if(res.data){
-                dispatch(setChatLoading(false))
-                dispatch(setMessages(res.data.messages))
-            }
+            // dispatch(setChatLoading(true))
+            // const res = await userRequest.get(`/message?chatId=${chat._id}&page=${page}&limit=${limit}`)
+            // if(res.data){
+            //     dispatch(setChatLoading(false))
+            //     dispatch(setMessages(res.data.messages))           
+            // }
+
             // updated chat state field: isReceiverSeen? , set it to true in localState
             dispatch(updateChatList({chatId: chat._id as string, 
                 newData:{

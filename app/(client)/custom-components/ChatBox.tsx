@@ -12,24 +12,21 @@ import { Textarea } from '@/components/ui/textarea'
 import { SmilePlus } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
-import { setChatId, setChatSound, setChatState, setUserLastAccess, setUserStatus } from '@/redux/chatRedux'
+import { setChatId, setChatSound, setChatState, setMessages, setUserLastAccess, setUserStatus } from '@/redux/chatRedux'
 import { setChatLoading } from '@/redux/chatRedux'
 import { MessageType } from '@/dataTypes'
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
 import { CircleUserRound } from 'lucide-react'
 import { ChevronDown } from 'lucide-react'
 import { publicRequest, userRequest } from '@/requestMethod'
-import { setMessages } from '@/redux/chatRedux'
 import { User } from '@/dataTypes'
 import { setChatPage } from '@/redux/chatRedux'
-import { Socket, io } from 'socket.io-client'
 import { useRef } from 'react'
 import { ChatType } from '@/dataTypes'
 import { addChatToChatList, setChatList, setChatListHasNext, updateChatList } from '@/redux/chatListRedux'
 import { emoji } from '@/data'
 import { UploadMultipleImage } from './UploadMultipleImage'
 import Fancybox from './Fancybox'
-import { addUserToOnlineUsers, setOnlineUsers } from '@/redux/userRedux'
 import { useSocket } from '@/context/socketContext'
 import { v4 as uuidv4}  from 'uuid'
 
@@ -46,7 +43,7 @@ const ChatBox = () => {
     const page: number = useSelector((state:RootState)=>state.chat.pageNumber)
     const sound: boolean = useSelector((state:RootState)=>state.chat.sound)
     const chatLoading: boolean = useSelector((state:RootState)=>state.chat.chatLoading)
-    const messagelimit: number = 6
+    const messagelimit: number = 10
     const chatListLimit: number = 10
     const [ text, setText ] = useState<string>('')
     const [ imageFiles, setImageFiles ] = useState<File[]>([])
@@ -64,6 +61,11 @@ const ChatBox = () => {
     const [content, setContent] = useState<string>()
     const chatIdRef = useRef(chatId)
     const senderIdRef = useRef(senderData?._id)
+    const pageRef = useRef(page)
+
+    useEffect(()=>{
+        pageRef.current=page
+    },[page])
 
     // update senderIdRef when senderData change
     useEffect(()=>{
@@ -74,6 +76,7 @@ const ChatBox = () => {
     // update chatIdRef when chatId change
     useEffect(()=>{
         chatIdRef.current = chatId
+        setHasNext(true)
     },[chatId])
 
     // init socket
@@ -118,8 +121,7 @@ const ChatBox = () => {
         // update userStatus when chatId changed
         socket?.on('userStatus', (data:{status:'online'|'offline', lastAccess: string}) =>{
                 dispatch(setUserStatus(data.status))      
-                dispatch(setUserLastAccess(data.lastAccess)) 
-                console.log('data',data)                   
+                dispatch(setUserLastAccess(data.lastAccess))                            
         })
 
         // update users  when a user offline
@@ -205,25 +207,41 @@ const ChatBox = () => {
     }, [arrivalMessage])
 
     // load previous message
-    const handleLoadMessage = () => {
+    const handleLoadMessage = async() => {
         dispatch(setChatPage(page+1))
+        dispatch(setChatLoading(true))
+        try {
+            const res = await userRequest.get(`/message?chatId=${chatIdRef.current}&page=${pageRef.current+1}&limit=${messagelimit}`)
+            if(res.data && newMessages.length){          
+                res.data.messages.reverse().map((message: MessageType)=>{
+                    setNewMessages(prev=>[message,...prev])
+                })    
+                setHasNext(res.data.hasNext)   
+                dispatch(setChatLoading(false))
+            }
+        } catch(err){
+            console.log('get messages failed',err)
+        } finally {
+            dispatch(setChatLoading(false))
+        }
     }
 
     // add new messages to localStorage messages
     useEffect(()=>{
         const getMessage = async () =>{
+            console.log('fetch messages')
             if(currentUser!==null && chatId !== null){
-                const res = await userRequest.get(`/message?chatId=${chatId}&page=${page}&limit=${messagelimit}`)
-                if(res.data && newMessages.length){          
-                    res.data.messages.reverse().map((message: MessageType)=>{
-                        setNewMessages(prev=>[message,...prev])
-                    })
+                const res = await userRequest.get(`/message?chatId=${chatId}&page=${pageRef.current}&limit=${messagelimit}`)
+                if(res.data ){          
+                        dispatch(setMessages(res.data.messages))
+                    // }
                     setHasNext(res.data.hasNext)
+                    console.log('fetch 1st time: ', res.data)
                 }
             }
         }
         getMessage()
-    },[page])
+    },[chatId])
 
     // value of content depend on imagesFile.length and text==='' or not
     useEffect(()=>{
@@ -498,13 +516,13 @@ const ChatBox = () => {
                 :
             <div className='relative'>
                 <div className=' h-80   overflow-auto space-y-4 p-2 ' >
-                        {hasNext ?
+                        {hasNext === false ? '':
                             <div 
                                 onClick={handleLoadMessage}
                                 className='flex justify-center items-center hover:bg-blue-100 hover:cursor-pointer text-blue-500 bg-gray-100 rounded-lg text-sm p-2 ' >
                             Xem tin cũ hơn
                             </div>
-                            : ''
+                            
                         }
                 
                         {newMessages?.length>0 && newMessages?.map((message: MessageType,index)=>(
