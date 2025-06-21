@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from "react";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./admin.css"
 import  { Toaster } from 'react-hot-toast';
 import Footer from "../(client)/custom-components/Footer";
@@ -13,17 +12,6 @@ import AppSidebar from "./admin-components/AppSidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 
 
 export default function RootLayout({children,}:Readonly<{ children: React.ReactNode;}>) {
@@ -50,7 +38,7 @@ export default function RootLayout({children,}:Readonly<{ children: React.ReactN
    
     <html lang="en">
 
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`antialiased`}>
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor} >      
 

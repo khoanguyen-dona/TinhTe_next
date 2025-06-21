@@ -1,5 +1,5 @@
 'use client'
-import { Geist, Geist_Mono } from "next/font/google";
+
 import "./auth.css";
 import  { Toaster } from 'react-hot-toast';
 import Navbar from "../(client)/custom-components/Navbar";
@@ -11,16 +11,6 @@ import '@fancyapps/ui/dist/fancybox/fancybox.css';
 import { Fancybox } from "@fancyapps/ui";
 import { SocketProvider } from "@/context/socketContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 
 export default function RootLayout({
   children,
@@ -30,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={` antialiased`}>
       <SocketProvider>
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor} >
