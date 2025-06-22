@@ -13,7 +13,6 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -59,6 +58,15 @@ const Reply = ({commentId, replyData, user, postId, slug, setLoading, reportComm
     const [sadCount, setSadCount] = useState<number>()
     const [wowCount, setWowCount] = useState<number>()
     const scrollRef = useRef<HTMLDivElement |null>(null)
+
+
+    // scroll to bottom when  have commentId
+    useEffect(() => {
+        if(commentId!==null ){
+            scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [ commentId]);
+    
 
     //fetch emotions of comment
     useEffect(()=>{
@@ -193,19 +201,16 @@ const Reply = ({commentId, replyData, user, postId, slug, setLoading, reportComm
     },[currentEmotion])
 
 
-    // scroll to bottom when  have commentIdTypeThread
-    useEffect(() => {
-        if(commentId!==null){
-            scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [ commentId]);
+
 
 
   return (
-    <>
+    <div >
     {/* <div className='flex gap-2  py-2 ml-12 border-l-2 pl-2  '> */}
-    <div className='flex   py-2  pl-2  '>
+   
 
+    <div ref={scrollRef} className='flex py-2  pl-2  '>
+            
             { replyData.userId.img ?
             <div className=' h-10 w-[50px]'>
                 <Image width={30} height={30} className="w-10 h-10 object-cover rounded-full" src={replyData.userId.img  } alt="" />
@@ -214,10 +219,10 @@ const Reply = ({commentId, replyData, user, postId, slug, setLoading, reportComm
                 <Image width={30} height={30} className="w-10 h-10 object-cover rounded-full" src='/user.png' alt="" />
             }
 
-            <div className='w-full '>
-                <div ref={scrollRef} className={` flex flex-col  p-4   rounded-lg relative ${commentId===replyData._id?'bg-red-100':'bg-gray-100'} `}>
-                    <div className='flex gap-5'>
-                        <div className='text-blue-500 font-bold'>{replyData.userId.username }</div>
+            <div  className='w-full '>
+                <div  className={` flex flex-col  p-4   rounded-lg relative ${commentId===replyData._id?'bg-red-100':'bg-gray-100'} `}>
+                    <div className='flex gap-5' >
+                        <div  className='text-blue-500 font-bold'>{replyData.userId.username }</div>
                         <div><ReactTimeAgoUtil date={replyData.createdAt} locale="vi-VN"/></div>
                     </div>
                     <div className='mt-3 flex gap-2 '>
@@ -369,7 +374,7 @@ const Reply = ({commentId, replyData, user, postId, slug, setLoading, reportComm
 
                         </div>
                     </div>
-                    <div  onClick={()=>setOpenCommentBox(!openCommentBox)} className='flex hover:text-red-500 hover:cursor-pointer'>
+                    <div   onClick={()=>setOpenCommentBox(!openCommentBox)} className='flex hover:text-red-500 hover:cursor-pointer'>
                         <p>Trả lời</p>
                     </div>
                     {loading2 ? <Loader className='animate-spin text-gray-500'/> :
@@ -384,6 +389,7 @@ const Reply = ({commentId, replyData, user, postId, slug, setLoading, reportComm
             </div>
     </div>
     
+    
     {openCommentBox &&
         <div className='ml-16 mt-4'  >
             <CommentBox   user={user} postId={postId} slug={slug} type={'comment'} refCommentIdTypeThread={replyData.refCommentIdTypeThread} 
@@ -393,7 +399,7 @@ const Reply = ({commentId, replyData, user, postId, slug, setLoading, reportComm
     }
 
 
-    </>
+    </div>
   )
 }
 

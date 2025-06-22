@@ -11,13 +11,12 @@ import toast from 'react-hot-toast';
 import { publicRequest, userRequest } from '@/requestMethod';
 import { ChevronUp } from 'lucide-react';
 import Fancybox from './Fancybox';
-import { Button } from "@/components/ui/button"
+
 
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -28,7 +27,6 @@ type Props = {
     commentIdTypeThread: string|null ,
     commentId: string|null // use to find specific commentId when click on notify button
     fetchAllReply: boolean, // if the commentId we find in reply we will set to true to fetch all reply
-    // colorRed: boolean, // highlight the specific commentId that other user remind of
     comment: CommentType, // commentData
     user: User,
     postId: string,
@@ -174,7 +172,7 @@ const Comment = ({commentIdTypeThread, commentId, fetchAllReply, comment, user, 
             }
         }
         getTotalReplies()
-    }, [])
+    }, [commentIdTypeThread])
 
     const handleCloseReplies = async () => {
         setShowReplies(false)
@@ -275,6 +273,8 @@ const Comment = ({commentIdTypeThread, commentId, fetchAllReply, comment, user, 
         }
         getEmotions()
     },[currentEmotion])
+
+     
 
 
   return (
@@ -482,8 +482,21 @@ const Comment = ({commentIdTypeThread, commentId, fetchAllReply, comment, user, 
         {showReplies &&
             <div className='border-l-2 ml-12'>
             {replies.length>0 && replies.map((reply,index)=>(
-                <Reply commentId={commentId} replyData={reply} key={index} user={user} postId={postId} slug={slug} setLoading={setLoading} reportComments={reportComments} 
-                        setReportComments={setReportComments} />
+                <>
+                    {
+                        commentId===reply._id ?
+                    
+                        
+                            <Reply commentId={commentId} replyData={reply} key={index} user={user} postId={postId} slug={slug} setLoading={setLoading} reportComments={reportComments} 
+                                    setReportComments={setReportComments} />
+                      
+                        :
+                      
+                            <Reply commentId={null} replyData={reply} key={index} user={user} postId={postId} slug={slug} setLoading={setLoading} reportComments={reportComments} 
+                                    setReportComments={setReportComments} />
+                    
+                    }
+                </>
             ))}
             </div>
         }
