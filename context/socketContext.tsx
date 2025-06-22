@@ -1,7 +1,7 @@
 'use client'; 
 
 import { RootState } from '@/redux/store';
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { io, Socket } from 'socket.io-client';
 import toast from 'react-hot-toast';
@@ -9,12 +9,15 @@ import toast from 'react-hot-toast';
 interface SocketContextType {
   socket: Socket | null; 
   isConnected: boolean;  
+  reconnect: () => void;
 }
+
 
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
+  reconnect: () => {}
 });
 
 interface SocketProviderProps {
@@ -25,6 +28,19 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
+
+  const reconnect = useCallback(() => {
+    if (socket && !isConnected) { // Chỉ kết nối lại nếu socket tồn tại và hiện đang ngắt kết nối
+      console.log('Đang cố gắng kết nối lại Socket.IO thủ công...');
+      socket.connect(); // Kích hoạt kết nối lại
+    } else if (socket && isConnected) {
+      console.log('Socket.IO đã được kết nối. Không cần kết nối lại.');
+    } else {
+      console.log('Socket.IO instance chưa sẵn sàng.');
+    }
+  }, [socket, isConnected]);
+
+
   useEffect(() => {
 
     const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_IO;
@@ -37,17 +53,17 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     });
 
 
-    // newSocket.on('connect', () => {
-    //   console.log('Socket.IO connected. Socket ID:', newSocket.id);
-    //   setIsConnected(true); // Update connection status to true
-    // });
+    newSocket.on('connect', () => {
+      console.log('Socket.IO connected. Socket ID:', newSocket.id);
+      setIsConnected(true); // Update connection status to true
+    });
 
 
-    // newSocket.on('disconnect', (reason) => {
-    //   console.log('Socket.IO disconnected. Reason:', reason);
-    //   setIsConnected(false); 
+    newSocket.on('disconnect', (reason) => {
+      console.log('Socket.IO disconnected. Reason:', reason);
+      setIsConnected(false); 
   
-    // });
+    });
 
     // newSocket.on('connect_error', (error) => {
     //   console.error('Socket.IO connection error:', error.message);
@@ -88,7 +104,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }, []); 
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider value={{ socket, isConnected, reconnect }}>
       {children}
     </SocketContext.Provider>
   );
