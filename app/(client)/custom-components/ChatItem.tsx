@@ -29,10 +29,7 @@ const ChatItem = ({chat, userId}: Props) => {
     const chatList = useSelector((state:RootState)=>state.chatList.currentChatList)
     const [senderInfo, setSenderInfo] = useState<User>()
     const dispatch = useDispatch()
-    const limit = 5
-    const page = 1
-    
-
+   
     // get info of sender
     useEffect(()=>{
         const getSenderInfo = async() =>{
@@ -70,13 +67,7 @@ const ChatItem = ({chat, userId}: Props) => {
             dispatch(setChatId(chat._id))
             dispatch(setUserStatus('offline'))
             dispatch(setChatPage(1))
-            dispatch(setSenderData(senderInfo as User))
-            // dispatch(setChatLoading(true))
-            // const res = await userRequest.get(`/message?chatId=${chat._id}&page=${page}&limit=${limit}`)
-            // if(res.data){
-            //     dispatch(setChatLoading(false))
-            //     dispatch(setMessages(res.data.messages))           
-            // }
+            dispatch(setSenderData(senderInfo as User))         
 
             // updated chat state field: isReceiverSeen? , set it to true in localState
             dispatch(updateChatList({chatId: chat._id as string, 

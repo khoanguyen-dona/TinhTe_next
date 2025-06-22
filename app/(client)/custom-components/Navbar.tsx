@@ -63,6 +63,8 @@ const Navbar = () => {
   const chatListLimit = 1
   const [open, setOpen] = useState<boolean>(false)
   const [sheetStatus, setSheetStatus] = useState<boolean>(false)
+  const [openNotify, setOpenNotify] = useState<boolean>(false)
+  const [openChatList, setOpenChatList] = useState<boolean>(false)
   const notificationLimit = 10
   const [notificationPage, setNotificationPage] = useState<number>(2)
   const [mailLoading, setMailLoading] = useState<boolean>(false)
@@ -251,10 +253,12 @@ const Navbar = () => {
           </Link>
 
          {/* mail button */}
-          <Popover>
+          <Popover >
             <PopoverTrigger asChild >
            
-              <div className='bg-gray-300 p-2  rounded-full hover:bg-blue-300 hover:cursor-pointer transition relative' title='Tin nhắn'>
+              <div
+                  onClick={()=>dispatch(setChatState(false))} 
+                 className='bg-gray-300 p-2  rounded-full hover:bg-blue-300 hover:cursor-pointer transition relative' title='Tin nhắn'>
                 <img src="/email.png"  className='w-8 h-8 text-gray-400 opacity-60' alt="" />
                 {mailNotiCount>0 &&
                 <>
@@ -278,8 +282,10 @@ const Navbar = () => {
 
                   <div className='h-140   overflow-auto'>
                     <>                  
-                    {chatList && chatList?.length>0 && chatList?.map((chat: ChatType,index)=>(            
-                      <ChatItem chat={chat} key={index} userId={user?._id as string} />  
+                    {chatList && chatList?.length>0 && chatList?.map((chat: ChatType,index)=>(    
+                      <div onClick={()=>setOpenChatList(false)}>
+                        <ChatItem  chat={chat} key={index} userId={user?._id as string} />  
+                      </div>        
                       ))
                     }    
                     {chatListHasNext &&
@@ -300,7 +306,7 @@ const Navbar = () => {
 
           
           {/* notification button */}
-          <Popover   >
+          <Popover open={openNotify} onOpenChange={setOpenNotify}  >
             <PopoverTrigger asChild >
               <div className='bg-gray-300 p-2  rounded-full hover:bg-blue-300 hover:cursor-pointer transition relative' title='Thông báo'>
                 <img src="/bell.png"  className='w-8 h-8 opacity-60' alt="" />
@@ -326,7 +332,7 @@ const Navbar = () => {
                   <div className='h-140   overflow-auto'>
                     {notifications?.map((notification: NotificationType, index)=>(
                     <>
-                      <div className={`hover:bg-gray-100  p-2 ${notification.isReceiverSeen?'':'bg-red-100'} `}>
+                      <div onClick={()=>setOpenNotify(false)} className={`hover:bg-gray-100  p-2 ${notification.isReceiverSeen?'':'bg-red-100'} `}>
                         <Link href={`/post/${notification.postSlug}/${notification.postId}?commentId=${notification.commentId}&refCommentIdTypeThread=${notification.refCommentIdTypeThread} `} 
                               key={index} className={`  flex-col hover:cursor-pointer  `} 
                               onClick={()=>handleSeenNotification(notification?._id)}>

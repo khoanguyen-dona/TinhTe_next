@@ -611,7 +611,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                     <button disabled={text?.trim().length===0 && imageFiles.length===0 } className='w-14 h-14' >
                         <Image onClick={handleSendMessage} 
                             src='/paper-plane.png' width={50} height={50} 
-                            className={`w-10 h-10 p-1  object-cover rounded-lg ${text.length===0?'opacity-50':'hover:bg-blue-100'} `} alt='' title='Gửi'
+                            className={`w-10 h-10 p-1  object-cover rounded-lg ${text.trim().length===0&&imageFiles.length===0?'opacity-50':'hover:bg-blue-100'} `} alt='' title='Gửi'
                         />  
                     </button>
                 }  

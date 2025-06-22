@@ -3,22 +3,17 @@ import React, { useState } from 'react'
 import { SendIcon } from 'lucide-react'
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
+
 import { Textarea } from '@/components/ui/textarea'
 import { User } from '@/dataTypes'
 import { userRequest } from '@/requestMethod'
-import { CommentType } from '@/dataTypes'
 import toast from 'react-hot-toast'
-import Comment from './Comment'
 import { CommentRedType } from './CommentRed'
 import CommentRed from './CommentRed'
 import Image from 'next/image'
@@ -46,10 +41,10 @@ type Props = {
 
 const CommentBox = ({ user, postId, slug, type, refCommentIdTypeThread, refCommentUserId, refCommentUsername, isReplied, setLoading, closeBoxAfterComment }:Props) => {
 
-    const [comment, setComment] = useState<string>()
+    const [comment, setComment] = useState<string>('')
     const [data, setData] = useState<CommentRedType[]>([])
     const [closeCommentBox, setCloseCommentBox] = useState<boolean>(false)
-    const { socket, isConnected} = useSocket()
+    const { socket} = useSocket()
     const [previewImages, setPreviewImages] = useState<string[]>([])
     const [imageFiles, setImageFiles] = useState<File[]>([])
     const uuid = uuidv4()
@@ -123,6 +118,9 @@ const CommentBox = ({ user, postId, slug, type, refCommentIdTypeThread, refComme
             toast.error('Lỗi')
         }finally{
             setLoading(false)
+            setComment('')
+            setPreviewImages([])
+            setImageFiles([])
         }
     }
 
@@ -203,14 +201,18 @@ const CommentBox = ({ user, postId, slug, type, refCommentIdTypeThread, refComme
                         </span>
                         {/* send button */}
                         { user!==null ?
-                            <button onClick={handleSendComment} className='px-6   rounded-lg text-white font-bold bg-blue-500 hover:bg-blue-600 flex justify-center items-center gap-2 hover:cursor-pointer' >
+                            <button
+                                disabled={comment.trim().length===0&&imageFiles.length===0} 
+                                onClick={handleSendComment} className={`px-6   rounded-lg text-white font-bold bg-blue-500  flex 
+                                justify-center items-center gap-2 hover:cursor-pointer ${comment.trim().length===0&&imageFiles.length===0?'opacity-40':'hover:bg-blue-600'}`} >
                                 <SendIcon />
                                 Gửi
                             </button> 
                             :
                             <AlertDialog>
                                 <AlertDialogTrigger>
-                                    <button className='px-6  py-4 rounded-lg text-white font-bold bg-blue-500 hover:bg-blue-600 flex justify-center items-center gap-2 hover:cursor-pointer' >
+                                    <button className={`px-6  py-4 rounded-lg text-white font-bold bg-blue-500 hover:bg-blue-600 flex justify-center 
+                                        items-center gap-2 hover:cursor-pointer  `} >
                                         <SendIcon  />
                                         Gửi
                                     </button> 
