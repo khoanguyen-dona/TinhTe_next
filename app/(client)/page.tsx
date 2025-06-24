@@ -292,7 +292,7 @@ export default function Home() {
             {/* Xem thêm button */}
             {hasNext ?
               <div onClick={()=>setPage((prev)=>prev+1)} className="flex justify-center items-center text-blue-500 mb-10 bg-blue-50 p-4 rounded-xl 
-              text-xl font-bold transition hover:bg-blue-100 hover:cursor-pointer mt-20">
+              text-xl font-bold transition hover:bg-blue-100 hover:cursor-pointer mt-5">
                 {loading?<Loader className="animate-spin w-8 h-8 opacity-50" /> : 'Xem thêm ' }
               </div> : ''
             }

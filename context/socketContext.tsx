@@ -65,25 +65,25 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   
     });
 
-    // newSocket.on('connect_error', (error) => {
-    //   console.error('Socket.IO connection error:', error.message);
+    newSocket.on('connect_error', (error) => {
+      console.error('Socket.IO connection error:', error.message);
     
-    // });
+    });
 
-    // newSocket.on('reconnect_attempt', (attemptNumber) => {
-    //   console.log('Socket.IO reconnect attempt:', attemptNumber);
-    // });
-
-
-    // newSocket.on('reconnect_error', (error) => {
-    //   console.error('Socket.IO reconnect error:', error.message);
-    // });
+    newSocket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('Socket.IO reconnect attempt:', attemptNumber);
+    });
 
 
-    // newSocket.on('reconnect_failed', () => {
-    //   console.error('Socket.IO reconnect failed. User might need to refresh or check server status.');
-    //   setIsConnected(false); // Ensure connection state reflects failure
-    // });
+    newSocket.on('reconnect_error', (error) => {
+      console.error('Socket.IO reconnect error:', error.message);
+    });
+
+
+    newSocket.on('reconnect_failed', () => {
+      console.error('Socket.IO reconnect failed. User might need to refresh or check server status.');
+      setIsConnected(false); // Ensure connection state reflects failure
+    });
 
     setSocket(newSocket);
 

@@ -1,17 +1,22 @@
-'use client'
 import "./globals.css";
-import  { Toaster } from 'react-hot-toast';
-import Navbar from "./custom-components/Navbar";
-import Footer from "./custom-components/Footer";
-import { Provider } from "react-redux";
-import {store, persistor} from '../../redux/store'
-import { PersistGate } from "redux-persist/integration/react";
-import '@fancyapps/ui/dist/fancybox/fancybox.css';
-import { Fancybox } from "@fancyapps/ui";
-import ChatBox from "./custom-components/ChatBox";
-import { SocketProvider } from "@/context/socketContext";
+import { Metadata } from 'next'; // Quan trọng: import Metadata
+import ClientLayoutWrapper from "./custom-components/wrapper/ClientLayoutWrapper";
 
 
+export const metadata: Metadata = {
+  title: 'TinhTe.vn - Mạng xã hội hỏi đáp, review thông tin công nghệ ', // Tiêu đề trang của bạn
+  description: 'Mạng xã hội TinhTe.vn', // Mô tả trang web của bạn
+  icons: { // Cấu hình Favicon
+    icon: '/favicon.ico', // Đặt favicon.ico trong thư mục public/ của bạn
+    // Hoặc nếu bạn có app/icon.png, bạn có thể dùng: icon: '/icon.png'
+  },
+  // Thêm các metadata khác nếu cần (Open Graph, Twitter Cards, v.v.)
+  openGraph: {
+    title: 'TinhTe.vn - Mạng xã hội hỏi đáp, review thông tin công nghệ',
+    description: ' Mạng xã hội hỏi đáp, review thông tin công nghệ',
+    images: ['/favicon.ico'], // Đặt og-image.jpg trong thư mục public/
+  },
+};
 
 export default function RootLayout({
   children,
@@ -22,31 +27,9 @@ export default function RootLayout({
     <html lang="en">
       
       <body className={` antialiased`}>
-          <SocketProvider>
-            <Provider store={store}>
-              <PersistGate loading={null} persistor={persistor} >
-                
-                <div><Navbar /></div>
-
-
-                <div className="flex justify-center">
-                  <div className=" w-[1200px]">
-                  {children}
-                  </div>
-                </div>
-
-                <ChatBox />
-                <Toaster 
-                  position="top-right"
-                  reverseOrder={false}
-                  containerClassName="mt-14"
-                />
-
-                <div><Footer /></div>
-
-              </PersistGate>
-            </Provider >
-          </SocketProvider>
+         <ClientLayoutWrapper>
+            {children}
+         </ClientLayoutWrapper>
 
       </body>
         
