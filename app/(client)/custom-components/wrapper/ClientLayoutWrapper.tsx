@@ -11,6 +11,7 @@ import { Fancybox } from "@fancyapps/ui";
 import ChatBox from "../ChatBox";
 import { SocketProvider } from "@/context/socketContext";
 import { persistor } from "@/redux/store";
+import SocketConnect from "../SocketConnect";
 
 
 
@@ -23,31 +24,32 @@ export default function ClientLayoutWrapper({
     <html lang="en">
       
       <body className={` antialiased`}>
-          <SocketProvider>
             <Provider store={store}>
-              <PersistGate loading={null} persistor={persistor} >
-                
-                <div><Navbar /></div>
+                <SocketProvider>
+                    <PersistGate loading={null} persistor={persistor} >
+                        
+                        <div><Navbar /></div>
 
 
-                <div className="flex justify-center">
-                  <div className=" w-[1200px]">
-                  {children}
-                  </div>
-                </div>
+                        <div className="flex justify-center">
+                        <div className=" w-[1200px]">
+                        {children}
+                        </div>
+                        </div>
 
-                <ChatBox />
-                <Toaster 
-                  position="top-right"
-                  reverseOrder={false}
-                  containerClassName="mt-14"
-                />
+                        <SocketConnect/>
+                        <ChatBox />
+                        <Toaster 
+                        position="top-right"
+                        reverseOrder={false}
+                        containerClassName="mt-14"
+                        />
 
-                <div><Footer /></div>
+                        <div><Footer /></div>
 
-              </PersistGate>
+                    </PersistGate>
+                </SocketProvider>
             </Provider >
-          </SocketProvider>
 
       </body>
         

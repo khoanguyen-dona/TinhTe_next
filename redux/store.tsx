@@ -7,6 +7,7 @@ import chatReducer from './chatRedux'
 import searchReducer from './searchRedux'
 import groupChatReducer from './groupChatRedux'
 import notificationReducer from './notificationRedux'
+import socketConnectionReducer from './socketConnectionRedux'
 import {
   persistStore,
   persistReducer,
@@ -26,7 +27,7 @@ const persistConfig = {
 };
 
 const rootReducer = combineReducers({ user: userReducer, draft: draftReducer, chatList: chatListReducer, chat: chatReducer, search: searchReducer,
-   groupChat: groupChatReducer, notification: notificationReducer });
+   groupChat: groupChatReducer, notification: notificationReducer, socketConnection: socketConnectionReducer });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
