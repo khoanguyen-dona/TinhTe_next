@@ -21,24 +21,24 @@ export default function RootLayout({
     <html lang="en">
       
       <body className={` antialiased`}>
-      <SocketProvider>
         <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor} >
-            
-            <div><Navbar /></div>
-              {children}
-            
-            <Toaster 
-              position="top-right"
-              reverseOrder={false}
-              containerClassName="mt-14"
-            />
+          <SocketProvider>
+            <PersistGate loading={null} persistor={persistor} >
+              
+              <div><Navbar /></div>
+                {children}
+              
+              <Toaster 
+                position="top-right"
+                reverseOrder={false}
+                containerClassName="mt-14"
+              />
 
-            <div><Footer /></div>
+              <div><Footer /></div>
 
-          </PersistGate>
+            </PersistGate>
+          </SocketProvider>
         </Provider >
-      </SocketProvider>
       </body>
         
     </html>

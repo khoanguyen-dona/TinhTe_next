@@ -95,7 +95,7 @@ const page = () => {
                 // router.push('/')
                 setTimeout(()=>{
                     window.location.href = '/'    
-                },3000)
+                },1500)
             }
         } catch(err){
             toast.error('Lỗi, vui lòng thử lại')           

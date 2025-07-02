@@ -28,13 +28,14 @@ interface SocketProviderProps {
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
-
+  const dispatch = useDispatch()
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   let reconnectTimes = 0
   const reconnect = useCallback(() => {
     if (socket && !isConnected) { // Chỉ kết nối lại nếu socket tồn tại và hiện đang ngắt kết nối
       console.log('Đang cố gắng kết nối lại Socket.IO ');
+      dispatch(setSocketReconnect(true))
       socket.connect(); // Kích hoạt kết nối lại
     } else if (socket && isConnected) {
       console.log('Socket.IO đã được kết nối. Không cần kết nối lại.');
@@ -60,26 +61,26 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       // console.log('Socket.IO connected. Socket ID:', newSocket.id);
       reconnectTimes = 0
       setIsConnected(true); // Update connection status to true
-      // dispatch(setSocketConnection(true))
-      // dispatch(setReconnectSuccess(true))
-      // dispatch(setSocketReconnect(false))
+      dispatch(setSocketConnection(true))
+      dispatch(setReconnectSuccess(true))
+      dispatch(setSocketReconnect(false))
     });
 
 
     newSocket.on('disconnect', (reason) => {
       console.log('Socket.IO disconnected. Reason:', reason);
       setIsConnected(false); 
-      // dispatch(setSocketConnection(false))
+      dispatch(setSocketConnection(false))
     });
 
     newSocket.on('connect_error', (error) => {
       console.error('Socket.IO connection error:', error.message);
-      // dispatch(setSocketReconnect(true))
-      // dispatch(setSocketConnection(false))
+      dispatch(setSocketReconnect(true))
+      dispatch(setSocketConnection(false))
       reconnectTimes += 1
       console.log('reconnect times', reconnectTimes)
       if(reconnectTimes===6){
-        // dispatch(setSocketReconnect(false))
+        dispatch(setSocketReconnect(false))
         reconnectTimes = 0
       }
     });
