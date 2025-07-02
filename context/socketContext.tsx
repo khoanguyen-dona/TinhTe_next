@@ -28,13 +28,12 @@ interface SocketProviderProps {
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
-  const dispatch = useDispatch()
+
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   let reconnectTimes = 0
   const reconnect = useCallback(() => {
     if (socket && !isConnected) { // Chỉ kết nối lại nếu socket tồn tại và hiện đang ngắt kết nối
-      dispatch(setSocketReconnect(true))
       console.log('Đang cố gắng kết nối lại Socket.IO ');
       socket.connect(); // Kích hoạt kết nối lại
     } else if (socket && isConnected) {
@@ -48,7 +47,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   useEffect(() => {
 
     const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_SOCKET_IO;
-    console.log('Attempting to connect to Socket.IO server at:', SOCKET_SERVER_URL);
+    // console.log('Attempting to connect to Socket.IO server at:', SOCKET_SERVER_URL);
  
     const newSocket = io(SOCKET_SERVER_URL, {
       reconnectionAttempts: 5,  
@@ -58,29 +57,29 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
 
     newSocket.on('connect', () => {
-      console.log('Socket.IO connected. Socket ID:', newSocket.id);
+      // console.log('Socket.IO connected. Socket ID:', newSocket.id);
       reconnectTimes = 0
       setIsConnected(true); // Update connection status to true
-      dispatch(setSocketConnection(true))
-      dispatch(setReconnectSuccess(true))
-      dispatch(setSocketReconnect(false))
+      // dispatch(setSocketConnection(true))
+      // dispatch(setReconnectSuccess(true))
+      // dispatch(setSocketReconnect(false))
     });
 
 
     newSocket.on('disconnect', (reason) => {
       console.log('Socket.IO disconnected. Reason:', reason);
       setIsConnected(false); 
-      dispatch(setSocketConnection(false))
+      // dispatch(setSocketConnection(false))
     });
 
     newSocket.on('connect_error', (error) => {
       console.error('Socket.IO connection error:', error.message);
-      dispatch(setSocketReconnect(true))
-      dispatch(setSocketConnection(false))
+      // dispatch(setSocketReconnect(true))
+      // dispatch(setSocketConnection(false))
       reconnectTimes += 1
       console.log('reconnect times', reconnectTimes)
       if(reconnectTimes===6){
-        dispatch(setSocketReconnect(false))
+        // dispatch(setSocketReconnect(false))
         reconnectTimes = 0
       }
     });

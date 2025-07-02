@@ -2,23 +2,18 @@
 import Menu from "./custom-components/Menu";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
-import { setUser } from "@/redux/userRedux";
 import { setChatList, setChatListHasNext } from "@/redux/chatListRedux";
 import { publicRequest, userRequest } from "@/requestMethod";
 import { MessageGroupChatType, Post } from "@/dataTypes";
 import Link from "next/link";
 import Image from "next/image";
-import { Loader, SmilePlus } from "lucide-react";
-import { Socket, io } from "socket.io-client";
+import { Loader } from "lucide-react";
 import { useSocket } from "@/context/socketContext";
-import { v4 as uuidv4 }from 'uuid'
-import { Textarea } from "@/components/ui/textarea";
-import { emoji } from "@/data";
 import GroupChat from "./custom-components/GroupChat";
 import { setNotifications, setNotificationsHasNext } from "@/redux/notificationRedux";
 export default function Home() {
@@ -27,7 +22,6 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(true)
   const searchParams = useSearchParams()
   const user = useSelector((state: RootState) => state.user.currentUser)
-  const googleAuth = searchParams.get('googleAuth')
   const logout = searchParams.get('logout')
   const [trendingPosts, setTrendingPosts] = useState<Post[]>()
   const [posts, setPosts] = useState<Post[]>()
@@ -36,27 +30,32 @@ export default function Home() {
   const limit:number = 10 // use for get posts 
   const notifyLimit:number = 10
   const chatListLimit = 10
-  const { socket, isConnected} = useSocket()
+  const { socket} = useSocket()
   const uuid = Math.random().toString(36).substring(2,10)
   const [guestId, setGuestId] = useState<string>('')
   const [groupMessages, setGroupMessages] = useState<MessageGroupChatType[]>([])
-  const accessToken = useSelector((state:RootState)=>state.user.accessToken)
 
   
   // setTimeout(()=>{
   //   window.location.reload()
   // },600000)
 
+
   // fetch notification
   useEffect(()=>{
     const getData = async() => {
+
       const res = await userRequest.get(`/notification/${user?._id}?limit=${notifyLimit}&page=1`)
-      if(res.data){
+      if(res.data.notifications){
         dispatch(setNotifications(res.data.notifications))
         dispatch(setNotificationsHasNext(res.data.hasNext))
       }
     }
-    getData()
+    if(user!==null){
+      setTimeout(()=>{
+        getData()
+      },1500)
+    }
   }, [])
 
   // fetch group-chat-messages 
@@ -115,13 +114,20 @@ export default function Home() {
     useEffect(()=>{
       
       const getData = async() => {   
-          if(user!==null){         
-            const res = await userRequest.get(`/chat/chat-list/${user?._id}?page=1&limit=${chatListLimit}`)
+          console.log('get chatlist in home page')
+          const res = await userRequest.get(`/chat/chat-list/${user?._id}?page=1&limit=${chatListLimit}`)
+          if(res.data.chatList){
             dispatch(setChatListHasNext(res.data.hasNext))
             dispatch(setChatList(res.data.chatList))              
-          }
-      }      
-      getData()
+          }        
+      }    
+
+      if(user!==null){
+        setTimeout(()=>{
+          getData()
+        },1500)
+      }  
+      
     },[])
 
 

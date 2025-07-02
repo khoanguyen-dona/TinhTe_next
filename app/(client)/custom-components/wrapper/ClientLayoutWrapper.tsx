@@ -25,8 +25,8 @@ export default function ClientLayoutWrapper({
       
       <body className={` antialiased`}>
             <Provider store={store}>
-                <SocketProvider>
                     <PersistGate loading={null} persistor={persistor} >
+                <SocketProvider>
                         
                         <div><Navbar /></div>
 
@@ -47,8 +47,8 @@ export default function ClientLayoutWrapper({
 
                         <div><Footer /></div>
 
-                    </PersistGate>
                 </SocketProvider>
+                    </PersistGate>
             </Provider >
 
       </body>

@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -20,10 +20,12 @@ import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { Loader } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux'
-import { setAccessToken, setUser } from '@/redux/userRedux'
-import { setChatList, setChatListHasNext } from '@/redux/chatListRedux'
+import {  setUser } from '@/redux/userRedux'
+import { setChatList, setChatListHasNext, setNotifyCount } from '@/redux/chatListRedux'
 import { RootState } from '@/redux/store'
-
+import { useSearchParams } from 'next/navigation'
+import { setChatId, setChatLoading, setChatPage, setChatState, setMessages, setSenderData } from '@/redux/chatRedux'
+import { setNotifications } from '@/redux/notificationRedux'
 const formSchema = z.object({
     email: z.string().email('This is not a email').min(4).max(50),
     password: z.string().min(4).max(100)
@@ -31,11 +33,31 @@ const formSchema = z.object({
 
 const page = () => {
     const dispatch = useDispatch()
+    const sessionExpired = useSearchParams().get('sessionExpired')
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [seePassword, setSeePassword] = useState<true|false>(false)
-    const user = useSelector((state: RootState)=>state.user.currentUser)
+    // const user = useSelector((state: RootState)=>state.user.currentUser)
     const chatListLimit = 10
+
+    console.log('ses',sessionExpired)
+
+    // if redirected to login ,reset all state
+    useEffect(()=>{
+         dispatch(setUser(null))
+            dispatch(setChatList([]))
+            dispatch(setChatPage(1))
+            dispatch(setChatId(null))
+            dispatch(setNotifyCount(0))
+            dispatch(setNotifications([]))
+            dispatch(setSenderData(null))
+            dispatch(setChatState(false))
+            dispatch(setMessages(null))
+            localStorage.removeItem('accessToken')
+            dispatch(setChatLoading(false)) 
+    },[sessionExpired])
+
+    
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -53,21 +75,27 @@ const page = () => {
             })
             if(res.data){        
                 dispatch(setUser(res.data.data))
-                dispatch(setAccessToken(res.data.accessToken))
-                const getChatList = async() =>{ 
-                    try{
-                        const res2 = await userRequest.get(`/chat/chat-list/${res.data.data._id}?page=1&limit=${chatListLimit}`)
-                        if(res2.data){
-                          dispatch(setChatList(res2.data.chatList))
-                          dispatch(setChatListHasNext(res2.data.hasNext))
-                        }
-                    } catch(err){
-                      console.log('get chat list failed',err)
-                    }
-                  }
-                  getChatList()
+                localStorage.setItem('accessToken', res.data.accessToken.toString())
+                // const getChatList = async() =>{ 
+                //     console.log('run fetch chatlist after 2 sec')
+                //     try{
+                //         const res2 = await userRequest.get(`/chat/chat-list/${res.data.data._id}?page=1&limit=${chatListLimit}`)
+                //         if(res2.data){
+                //           dispatch(setChatList(res2.data.chatList))
+                //           dispatch(setChatListHasNext(res2.data.hasNext))
+                //         }
+                //     } catch(err){
+                //       console.log('get chat list failed',err)
+                //     }
+                // }
+                // setTimeout(()=>{
+                //     getChatList()
+                // },2000)
                 toast.success("Đăng nhập thành công")
-                router.push('/')
+                // router.push('/')
+                setTimeout(()=>{
+                    window.location.href = '/'    
+                },3000)
             }
         } catch(err){
             toast.error('Lỗi, vui lòng thử lại')           
@@ -84,12 +112,15 @@ const page = () => {
   return (
     <>
     {
-        user ? router.push('/') :
+        // user ? router.push('/') :
     <div className={` h-screen flex justify-center items-center bg-no-repeat bg-cover bg-center
          bg-[url('https://img.freepik.com/free-photo/close-up-pretty-flowers-with-blurred-person-background_23-2147604837.jpg?size=626&ext=jpg')] `}>
         <Form {...form}>
             <div className='flex flex-col p-4 gap-8 w-5/6  md:w-2/3 lg:w-1/2 xl:w-1/3 mt-0 h-auto bg-white rounded-xl border-2 border-gray-200 shadow-2xl'>
                 <div className='font-bold text-center text-2xl'>Đăng nhập</div>
+                {sessionExpired &&
+                    <div className='text-center text-xl text-red-500'>Phiên đăng nhập hết hạn</div>
+                }
                 <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
                     <FormField
                         control={form.control}

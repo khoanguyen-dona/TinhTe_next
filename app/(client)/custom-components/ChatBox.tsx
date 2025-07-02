@@ -208,15 +208,22 @@ const ChatBox = () => {
 
     // load previous message
     const handleLoadMessage = async() => {
-        dispatch(setChatPage(page+1))
+        
         dispatch(setChatLoading(true))
         try {
             const res = await userRequest.get(`/message?chatId=${chatIdRef.current}&page=${pageRef.current+1}&limit=${messagelimit}`)
-            if(res.data && newMessages.length){          
+            if(res.data && newMessages?.length > 0){                  
                 res.data.messages.reverse().map((message: MessageType)=>{
                     setNewMessages(prev=>[message,...prev])
                 })    
                 setHasNext(res.data.hasNext)   
+                dispatch(setChatLoading(false))
+                dispatch(setChatPage(page+1))
+            } else {
+                const res = await userRequest.get(`/message?chatId=${chatIdRef.current}&page=1&limit=${messagelimit}`)
+                dispatch(setMessages(res.data.messages))
+                // }
+                setHasNext(res.data.hasNext)  
                 dispatch(setChatLoading(false))
             }
         } catch(err){
@@ -232,11 +239,10 @@ const ChatBox = () => {
             console.log('fetch messages')
             if(currentUser!==null && chatId !== null){
                 const res = await userRequest.get(`/message?chatId=${chatId}&page=${pageRef.current}&limit=${messagelimit}`)
-                if(res.data ){          
+                if(res.data){          
                         dispatch(setMessages(res.data.messages))
                     // }
                     setHasNext(res.data.hasNext)
-                    console.log('fetch 1st time: ', res.data)
                 }
             }
         }

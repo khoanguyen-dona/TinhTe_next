@@ -1,10 +1,8 @@
 'use client'
 import { setChatList } from '@/redux/chatListRedux';
 import { RootState } from '@/redux/store';
-import { setAccessToken, setUser } from '@/redux/userRedux';
+import { setUser } from '@/redux/userRedux';
 import { publicRequest } from '@/requestMethod';
-import { Router } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Check } from 'lucide-react';
@@ -12,7 +10,6 @@ import ThreeDotLoading from '../custom-components/ThreeDotLoading';
 const page = () => {
    const dispatch = useDispatch()
     const user = useSelector((state:RootState)=>state.user.currentUser)
-    const router = useRouter()
     useEffect(() => {
           
          // get chatList
@@ -22,14 +19,12 @@ const page = () => {
                     const res_user = await publicRequest(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/user`,{withCredentials: true})
                     if(res_user.data){
                         dispatch(setUser(res_user.data.user))
-                        dispatch(setAccessToken(res_user.data.accessToken))
+                        localStorage.setItem('accessToken', res_user.data.accessToken.toString() )
                         dispatch(setChatList(res_user.data.chatList))
                         setTimeout(()=>{
                             window.location.href = '/'    
                         },1000)
-                    }
-                    
-                    // router.push('/?googlaAuth=true')         
+                    }                         
               }catch(err){
                     console.log('error while fetch user',err)
               } finally{  

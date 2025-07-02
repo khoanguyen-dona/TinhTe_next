@@ -1,13 +1,12 @@
-import React, { KeyboardEventHandler, useEffect, useState } from 'react'
-import { Input } from "@/components/ui/input"
+import React, { useEffect, useState } from 'react'
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import Image from 'next/image'
-import { setAccessToken, setUser } from '@/redux/userRedux'
-import toast from 'react-hot-toast'
+import { setUser } from '@/redux/userRedux'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/redux/store'
 import { useDispatch } from 'react-redux'
@@ -15,7 +14,7 @@ import { useRouter } from 'next/navigation'
 import { ChatType, NotificationType, User } from '@/dataTypes'
 import ChatItem from './ChatItem'
 import { userRequest } from '@/requestMethod'
-import { addChatToChatList, addChatToChatListAtTail, setChatList, setChatListHasNext } from '@/redux/chatListRedux'
+import {  addChatToChatListAtTail, setChatList, setChatListHasNext } from '@/redux/chatListRedux'
 import { setChatLoading, setMessages } from '@/redux/chatRedux'
 import { setSenderData } from '@/redux/chatRedux'
 import { setChatId } from '@/redux/chatRedux'
@@ -34,18 +33,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import ReactTimeAgoUtil from '@/utils/ReactTimeAgoUtil'
-import { addNotificationAtTail, addToNotifications, setNotificationCount, setNotificationsHasNext, updateNotifications } from '@/redux/notificationRedux'
+import { addNotificationAtTail, addToNotifications, setNotificationCount, setNotifications, setNotificationsHasNext, updateNotifications } from '@/redux/notificationRedux'
 import { useSocket } from '@/context/socketContext'
 
-type GetNotificationType = {
-  _id : string,
-  userId: string,
-  content: string ,
-  userIdRef: string
-  usernameRef: string,
-  commentId: string,
-  refCommentIdTypeThread: string,
-}
 
 
 const Navbar = () => {
@@ -69,7 +59,7 @@ const Navbar = () => {
   const [notificationPage, setNotificationPage] = useState<number>(2)
   const [mailLoading, setMailLoading] = useState<boolean>(false)
   const [notifyLoading, setNotifyLoading] = useState<boolean>(false)
-  const {socket ,isConnected} = useSocket()
+  const {socket } = useSocket()
 
   const handleLogout = () => {
     dispatch(setUser(null))
@@ -77,10 +67,11 @@ const Navbar = () => {
     dispatch(setChatPage(1))
     dispatch(setChatId(null))
     dispatch(setNotifyCount(0))
+    dispatch(setNotifications([]))
     dispatch(setSenderData(null))
     dispatch(setChatState(false))
     dispatch(setMessages(null))
-    dispatch(setAccessToken(null))
+    localStorage.removeItem('accessToken')
     dispatch(setChatLoading(false))
     router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
   }
@@ -163,8 +154,10 @@ const Navbar = () => {
           setMailLoading(false)
         }
       }
-      getChatList()
-      setPage(page+1)
+      if(user!==null){
+        getChatList()
+        setPage(page+1)
+      }
   }
 
   const  handleSeenNotification = async (notificationId: string) => {
@@ -253,7 +246,7 @@ const Navbar = () => {
           </Link>
 
          {/* mail button */}
-          <Popover >
+          <Popover  open={openChatList} onOpenChange={setOpenChatList}  >
             <PopoverTrigger asChild >
            
               <div
