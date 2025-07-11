@@ -38,7 +38,7 @@ const page = () => {
     const [loading, setLoading] = useState(false)
     const [seePassword, setSeePassword] = useState<true|false>(false)
     // const user = useSelector((state: RootState)=>state.user.currentUser)
-    const chatListLimit = 10
+    // const chatListLimit = 10
 
     console.log('ses',sessionExpired)
 
@@ -95,7 +95,7 @@ const page = () => {
                 // router.push('/')
                 setTimeout(()=>{
                     window.location.href = '/'    
-                },1500)
+                },2000)
             }
         } catch(err){
             toast.error('Lỗi, vui lòng thử lại')           

@@ -61,6 +61,8 @@ const Navbar = () => {
   const [notifyLoading, setNotifyLoading] = useState<boolean>(false)
   const {socket } = useSocket()
 
+  const accessToken = localStorage.getItem('accessToken')
+
   const handleLogout = () => {
     dispatch(setUser(null))
     dispatch(setChatList([]))
@@ -73,7 +75,7 @@ const Navbar = () => {
     dispatch(setMessages(null))
     localStorage.removeItem('accessToken')
     dispatch(setChatLoading(false))
-    router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
+    router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout?accessToken=${accessToken}`) 
   }
 
   useEffect(()=>{

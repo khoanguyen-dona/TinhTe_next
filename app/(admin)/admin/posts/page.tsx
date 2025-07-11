@@ -12,17 +12,6 @@ import {  useSelector } from 'react-redux';
 import { PostsTable } from '@/app/(client)/custom-components/table/posts-table';
 import toast from 'react-hot-toast';
 
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
 import {
   Select,
   SelectContent,
@@ -97,7 +86,7 @@ const page = () => {
 
     return (
         
-        <div className='flex justify-center p-2 md:px-8  w-screen'> 
+        <div className='flex justify-center px-2 md:px-8  w-screen'> 
         
             {loading && 
           
@@ -109,7 +98,7 @@ const page = () => {
                
             }
 
-            <div className='w-full  h-auto  flex flex-col justify-center   space-y-10 mt-10' >
+            <div className='w-full   h-auto  flex flex-col justify-center items-center   space-y-10 mt-10' >
       
 
                     <div className='font-bold text-2xl text-center'>

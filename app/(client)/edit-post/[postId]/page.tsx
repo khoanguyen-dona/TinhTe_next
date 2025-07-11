@@ -34,7 +34,8 @@ const page = () => {
     const [category, setCategory] = useState<string>()
     const [shortDescription, setShortDescription] = useState<string|undefined>(post?.shortDescription)
     const [linkUrl, setLinkUrl] = useState<string>()
- 
+    const [isPosted, setIsPosted] = useState<boolean>(post?.isPosted as boolean)
+
     // fetch data by postId
     useEffect(()=>{
         setLoading(true)
@@ -112,6 +113,7 @@ const page = () => {
                 isPosted: isPosted,
             })
             if(res.data){
+                setIsPosted(res.data.post.isPosted)
                 toast.success('cập nhật thành công')
                 setThumbnailFile(undefined)
             }
@@ -272,10 +274,19 @@ const page = () => {
                     onClick={()=>handleSubmit('saved')}>
                 Lưu bài viết
             </button>
-            <button className='p-4 bg-blue-500 text-white font-bold rounded-xl hover:cursor-pointer hover:bg-blue-600 transition'
-                    onClick={()=>handleSubmit('post')}>       
-                Đăng bài
-            </button>
+            {isPosted ?
+
+                <button className='p-4 bg-blue-500 text-white font-bold rounded-xl hover:cursor-pointer hover:bg-blue-600 transition'
+                        onClick={()=>handleSubmit('saved')}>       
+                        Bỏ đăng bài
+                </button>
+                :
+                <button className='p-4 bg-blue-500 text-white font-bold rounded-xl hover:cursor-pointer hover:bg-blue-600 transition'
+                        onClick={()=>handleSubmit('post')}>       
+                    Đăng bài
+                </button>
+
+            }
         </div>
 
     </div>

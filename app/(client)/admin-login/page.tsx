@@ -7,10 +7,8 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -20,7 +18,7 @@ import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { Loader } from 'lucide-react';
 import { useDispatch } from 'react-redux'
-import { setAccessToken, setUser } from '@/redux/userRedux'
+import {  setUser } from '@/redux/userRedux'
 
 const formSchema = z.object({
     email: z.string().email('This is not a email').min(4).max(50),
@@ -50,7 +48,8 @@ const page = () => {
             })
             if(res.data){        
                 dispatch(setUser(res.data.data))
-                dispatch(setAccessToken(res.data.accessToken))
+                localStorage.setItem('accessToken', res.data.accessToken)
+                // dispatch(setAccessToken(res.data.accessToken))
                 toast.success("Đăng nhập thành công")
                 router.push('/admin')
             }
@@ -61,10 +60,10 @@ const page = () => {
             setLoading(false)
         }
     }
-    const handleLoginWithGoogle = () => {
-        setLoading(true)
-        window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`
-    }
+    // const handleLoginWithGoogle = () => {
+    //     setLoading(true)
+    //     window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/google`
+    // }
 
   return (
     <div className={` h-screen 200 flex justify-center items-center `}>

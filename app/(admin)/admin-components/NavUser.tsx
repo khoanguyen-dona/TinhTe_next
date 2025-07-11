@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/sidebar"
 import { User } from "@/dataTypes"
 import { useDispatch } from "react-redux"
-import { setAccessToken, setUser } from "@/redux/userRedux"
+import {  setUser } from "@/redux/userRedux"
 import { useRouter } from "next/navigation"
 export function NavUser({
   user,
@@ -41,7 +41,8 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const handleLogout = () => {
         dispatch(setUser(null))
-        dispatch(setAccessToken(null))
+        localStorage.removeItem('accessToken')
+        // dispatch(setAccessToken(null))
         router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`) 
     }
   return (

@@ -6,7 +6,7 @@ import { Loader } from 'lucide-react'
 import { DataTable } from '@/app/(client)/custom-components/table/data-table'
 // import { columns } from '@/app/(admin)/admin/posts/columns'
 import toast from 'react-hot-toast'
-import { publicRequest, userRequest } from '@/requestMethod'
+import {  userRequest } from '@/requestMethod'
 import { RootState } from '@/redux/store'
 import { useSelector } from 'react-redux'
 import { Post } from '@/dataTypes'
@@ -83,45 +83,46 @@ const page = () => {
 }
 
   return (
-    <div className='flex justify-center '>
-    {loading && 
-    <div className='fixed top-0 z-20  w-screen h-screen bg-white opacity-50' >
-        <div className='absolute inset-0 flex items-center justify-center'>
-            <Loader className=' animate-spin w-14 h-14   '/>
-        </div>
-    </div>
-    }
+    <div className='flex flex-col justify-center items-center  '>
 
-    <div className=' px-2 md:px-8 w-full  mt-30 mb-30 h-auto flex flex-col justify-center items-center '>
-      
-      <div className='text-center font-bold text-2xl mb-10'>Bài đăng của tôi</div>
-      <div>
+      {loading && 
+        <div className='fixed top-0 z-20  w-full h-full bg-white opacity-50' >
+            <div className='absolute inset-0 flex items-center justify-center'>
+                <Loader className=' animate-spin w-14 h-14   '/>
+            </div>
+        </div>
+      }
+
+      <div className='w-screen mt-30 mb-30 h-auto flex flex-col justify-center items-center px-4 md:px-8  '>
         
-          {posts!==undefined &&    
-              <PostsTable data={posts} onDelete={handleDeletePost} handleApprove={handleApprove} />
-          }
-      </div>
-
-      {/* pagination */}
-      <div className='flex justify-center items-center gap-10 mt-10'>
-        <button disabled={page===1}>
-          <ChevronLeft  onClick={handlePrev} className={`w-10 h-10  ${page===1?'opacity-20':'hover:cursor-pointer hover:text-blue-500 hover:bg-blue-100 rounded-lg'} `}/>
-        </button>
-        <div className='text-xl justify-center items-center flex gap-2'>
-          <select value={page} onChange={(e)=>setPage(parseInt(e.target.value))} className='border-1 border-gray-300 p-1 rounded-lg' id="">
-            {/* @ts-ignore */}
-            {Array.from({length: totalPage}, (_, i)=>(
-              <option key={i} value={i+1}>{i+1}</option>
-            ))
+        <div className='text-center font-bold text-2xl mb-10'>Bài đăng của tôi</div>
+        <div className='w-full'>
+          
+            {posts!==undefined &&    
+                <PostsTable data={posts} onDelete={handleDeletePost} handleApprove={handleApprove} />
             }
-          </select>
         </div>
-        <button disabled={page===totalPage}>
-          <ChevronRight onClick={handleNext} className={`w-10 h-10 ${page===totalPage?'opacity-20':'hover:bg-blue-100 hover:text-blue-500 rounded-lg hover:cursor-pointer'}`}/>
-        </button>
-      </div>
 
-    </div>
+        {/* pagination */}
+        <div className='flex justify-center items-center gap-10 mt-10'>
+          <button disabled={page===1}>
+            <ChevronLeft  onClick={handlePrev} className={`w-10 h-10  ${page===1?'opacity-20':'hover:cursor-pointer hover:text-blue-500 hover:bg-blue-100 rounded-lg'} `}/>
+          </button>
+          <div className='text-xl justify-center items-center flex gap-2'>
+            <select value={page} onChange={(e)=>setPage(parseInt(e.target.value))} className='border-1 border-gray-300 p-1 rounded-lg' id="">
+              {/* @ts-ignore */}
+              {Array.from({length: totalPage}, (_, i)=>(
+                <option key={i} value={i+1}>{i+1}</option>
+              ))
+              }
+            </select>
+          </div>
+          <button disabled={page===totalPage}>
+            <ChevronRight onClick={handleNext} className={`w-10 h-10 ${page===totalPage?'opacity-20':'hover:bg-blue-100 hover:text-blue-500 rounded-lg hover:cursor-pointer'}`}/>
+          </button>
+        </div>
+
+      </div>
     </div>
   )
 }

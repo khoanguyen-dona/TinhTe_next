@@ -2,14 +2,13 @@
 import React from 'react'
 import { useEffect, useState } from 'react';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Post, User } from '@/dataTypes';
-import { publicRequest, userRequest } from '@/requestMethod';
+import {  User } from '@/dataTypes';
+import {  userRequest } from '@/requestMethod';
 import { ChevronLeft } from 'lucide-react';
 import { ChevronRight } from 'lucide-react';
 import { Loader } from 'lucide-react';
 import { RootState } from '@/redux/store';
 import {  useSelector } from 'react-redux';
-import { PostsTable } from '@/app/(client)/custom-components/table/posts-table';
 import toast from 'react-hot-toast';
 import { UserRole } from '@/dataTypes';
 import { UsersTable } from '@/app/(client)/custom-components/table/users-table';
@@ -19,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const page = () => {
     const user = useSelector((state: RootState)=>state.user.currentUser)
     console.log(user)
-    const {state} = useSidebar()
+    // const {state} = useSidebar()
     const [users, setUsers] = useState<User[]|undefined>(undefined)
     const [page, setPage] = useState<number>(1)
     const [limit, setLimit] = useState<number>(10)
@@ -98,7 +97,7 @@ const page = () => {
 
     return (
         
-        <div className='flex justify-center p-2 md:px-8  w-screen'> 
+        <div className='flex justify-center px-2 md:px-8  w-screen'> 
         
             {loading && 
           

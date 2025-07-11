@@ -1,4 +1,4 @@
-import { AxiosError, AxiosInstance } from 'axios';
+import { AxiosInstance } from 'axios';
 
 import axios from "axios";
 
@@ -29,7 +29,6 @@ export const userRequest: AxiosInstance = axios.create({
 userRequest.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem('accessToken')
-    console.log('send req with accessToken: ',accessToken)
     if (accessToken) {
       if (config.headers) { // Đảm bảo config.headers tồn tại
         config.headers.token = `Bearer ${accessToken}`;
@@ -42,7 +41,6 @@ userRequest.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
 
 // --- Response Interceptor ---
 // Chặn mọi phản hồi đến để xử lý các lỗi như token hết hạn và chuyển hướng
