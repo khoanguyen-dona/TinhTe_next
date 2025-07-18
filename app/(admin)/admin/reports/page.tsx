@@ -1,33 +1,22 @@
 'use client'
 import React from 'react'
 import { useEffect, useState } from 'react';
-import { useSidebar } from '@/components/ui/sidebar';
-import { Post } from '@/dataTypes';
-import { publicRequest, userRequest } from '@/requestMethod';
+import {  CommentType,  } from '@/dataTypes';
+import {  userRequest } from '@/requestMethod';
 import { ChevronLeft } from 'lucide-react';
 import { ChevronRight } from 'lucide-react';
 import { Loader } from 'lucide-react';
 import { RootState } from '@/redux/store';
 import {  useSelector } from 'react-redux';
-import { PostsTable } from '@/app/(client)/custom-components/table/posts-table';
 import toast from 'react-hot-toast';
-
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { CommentsTable } from '@/app/(client)/custom-components/table/comments-table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 const page = () => {
     const user = useSelector((state: RootState)=>state.user.currentUser)
     console.log(user)
-    const {state} = useSidebar()
-    const [posts, setPosts] = useState<Post[]|undefined>(undefined)
+    const [comments, setComments] = useState<CommentType[]|undefined>(undefined)
     const [page, setPage] = useState<number>(1)
     const [limit, setLimit] = useState<number>(10)
     const [loading, setLoading] = useState<boolean>(false)
@@ -35,23 +24,24 @@ const page = () => {
     const [reload, setReload] = useState<boolean>(false)
 
     useEffect(()=>{
-        const getPosts = async ()=>{
+        const getUsers = async ()=>{
             setLoading(true)
-            const res = await publicRequest.get(`/post?page=${page}&limit=${limit}&isPosted=&isApproved=`)
+            const res = await userRequest.get(`/report-comment/comments?page=${page}&limit=${limit}`)
             if (res.data){
-                setPosts(res.data.posts)
+                setComments(res.data.comments)
                 setTotalPage(res.data.totalPage)
                 setLoading(false)
             }
         }
-        getPosts()
+        getUsers()
     },[page, limit, reload])
+ 
 
-    const handleDeletePost = async (postId: string) => {
+    const handleDelete = async (commentId: string) => {
         try{
           setLoading(true)
-          const res = await userRequest.delete(`/post/${postId}`)
-          if(res.status===200){
+          const res = await userRequest.delete(`/comment/${commentId}`)
+          if(res.status===200){       
             setReload(!reload)
             toast.success('Xóa thành công')
           }
@@ -62,28 +52,11 @@ const page = () => {
         }
     }
 
-    const handleApprove = async (postId: string, value: boolean) => {
-        try{
-          setLoading(true)
-          const res = await userRequest.put(`/post/${postId}`,{
-            isApproved: value
-          })
-          if(res.status===200){
-            setReload(!reload)
-            toast.success('Cập nhật thành công')
-          }
-        } catch(err){
-          toast.error('Lỗi ')
-          setLoading(false)
-        } 
-    }
 
     const handlePageLimit = async (number: number) =>{
-      setLimit((number))
-      setPage(1)
-    } 
-
-    console.log('limit',limit)
+        setLimit((number))
+        setPage(1)
+      } 
 
     return (
         
@@ -99,16 +72,16 @@ const page = () => {
                
             }
 
-            <div className='w-full   h-auto  flex flex-col justify-center   space-y-10 mt-10' >
+            <div className='w-full  h-auto  flex flex-col justify-center   space-y-10 mt-10' >
       
 
                     <div className='font-bold text-2xl text-center'>
-                        Posts  
-                    </div>
+                        Report comments 
+                    </div>               
 
                     <div className='w-full' >
-                        {posts!==undefined &&    
-                            <PostsTable  data={posts} onDelete={handleDeletePost} handleApprove={handleApprove} />
+                        {comments!==undefined &&    
+                            <CommentsTable  data={comments} handleDelete={handleDelete}  />
                         }
                     </div>
 
@@ -118,9 +91,9 @@ const page = () => {
                         
                           <Select onValueChange={(value)=>handlePageLimit(Number(value))} defaultValue={'10'} >
                             <SelectTrigger className="w-auto">
-                              <SelectValue placeholder={limit}   />
+                              <SelectValue />
                             </SelectTrigger>
-                            <SelectContent >
+                            <SelectContent>
                               <SelectItem value="10">10</SelectItem>
                               <SelectItem value='20'>20</SelectItem>
                               <SelectItem value="40">40</SelectItem>
@@ -136,26 +109,24 @@ const page = () => {
                         <button disabled={page===1} >
                             <ChevronLeft  onClick={()=>setPage(prev=>prev-1)} className={`p-1 w-10 h-10  rounded-lg ${page===1?'opacity-20':'hover:text-blue-500 hover:cursor-pointer transition hover:bg-blue-100'}  `} />
                         </button>
-
+                        
                         {/* @ts-ignore */}
                         <Select onValueChange={(value)=>setPage(Number(value))} value={page} >
-                          <SelectTrigger className="w-auto">
+                            <SelectTrigger className="w-auto">
                             <SelectValue placeholder={page} />
-                          </SelectTrigger>
-                          <SelectContent>
+                            </SelectTrigger>
+                            <SelectContent>
                             {Array?.from({length: totalPage as number}, (_, index)=>(
-                              // @ts-ignore
-                              <SelectItem key={index} value={index+1}>{index+1}</SelectItem>   
-                              ) )
+                                // @ts-ignore
+                                <SelectItem key={index} value={index+1}>{index+1}</SelectItem>   
+                                ) )
                             }
-                          </SelectContent>
+                            </SelectContent>
                         </Select>
 
                         <button disabled={page===totalPage}>
-
                             <ChevronRight onClick={()=>setPage(prev=>prev+1)} className={`p-1 w-10 h-10 rounded-lg ${page===totalPage?'opacity-20':'hover:text-blue-500 hover:cursor-pointer transition hover:bg-blue-100'}  `}/>
                         </button>
-
                     </div>
 
             </div>

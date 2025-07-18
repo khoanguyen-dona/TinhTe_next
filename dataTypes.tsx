@@ -33,7 +33,7 @@ export type CommentType = {
     _id: string,
     content: string,
     postId: Post,
-    userId: User,
+    userId: User | string,
     imgGallery: string[],
     type: 'thread'|'comment' ,
     refCommentIdTypeThread: string,

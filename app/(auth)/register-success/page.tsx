@@ -16,7 +16,7 @@ const page = () => {
             <p>Tài khoản của bạn đã được tạo thành công !</p>
             <div className='flex justify-center items-center'>
                 <a href='/login'      
-                   className='bg-blue-500 w-1/3 p-6 hover:cursor-pointer text-center hover:bg-blue-600 transition text-white rounded-lg font-bold text-lg'
+                   className='bg-blue-500 w-1/3 p-4 hover:cursor-pointer text-center hover:bg-blue-600 transition text-white rounded-lg font-bold text-lg'
                 >
                     Đăng nhập
                 </a>

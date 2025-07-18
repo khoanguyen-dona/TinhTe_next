@@ -106,7 +106,7 @@ export const UsersTable = ({ data, handleDeleteUser, handleRoleChange }: UsersTa
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                <AlertDialogTitle>Bạn có chắc chắn muốn xóa bài viết này?</AlertDialogTitle>  
+                                <AlertDialogTitle>Bạn có chắc chắn muốn xóa user này?</AlertDialogTitle>  
                                 </AlertDialogHeader>          
                                 <div className='flex justify-center gap-2'>                 
                                 <AlertDialogCancel className=''>No</AlertDialogCancel>

@@ -280,8 +280,8 @@ const Comment = ({commentIdTypeThread, commentId, fetchAllReply, comment, user, 
   return (
     <>
         <div className={`flex gap-2 mt-6  `}>
-            { comment.userId.img ?
-                <Image width={30} height={30} className="w-10 h-10 object-cover rounded-full" src={comment.userId.img} alt="" />
+            { typeof comment.userId === 'object' ?
+                <Image width={30} height={30} className="w-10 h-10 object-cover rounded-full" src={comment.userId.img } alt="" />
                 :
                 <Image width={30} height={30} className="w-10 h-10 object-cover rounded-full" src='/user.png' alt="" />
             }
@@ -289,7 +289,9 @@ const Comment = ({commentIdTypeThread, commentId, fetchAllReply, comment, user, 
             <div className='w-full'>
                 <div className={` flex flex-col  p-4  rounded-lg relative bg-gray-100 `}>
                     <div className='flex gap-5'>
-                        <div className='text-blue-500 font-bold'>{comment.userId.username }</div>
+                        { typeof comment.userId === 'object' &&
+                            <div className='text-blue-500 font-bold'>{comment.userId.username }</div>
+                        }
                         <div><ReactTimeAgoUtil date={comment.createdAt} locale="vi-VN"/></div>
                     </div>
                     <div className='mt-3 '>
@@ -302,7 +304,8 @@ const Comment = ({commentIdTypeThread, commentId, fetchAllReply, comment, user, 
                                             calculateCount
                                             setCurrentEmotion('all')
                                         }}
-                                        className='absolute -bottom-4 right-0 p-1 px-2 bg-white border-2 border-gray-100 shadow-lg rounded-full h-auto flex items-center hover:cursor-pointer hover:text-red-500'>
+                                        className='absolute -bottom-4 right-0 p-1 px-2 bg-white border-2 border-gray-100 shadow-lg rounded-full h-auto flex items-center hover:cursor-pointer hover:text-red-500'
+                                    >
                                             {emotionTypeOfComment?.map((emo)=>(
                                                     EmotionArray.includes(emo) && <img className='w-6 h-6' src={`/icon-${emo}.svg`} />
                                                 )
@@ -473,8 +476,10 @@ const Comment = ({commentIdTypeThread, commentId, fetchAllReply, comment, user, 
 
         {openCommentBox &&
             <div className='ml-12 mt-6 border-l-2 pl-2 '  >
-                <CommentBox  user={user} postId={postId} slug={slug} type={'comment'} refCommentIdTypeThread={comment._id} closeBoxAfterComment={true} 
-                refCommentUserId={comment.userId._id} refCommentUsername={comment.userId.username} isReplied={false} setLoading={setLoading}/>
+                { typeof comment.userId === 'object' &&
+                    <CommentBox  user={user} postId={postId} slug={slug} type={'comment'} refCommentIdTypeThread={comment._id} closeBoxAfterComment={true} 
+                    refCommentUserId={comment.userId._id} refCommentUsername={comment.userId.username} isReplied={false} setLoading={setLoading}/>
+                }
             </div>
         }
 

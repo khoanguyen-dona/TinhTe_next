@@ -36,6 +36,11 @@ const items = [
       url: "/admin/users",
       src: '/person.png',
     },
+    {
+      title: "Reports comment",
+      url: "/admin/reports",
+      src: '/flag.png',
+    },
   ]
    
   export function AppSidebar() {

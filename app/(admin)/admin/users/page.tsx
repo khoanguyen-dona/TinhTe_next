@@ -25,6 +25,8 @@ const page = () => {
     const [loading, setLoading] = useState<boolean>(false)
     const [totalPage, setTotalPage] = useState<number>()
     const [reload, setReload] = useState<boolean>(false)
+    
+     
 
     useEffect(()=>{
         const getUsers = async ()=>{
@@ -150,7 +152,21 @@ const page = () => {
                         <button disabled={page===1} >
                             <ChevronLeft  onClick={()=>setPage(prev=>prev-1)} className={`p-1 w-10 h-10  rounded-lg ${page===1?'opacity-20':'hover:text-blue-500 hover:cursor-pointer transition hover:bg-blue-100'}  `} />
                         </button>
-                        {page}
+
+                            {/* @ts-ignore */}
+                        <Select onValueChange={(value)=>setPage(Number(value))} value={page} >
+                          <SelectTrigger className="w-auto">
+                            <SelectValue placeholder={page} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array?.from({length: totalPage as number}, (_, index)=>(
+                              // @ts-ignore
+                              <SelectItem key={index} value={index+1}>{index+1}</SelectItem>   
+                              ) )
+                            }
+                          </SelectContent>
+                        </Select>
+                        
                         <button disabled={page===totalPage}>
                             <ChevronRight onClick={()=>setPage(prev=>prev+1)} className={`p-1 w-10 h-10 rounded-lg ${page===totalPage?'opacity-20':'hover:text-blue-500 hover:cursor-pointer transition hover:bg-blue-100'}  `}/>
                         </button>

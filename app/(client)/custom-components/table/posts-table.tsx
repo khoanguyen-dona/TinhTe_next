@@ -57,7 +57,8 @@ export const PostsTable = ({ data, onDelete, handleApprove }: PostsTableProps) =
                 <textarea 
                     onClick={()=>{window.open(`/post/${row.original.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${row.original._id}`,'_blank')}}  
                     readOnly 
-                    className="resize-none w-80 h-20 border-none font-semibold hover:cursor-pointer hover:text-blue-500" value={row.getValue('title')} 
+                    className="resize-none w-80 h-20 border-none font-semibold hover:cursor-pointer hover:text-blue-500" 
+                    value={row.getValue('title')} 
                 />        
             )
         }
