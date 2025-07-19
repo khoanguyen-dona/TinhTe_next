@@ -28,24 +28,24 @@ export default function ClientLayoutWrapper({
                   <SocketProvider>
                     <PersistGate loading={null} persistor={persistor} >
                             
-                            <div><Navbar /></div>
+                        <div><Navbar /></div>
 
 
-                            <div className="flex justify-center">
-                            <div className=" w-[1200px]">
-                            {children}
-                            </div>
-                            </div>
+                        <div className="flex justify-center">
+                        <div className=" w-[1200px]">
+                        {children}
+                        </div>
+                        </div>
 
-                            <SocketConnect/>
-                            <ChatBox />
-                            <Toaster 
-                            position="top-right"
-                            reverseOrder={false}
-                            containerClassName="mt-14"
-                            />
-                            
-                            <div><Footer /></div>
+                        <SocketConnect/>
+                        <ChatBox />
+                        <Toaster 
+                        position="top-right"
+                        reverseOrder={false}
+                        containerClassName="mt-14"
+                        />
+                        
+                        <div><Footer /></div>
 
                   </PersistGate>
                 </SocketProvider>
