@@ -4,6 +4,7 @@ import { Metadata } from 'next'; // Quan trọng: import Metadata
 import ClientLayoutWrapper from "./custom-components/wrapper/ClientLayoutWrapper";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(`${process.env.NEXT_PUBLIC_BROWSER_URL}`),
   title: 'TinhTe.vn - Mạng xã hội hỏi đáp, review thông tin công nghệ ', // Tiêu đề trang của bạn
   description: 'Mạng xã hội TinhTe.vn', // Mô tả trang web của bạn
   icons: { // Cấu hình Favicon
