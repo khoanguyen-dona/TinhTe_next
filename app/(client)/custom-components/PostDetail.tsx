@@ -6,11 +6,10 @@ import JoditViewer from '@/app/(client)/custom-components/JoditViewer'
 import Image from 'next/image'
 import { Post } from '@/dataTypes'
 import { publicRequest, userRequest } from '@/requestMethod'
-import { useParams, useSearchParams} from 'next/navigation'
+import {  useSearchParams} from 'next/navigation'
 import moment from 'moment'
 import { Separator } from "@/components/ui/separator"
 import { Loader, MessageSquare } from 'lucide-react'
-import { ThumbsUp } from 'lucide-react'
 import { RootState } from '@/redux/store'
 import { useDispatch, useSelector } from 'react-redux'
 import { User } from '@/dataTypes'
@@ -20,7 +19,6 @@ import Comment from '@/app/(client)/custom-components/Comment'
 import { ReportCommentType } from '@/dataTypes'
 import { EmotionType } from '@/dataTypes'
 import toast from 'react-hot-toast'
-import PostMetadata from '@/app/(client)/custom-components/postMetadata'
 import {
     Dialog,
     DialogContent,
@@ -30,10 +28,8 @@ import {
     DialogTitle,
     DialogTrigger,
   } from "@/components/ui/dialog"
-import { setChatList } from '@/redux/chatListRedux'
-import Link from 'next/link'
 
-// import { useSocket } from '@/context/socketContext'
+import Link from 'next/link'
 
 type postEmotionType = {
     postId: string,
@@ -43,12 +39,11 @@ type postEmotionType = {
 
 type Props = {
     postId: string,
-    slug: string
+    slug: string,
+    data: Post
 }
 
-
-
-const PostDetail = ({postId, slug}:Props) => {
+const PostDetail = ({postId, slug, data}:Props) => {
     const searchParams = useSearchParams()
     const commentId = searchParams.get('commentId')
     const commentIdTypeThread = searchParams.get('refCommentIdTypeThread')
@@ -64,8 +59,7 @@ const PostDetail = ({postId, slug}:Props) => {
     const [reload, setReload] = useState<boolean>(false)
     const EmotionArray = ['like','love','fun','sad','wow']
     const user = useSelector((state: RootState)=>state.user.currentUser as User)
-    // const {postId, slug} = useParams()
-    const [post, setPost] = useState<Post>()
+    const [post, setPost] = useState<Post>(data)
     const [loading, setLoading] = useState<boolean>(false)
     const [newestPosts, setNewestPosts] = useState<Post[]>()
     const [showEmoji, setShowEmoji] = useState<boolean>(false);
@@ -181,24 +175,6 @@ const PostDetail = ({postId, slug}:Props) => {
     }
 
 
-
-    //fech post data
-    useEffect(()=>{
-        const getPost = async() =>{
-            try{
-                setLoading(true)
-                const res = await publicRequest.get(`/post/${postId}`)
-                if(res.data){
-                    setPost(res.data.post)
-                }
-            } catch(err){
-                console.log('fetch data failed',err)
-            } finally {
-                setLoading(false)
-            }
-        }
-        getPost()
-    }, [])
 
     //fetch newestPost 
     useEffect(()=>{
@@ -323,8 +299,6 @@ const PostDetail = ({postId, slug}:Props) => {
 
   return (
     <>
-        <PostMetadata postTitle={post?.title as string} postDesc={post?.shortDescription as string} 
-        postImg={post?.thumbnail as string} />
         <div className='flex justify-center'>
         {loading && 
             <div className='fixed top-0 z-20  w-screen h-screen bg-white opacity-50' >

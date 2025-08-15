@@ -6,15 +6,12 @@ const Menu = () => {
         <div className='hover:cursor-pointer text-blue-500'>
             Home
         </div>
-        <div className='hover:cursor-pointer'>
-            Audio
-        </div>
-        <div className='hover:cursor-pointer'>
+        <Link href='/xe' className='hover:cursor-pointer'>
             Xe
-        </div>
-        <div className='hover:cursor-pointer'>
+        </Link>
+        <Link href='dien-thoai' className='hover:cursor-pointer'>
             Điện thoại
-        </div>
+        </Link>
         <Link href='/forums'>
             Forums
         </Link>

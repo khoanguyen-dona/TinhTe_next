@@ -6,10 +6,11 @@ import PostItem from '../custom-components/PostItem'
 import { publicRequest } from '@/requestMethod'
 import { Post } from '@/dataTypes'
 import { ChevronLeft, ChevronRight, Loader } from 'lucide-react'
-
+import { categories } from '@/data'
 
 const page = () => {
     const {category} = useParams()
+    const [ categoryWord, setCategoryWord ] = useState<string>()
     const [page, setPage] = useState<number>(1)
     const limit = 10
     const [posts, setPosts] = useState<Post[]>()
@@ -37,7 +38,13 @@ const page = () => {
     const handleNext = () =>{
         setPage(prev=>prev+1)
     }
-    console.log('pa',page)
+    console.log('category',category)
+
+    // convert category 
+    const convertCategory = (categoryValue: string) => {
+        const value = categories.filter(category => category.value===categoryValue)
+        return value[0].title
+    }
 
   return (
     <div className='flex justify-center'>
@@ -52,7 +59,7 @@ const page = () => {
 
     <div className='p-4 mt-24 h-auto w-full  flex flex-col '>
         <div className='font-bold text-2xl first-letter:uppercase'>
-            {category}
+            {convertCategory(category as string)}
         </div>
         {/*  */}
         <div className='flex bg-orange-300 p-1 rounded-md mt-10'>

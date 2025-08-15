@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: { postId: string, s
     description: post.shortDescription, // Mô tả trang
     keywords: post.title, // Từ khóa (tùy chọn, nhưng vẫn hữu ích)
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_BROWSER_URL}/${post.title}/${post._id}`, // URL chính tắc của bài viết
+      canonical: `${process.env.NEXT_PUBLIC_BROWSER_URL}/${post.title.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '')}/${post._id}`, // URL chính tắc của bài viết
     },
     openGraph: { // Metadata cho chia sẻ trên mạng xã hội (Facebook, Zalo)
       title: post.title,
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: { params: { postId: string, s
         },
       ],
       type: 'article', // Loại nội dung là bài viết
-      publishedTime: new Date().toISOString(), // Thời gian xuất bản (nếu có trong dữ liệu bài viết)
+      publishedTime: new Date(post.createdAt).toISOString(), // Thời gian xuất bản (nếu có trong dữ liệu bài viết)
       authors: [post.authorId.username], // Tên tác giả
     },
     twitter: { // Metadata cho chia sẻ trên Twitter
@@ -85,6 +85,6 @@ export default async function PostPage({ params }: { params: { postId: string, s
   }
 
   return (
-    <PostDetail postId={postId} slug={slug} /> 
+    <PostDetail postId={postId} slug={slug} data={post} /> 
   );
 }

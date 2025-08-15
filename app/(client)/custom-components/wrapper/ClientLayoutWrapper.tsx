@@ -30,19 +30,18 @@ export default function ClientLayoutWrapper({
                             
                         <div><Navbar /></div>
 
-
                         <div className="flex justify-center">
-                        <div className=" w-[1200px]">
-                        {children}
-                        </div>
+                          <div className=" w-[1200px]">
+                          {children}
+                          </div>
                         </div>
 
                         <SocketConnect/>
                         <ChatBox />
                         <Toaster 
-                        position="top-right"
-                        reverseOrder={false}
-                        containerClassName="mt-14"
+                          position="top-right"
+                          reverseOrder={false}
+                          containerClassName="mt-14"
                         />
                         
                         <div><Footer /></div>
