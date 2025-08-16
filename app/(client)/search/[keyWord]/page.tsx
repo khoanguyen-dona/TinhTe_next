@@ -30,8 +30,9 @@ export default function Search() {
     const [hasNext, setHasNext] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [mailLoading,setMailLoading] = useState<boolean>(false)
+    const [ userIdClicked, setUserIdClicked ] = useState<string>()
 
-
+    console.log('userIdClicked----', userIdClicked)
     //fetch first time and when switch type
     useEffect(()=>{ 
 
@@ -135,7 +136,7 @@ export default function Search() {
             // find chat between 2 user
             const res = await userRequest.get(`/chat?user1=${currentUser?._id}&user2=${userId}`) 
               
-            // if existed ,go find chatId in out localStorage then set chatBox state
+            // if existed ,go find chatId in localStorage then set chatBox state
             if(res.data.chat !== null && sender.data){
       
                 const chat = chatList.find((chat:ChatType)=>chat._id===res.data.chat._id)
@@ -266,10 +267,10 @@ export default function Search() {
                         <div>
                             <button 
                                 disabled={mailLoading||user._id===currentUser?._id}
-                                onClick={()=>handleOpenChatBox(user?._id)}
+                                onClick={()=>{handleOpenChatBox(user?._id), setUserIdClicked(user._id)}}
                                 className={`p-4 bg-blue-50 text-blue-500 font-bold rounded-lg hover:cursor-pointer hover:bg-blue-100 flex gap-2 
-                                ${mailLoading?'opacity-50':''} ${user._id===currentUser?._id?'hidden':''} `}>
-                                {mailLoading && <Loader className="animate-spin"/>}Nhắn tin
+                                ${mailLoading && userIdClicked===user._id ?'opacity-50':''} ${user._id===currentUser?._id?'hidden':''} `}>
+                                {mailLoading && userIdClicked===user._id && <Loader className="animate-spin"/>}Nhắn tin
                             </button>
                         </div>
                     </div>
