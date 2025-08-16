@@ -38,7 +38,7 @@ export default function Home() {
   const day = new Date().getDate()
   const month = new Date().toISOString().substring(5,7)
   const year = new Date().getFullYear()
-  console.log('year/month.day',year+'/'+month+'/'+day)
+  // console.log('year/month.day',year+'/'+month+'/'+day)
 
   // call visit api
   useEffect(()=>{

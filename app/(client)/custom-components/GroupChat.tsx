@@ -26,8 +26,8 @@ import { addChatToChatList, setChatList, setChatListHasNext } from '@/redux/chat
 
 
 type Props = {
-    userId: string|null,
-    username: string|null,
+    userId: string,
+    username: string,
     socket: Socket|null,
     avatar: string|'/user.png',
     messages: MessageGroupChatType[],
@@ -61,6 +61,17 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
     const soundRef = useRef(sound)
     // const chatLoadingRef = useRef(chatLoading)
 
+    // add currnet user to onlineUsers
+    useEffect(()=>{
+         setOnlineUsers( prevUsers =>{
+                const isExist = prevUsers.find((user: onlineUserType)=> user.userId===userId)
+                if(isExist){
+                    return prevUsers
+                } else {
+                    return [{avatar: avatar, userId: userId, username: username},...prevUsers]
+                }
+        })   
+    }, [])
 
     // update status of soundRef
     useEffect(()=>{
@@ -377,7 +388,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                                         <div>
                                             <Image src={user.avatar as any||'/user.png'} width={20} height={20} alt='' className='w-8 h-8 object-cover rounded-full' />
                                         </div>
-                                        <div>
+                                        <div className=''>
                                             {user.username}
                                         </div>
                                     </div>
@@ -388,7 +399,7 @@ const GroupChat = ({userId, username, socket, avatar, messages}:Props) => {
                                                 <div>
                                                     <Image src={user.avatar as any||'/user.png'} width={20} height={20} alt='' className='w-8 h-8 object-cover rounded-full' />
                                                 </div>
-                                                <div>
+                                                <div className='flex items-center'>
                                                     {user.username}
                                                 </div>
                                             </div>
