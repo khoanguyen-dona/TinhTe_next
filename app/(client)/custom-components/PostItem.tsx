@@ -83,7 +83,8 @@ const PostItem = ({post}:Props) => {
             </div>
             {/* last comment */}
             <div className='w-1/10 flex flex-col '>
-                <p className='font-bold'>{latestComment?.userId?.username}</p>
+                {/* @ts-ignore */}
+                <p className='font-bold'>{latestComment?.userId?.username as string}</p>
                 {latestComment?.createdAt &&                   
                     <p className='text-gray-400'><ReactTimeAgoUtil date={latestComment?.createdAt} locale='vi-VN' /></p>
                  } 

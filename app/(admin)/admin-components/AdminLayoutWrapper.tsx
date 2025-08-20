@@ -17,7 +17,7 @@ export default function RootLayout({ children }:Readonly<{ children: React.React
 
   const router = useRouter()
 
-  if(localStorage as Storage !== undefined){
+  if(typeof window !== 'undefined' && localStorage as Storage !== undefined){
 
     const user = JSON.parse(localStorage.getItem('persist:root') as any)?.user;
     const currentUser = user && JSON.parse(user).currentUser
